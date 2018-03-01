@@ -7,6 +7,7 @@
 <div class="krona-box">
     <h1>{l s='Your Settings' mod='genzo_krona'}</h1>
     <form method="post" enctype="multipart/form-data">
+
         <div class="form-row">
             <img id="avatar" src="{$avatar}">
             <div class="label"><label for="active">{l s='Using' mod='genzo_krona'} {$game_name}</label></div>
