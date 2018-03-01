@@ -1,0 +1,283 @@
+/* Elements */
+[id^="module-genzo_krona"] {
+    line-height: 24px;
+}
+
+[id^="module-genzo_krona"] .krona-box {
+    background: #FCFCFC;
+    border: solid 1px #DDD;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+[id^="module-genzo_krona"] .krona-box h1,
+[id^="module-genzo_krona"] .krona-box h2 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+}
+
+[id^="module-genzo_krona"] .krona-box h3 {
+    margin: 0 0 10px 0;
+}
+
+[id^="module-genzo_krona"] p.alert {
+    margin: 0 0 20px 0;
+}
+
+[id^="module-genzo_krona"] ul#krona-pagination {
+    float: right;
+    margin: 0;
+}
+
+[id^="module-genzo_krona"] ul#krona-pagination li {
+    display: inline-block;
+}
+
+[id^="module-genzo_krona"] ul#krona-pagination li {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1px solid #DDD;
+    border-right: none;
+    margin: 0;
+    background: #FFF;
+}
+[id^="module-genzo_krona"] ul#krona-pagination li:first-of-type {
+    border-radius: 4px 0 0 4px;
+}
+[id^="module-genzo_krona"] ul#krona-pagination li:last-of-type {
+    border-right: 1px solid #DDD;
+    border-radius: 0 4px 4px 0;
+}
+
+
+/* Navigation */
+[id^="module-genzo_krona"] ul#krona-nav {
+    padding: 0 10px;
+    background: #FCFCFC;
+    border: 1px solid #DDD;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+[id^="module-genzo_krona"] ul#krona-nav li {
+    padding: 12px 10px;
+    display: inline-block;
+}
+
+[id^="module-genzo_krona"] ul#krona-nav li:last-of-type {
+    float: right;
+}
+
+[id^="module-genzo_krona"] ul#krona-nav li.active {
+    font-weight: bold;
+}
+
+
+/* Forms */
+[id^="module-genzo_krona"] .form-row {
+    margin: 15px 0;
+}
+
+[id^="module-genzo_krona"] .form-row div.label {
+    margin: 0 0 5px 0;
+}
+
+[id^="module-genzo_krona"] .form-row input[type="text"]  {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid #DDD;
+}
+
+[id^="module-genzo_krona"] .form-row input[type="radio"]  {
+    vertical-align: middle;
+    margin: -2px 1px 0 5px;
+}
+
+
+[id^="module-genzo_krona"] .krona-button {
+    border: 1px solid #CCC;
+    padding: 9px;
+    text-align: center;
+    font-size: 13px;
+    text-decoration: none;
+    color: #777;
+    background: #FFF;
+    margin: 10px 5px 0 0;
+}
+
+[id^="module-genzo_krona"] .krona-button:hover {
+    color: #E47746;
+    border-color: #E47746;
+    cursor: pointer;
+}
+
+[id^="module-genzo_krona"] .krona-button:after {
+    font-family: "FontAwesome", "FontAwesomeAS4";
+    content: "\f105";
+    margin-left: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+[id^="module-genzo_krona"] img#avatar {
+    width: 100px;
+    height: 100px;
+    margin-top: -50px;
+    float: right;
+}
+
+[id^="module-genzo_krona"] #avatar-upload input#avatar-input {
+    display: none;
+}
+
+[id^="module-genzo_krona"] #avatar-upload #avatar-fake {
+    width: calc(100% - 150px);
+    border-right: none;
+}
+
+[id^="module-genzo_krona"] #avatar-upload span#avatar-button {
+    width: 150px;
+    text-align: center;
+    padding: 5px 0 4px 0;
+    background: #DDD;
+    display: block;
+    float: right;
+    cursor: pointer;
+}
+
+/* Overview */
+[id^="module-genzo_krona"] ul#overview {
+    padding: 0;
+    margin: 0;
+}
+
+[id^="module-genzo_krona"] ul#overview li {
+    display: inline-block;
+    padding: 0 25px;
+    text-align: center;
+    vertical-align: top;
+}
+
+[id^="module-genzo_krona"] ul#overview li:first-of-type {
+    padding: 0 15px 0 0;
+}
+
+[id^="module-genzo_krona"] ul#overview li:last-of-type {
+    float: right;
+    padding: 0;
+    margin: -10px -10px 0 0;
+}
+
+[id^="module-genzo_krona"] ul#overview li img {
+    max-height: 68px;
+    max-width: 68px;
+    border-radius: 4px;
+}
+
+
+/* Timeline */
+[id^="module-genzo_krona"] .timeline-item {
+    padding: 3em 2em 2em;
+    position: relative;
+    border-left: 2px solid #CCCCCC;
+}
+
+[id^="module-genzo_krona"] .timeline-item h3 {
+    margin: -22px 0 0 15px;
+}
+
+[id^="module-genzo_krona"] .timeline-item p {
+    margin: 5px 0 10px 15px;
+}
+
+[id^="module-genzo_krona"] .timeline-item::before {
+    content: attr(points-is);
+    position: absolute;
+    left: -16px;
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    font-weight: bold;
+    top: 18px;
+    display: block;
+    z-index: 100;
+}
+[id^="module-genzo_krona"] .timeline-item.green::before {
+    color: #009B4E;
+}
+[id^="module-genzo_krona"] .timeline-item.red::before {
+    color: #DF7160;
+}
+
+[id^="module-genzo_krona"] .timeline-item::after {
+    width: 32px;
+    height: 32px;
+    display: block;
+    top: 1em;
+    position: absolute;
+    left: -16px;
+    border-radius: 50%;
+    content: "";
+    background: white;
+    box-sizing: border-box;
+}
+[id^="module-genzo_krona"] .timeline-item.green::after {
+    border: 2px solid #009B4E;
+}
+[id^="module-genzo_krona"] .timeline-item.red::after {
+    border: 2px solid #DF7160;
+}
+[id^="module-genzo_krona"] .timeline-item:last-child {
+    -o-border-image: linear-gradient(to bottom, #CCCCCC 60%, rgba(0, 0, 0, 0)) 1 100%;
+    border-image: -webkit-gradient(linear, left top, left bottom, color-stop(60%, #CCCCCC), to(rgba(0, 0, 0, 0))) 1 100%;
+    border-image: linear-gradient(to bottom, #CCCCCC 60%, rgba(0, 0, 0, 0)) 1 100%;
+}
+
+/* Levels */
+[id^="module-genzo_krona"] #levels .level {
+    width: calc(33.33% - 12px);
+    float: left;
+    box-sizing: border-box;
+    margin-right: 18px;
+}
+[id^="module-genzo_krona"] #levels .level:nth-of-type(3n) {
+    margin-right: 0;
+}
+
+    @media (max-width: 900px) {
+        [id^="module-genzo_krona"] #levels .level {
+            width: 100%;
+            float: none;
+            box-sizing: border-box;
+            margin-right: 0;
+        }
+    }
+
+[id^="module-genzo_krona"] #levels .level .icon img {
+    width: 30px;
+    height: 30px;
+    float: left;
+    margin: 0 10px 8px 0;
+}
+[id^="module-genzo_krona"] #levels .level h3 {
+    margin: 3px 0 0 0;
+    font-size: 13px;
+    font-weight: bold;
+    color: #009B4E
+}
+
+[id^="module-genzo_krona"] #levels .level .level-row {
+    margin: 8px 0;
+    font-size: 12px;
+}
+[id^="module-genzo_krona"] #levels .level .level-row:last-of-type {
+    margin: 8px 0 0 0;
+}
+
+[id^="module-genzo_krona"] #levels .level .level-row .headline {
+    font-weight: bold;
+    font-size: 11px;
+    margin-bottom: -3px;
+}

@@ -1,0 +1,29 @@
+.sidebar button {
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar i {
+    width: 20px; 
+}
+
+table.Coupon input[name="CouponFilter_level"] {
+    display: none;
+}
+
+.support-box {
+    width: 31%;
+    display: inline-block;
+    height: 100px;
+    vertical-align: top;
+}
+
+table#sortable thead tr th {
+    font-weight: bold;
+}
+
+table#sortable input {
+    border: none;
+    margin-left: 10px;
+    background: transparent;
+}
