@@ -44,7 +44,12 @@ class Player extends \ObjectModel {
         (\Shop::isFeatureActive()) ? $ids_shop = \Shop::getContextListShopID() :$ids_shop = null;
 
         $query = new \DbQuery();
-        $query->select('p.*, c.id_shop');
+        if ($ids_shop) {
+            $query->select('p.*, c.id_shop');
+        }
+        else {
+            $query->select('p.*');
+        }
         $query->from(self::$definition['table'], 'p');
         if ($ids_shop) {
             $query->innerJoin('customer', 'c', 'p.id_customer = c.id_customer');
