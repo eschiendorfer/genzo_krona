@@ -6,11 +6,11 @@
     <div class="col-md-10">
         <div class="panel col-lg-12">
             <div class="panel-heading">{l s='Bug Reporting' mod='genzo_krona'}</div>
-            <p><b>Github:</b></p>
-            <p><b>Forum:</b></p>
+            <p><b>Github:</b> <a target="_blank" href="https://github.com/eschiendorfer/genzo_krona">https://github.com/eschiendorfer/genzo_krona</a></p>
+            <p><b>Forum:</b> <a target="_blank" href="https://forum.thirtybees.com/topic/1505/planned-free-module-loyalty-points">https://forum.thirtybees.com/topic/1505/planned-free-module-loyalty-points</a></p>
         </div>
         <div class="panel col-lg-12">
-            <div class="panel-heading">Coupons</div>
+            <div class="panel-heading">{l s='Coupons' mod='genzo_krona'}</div>
             <p>{l s='This module is using the core cart_rules as templates. That way, you will have all possible functions! How to use ist?' mod='genzo_krona'}</p>
             <ol>
                 <li>{l s='Create a cart rule, as you want the coupon to be. The name has to begin with' mod='genzo_krona'} <b>"KronaTemplate:"</b>. {l s='Example:' mod='genzo_krona'} "KronaTemplate: 10% Coupon".</li>
