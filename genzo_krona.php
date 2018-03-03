@@ -403,6 +403,8 @@ class Genzo_Krona extends Module
                         }
                     }
                 }
+                $url = $this->context->link->getAdminLink('AdminModules', true) . '&configure=' . $this->name . '&module_name=' . $this->name;
+                Tools::redirectAdmin($url);
             }
         }
 
