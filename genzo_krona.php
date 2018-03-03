@@ -2468,12 +2468,14 @@ class Genzo_Krona extends Module
 
         $level->achieve_max = (int)Tools::getValue('achieve_max');
 
-        $icon_old = $level->icon; // We need to delete the old image, since we don't override it
-        $icon = $this->uploadIcon();
-        $level->icon = ($icon) ? $icon : 'no-icon.png';
+        if($_FILES['icon']['tmp_name']) {
+            $icon_old = $level->icon; // We need to delete the old image, since we don't override it
+            $icon = $this->uploadIcon();
+            $level->icon = ($icon) ? $icon : 'no-icon.png';
 
-        if (isset($icon_old) && $icon_old != 'no-icon.png' && $icon_old!=$level->icon) {
-            unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/'.$icon_old);
+            if (isset($icon_old) && $icon_old != 'no-icon.png' && $icon_old != $level->icon) {
+                unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old);
+            }
         }
 
         if (empty($level->name) OR
