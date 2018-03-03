@@ -77,9 +77,15 @@ class Player extends \ObjectModel {
 
     public static function getTotalPlayers($filters = null) {
 
+        (\Shop::isFeatureActive()) ? $ids_shop = \Shop::getContextListShopID() :$ids_shop = null;
+
         $query = new \DbQuery();
         $query->select('Count(*)');
-        $query->from(self::$definition['table']);
+        $query->from(self::$definition['table'], 'p');
+        if ($ids_shop) {
+            $query->innerJoin('customer', 'c', 'p.id_customer = c.id_customer');
+            $query->where('c.`id_shop` IN (' . implode(',', array_map('intval', $ids_shop)) . ')');
+        }
 
         if (!empty($filters)) {
             foreach ($filters as $filter) {
