@@ -60,8 +60,9 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
         $pages = ceil(Player::getTotalPlayers()/$items);
 
 		$this->context->smarty->assign(array(
-            'meta_title' => $game_name.': Leaderboard',
+            'meta_title' => $game_name.': '.$this->module->l('Leaderboard'),
             'game_name' => $game_name,
+            'points_name' => Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop),
             'slack' => Configuration::get('krona_url', null, $id_shop_group, $id_shop),
             'active' => 'Players',
             'players' => Player::getAllPlayers($filters, $player_pagination, $order),

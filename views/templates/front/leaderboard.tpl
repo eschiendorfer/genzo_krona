@@ -7,7 +7,12 @@
     <div id="players">
         {foreach from=$players item=player}
             <div class="player">
-                <img src="/modules/genzo_krona/views/img/avatar/{$player.avatar}">{$player.pseudonym}</div>
+                <img src="/modules/genzo_krona/views/img/avatar/{$player.avatar}">
+                <h3>{$player.pseudonym}</h3>
+                <div>{$points_name}: {$player.points}</div>
+                <div style="clear: both;"></div>
+            </div>
+
         {/foreach}
     </div>
     {include file="./pagination.tpl"}
