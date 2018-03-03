@@ -30,8 +30,6 @@ use KronaModule\PlayerLevel;
 use KronaModule\Coupon;
 use KronaModule\Zebra_Image;
 
-
-
 class Genzo_Krona extends Module
 {
     public $errors;
@@ -1768,8 +1766,12 @@ class Genzo_Krona extends Module
     private function generateFormLevel($data = null) {
 
         $id_level = (int)Tools::getValue('id_level');
-
 	    $id_lang = $this->context->language->id;
+
+        // Get Values
+        ($data) ? $level = $data : $level = new Level($id_level);
+
+        $vars = json_decode(json_encode($level), true); // Turns an object into an array
 
         $inputs[] = array(
             'type' => 'hidden',
@@ -1904,6 +1906,11 @@ class Genzo_Krona extends Module
             'suffix' => $this->l('Times'),
         );
         $inputs[] = array(
+            'type'         => 'html',
+            'name'         => 'html_icon',
+            'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$vars['icon']}' width='30' height='30' />",
+        );
+        $inputs[] = array(
             'type'  => 'file',
             'label' => 'Icon',
             'name'  => 'icon',
@@ -1938,13 +1945,6 @@ class Genzo_Krona extends Module
         $helper->id = $id_level;
         $helper->table = 'genzo_krona_level';
         $helper->identifier = 'id_level';
-
-        // Get Values
-
-
-        ($data) ? $level = $data : $level = new Level($id_level);
-
-        $vars = json_decode(json_encode($level), true); // Turns an object into an array
 
         // Fix of values since we dont use always same names
         $vars['condition_points'] = $vars['condition'];
@@ -2470,9 +2470,9 @@ class Genzo_Krona extends Module
 
         $icon_old = $level->icon; // We need to delete the old image, since we don't override it
         $icon = $this->uploadIcon();
-        $level->icon = ($icon) ? $icon : 'no-icon.jpg';
+        $level->icon = ($icon) ? $icon : 'no-icon.png';
 
-        if (isset($icon_old) && $icon_old != 'no-icon.jpg' && $icon_old!=$level->icon) {
+        if (isset($icon_old) && $icon_old != 'no-icon.png' && $icon_old!=$level->icon) {
             unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/'.$icon_old);
         }
 
@@ -2663,7 +2663,7 @@ class Genzo_Krona extends Module
         // Remove spaces and lower the letters
         $file_name = strtolower(str_replace(' ','-',$file_name));
         // Add Extension
-        $file_name .= '.jpg';
+        $file_name .= '.png';
 
         if(!$file_name OR $file_name=='') {
             $this->errors[] = $this->l('Invalid Filename');
@@ -2691,8 +2691,8 @@ class Genzo_Krona extends Module
                 $avatar = new Zebra_Image();
                 $avatar->source_path = $file_path;
                 $avatar->target_path = $file_path;
-                $avatar->jpeg_quality = 100;
-                $avatar->resize(30, 30, ZEBRA_IMAGE_CROP_CENTER);
+                $avatar->png_compression = 1;
+                $avatar->resize(30, 30, ZEBRA_IMAGE_CROP_CENTER, -1);
             }
             else {
                 $this->errors[] = $this->l('Image Upload failed');
