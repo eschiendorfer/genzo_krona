@@ -123,8 +123,6 @@ class Genzo_Krona extends Module
             $actionOrder->add();
         }
 
-        // Todo: Trigger Avatar Upload
-
         // Inbuilt Actions
         $actions = array('account_creation', 'page_visit', 'avatar_upload', 'newsletter');
 
@@ -206,6 +204,7 @@ class Genzo_Krona extends Module
 
         // Save Settings
         // Lang fields
+        $game_names = array();
         $points_names = array();
 
         foreach ($ids_lang as $id_lang) {
@@ -1351,7 +1350,12 @@ class Genzo_Krona extends Module
 
     // Forms
     private function generateFormAction() {
+
 	    $id_action = Tools::getValue('id_action');
+
+        // Get Values
+        $action = new Action($id_action);
+        $vars = json_decode(json_encode($action), true); // Turns an object into an array
 
 	    // Check for Inbuilt functions
         ($id_action == Action::getIdAction('genzo_krona', 'order')) ? $order = true : $order = false;
@@ -1393,7 +1397,7 @@ class Genzo_Krona extends Module
         }
 
         $inputs[] = array(
-            'type' => 'textarea',
+            'type' => 'text',
             'label' => $this->l('Message'),
             'name' => 'message',
             'desc' => $message_desc,
@@ -1472,10 +1476,6 @@ class Genzo_Krona extends Module
         $helper->id = $id_action;
         $helper->table = 'genzo_krona_action';
         $helper->identifier = 'id_action';
-
-        // Get Values
-        $action = new Action($id_action);
-        $vars = json_decode(json_encode($action), true); // Turns an object into an array
 
         $helper->tpl_vars = array(
             'fields_value' => $vars,
@@ -1590,7 +1590,7 @@ class Genzo_Krona extends Module
         );
 
         $inputs[] = array(
-            'type' => 'textarea',
+            'type' => 'text',
             'label' => $this->l('Message'),
             'name' => 'message',
             'desc' => $this->l('You can use:'). ' {points}',
@@ -2137,7 +2137,7 @@ class Genzo_Krona extends Module
             'lang'  => true,
         );
         $inputs[] = array(
-            'type'  => 'textarea',
+            'type'  => 'text',
             'name'  => 'order_message',
             'label' => $this->l('Message order'),
             'desc'  => $this->l('You can use:'). ' {points} {reference} {amount}',
@@ -2151,7 +2151,7 @@ class Genzo_Krona extends Module
             'lang'  => true,
         );
         $inputs[] = array(
-            'type'  => 'textarea',
+            'type'  => 'text',
             'name'  => 'order_canceled_message',
             'label' => $this->l('Message canceled order'),
             'desc'  => $this->l('You can use:'). ' {points} {reference} {amount}',
