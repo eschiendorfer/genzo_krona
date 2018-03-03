@@ -48,4 +48,5 @@ Thats all! Now Krona knows, that the customer has posted a question and will rew
 
 ## Support
 The following thirty bees module are already using Krona:
+
 birthdaygift by SLiCK_303: https://github.com/SLiCK-303/birthdaygift
