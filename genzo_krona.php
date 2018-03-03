@@ -52,7 +52,7 @@ class Genzo_Krona extends Module
 
 		$this->bootstrap = true;
 
-		$this->controllers = array('home', 'overview', 'customersettings', 'timeline', 'levels');
+		$this->controllers = array('home', 'overview', 'customersettings', 'timeline', 'levels', 'leaderboard');
 
 	 	parent::__construct();
 
@@ -397,8 +397,10 @@ class Genzo_Krona extends Module
 
             if(!empty($modules)) {
                 foreach ($modules as $module_name => $actions) {
-                    foreach ($actions as $action_name) {
-                        $this->registerAction($module_name, $action_name);
+                    if (!empty($actions)) {
+                        foreach ($actions as $action_name) {
+                            $this->registerAction($module_name, $action_name);
+                        }
                     }
                 }
             }
@@ -2355,6 +2357,7 @@ class Genzo_Krona extends Module
 
             // Making the actual Points change
             Player::updatePoints($id_customer, $points_change);
+            PlayerLevel::updatePlayerLevel($id_customer, 0);
 
             $this->confirmation = $this->l('Your custom Action was sucessfully saved.');
 
@@ -3134,6 +3137,16 @@ class Genzo_Krona extends Module
                     'fc' => 'module',
                     'module' => 'genzo_krona',
                     'controller' => 'levels',
+                ),
+            ),
+            'module-genzo_krona-leaderboard' => array(
+                'controller' => 'leaderboard',
+                'rule' => $slack.'/leaderboard',
+                'keywords' => array(),
+                'params' => array(
+                    'fc' => 'module',
+                    'module' => 'genzo_krona',
+                    'controller' => 'leaderboard',
                 ),
             ),
         );
