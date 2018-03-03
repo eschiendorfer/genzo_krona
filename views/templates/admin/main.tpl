@@ -11,13 +11,7 @@
         </div>
         {/if}
         {if $tab == 'Players' AND $import==0 AND $dont==0}
-            <div class="panel col-lg-12">
-                <div class="panel-heading">{l s='Import existing Users:' mod='genzo_krona'}</div>
-                <p>{l s='Do you wanna reward existing user with the account creation reward? Don\'t forget to save the pseudonym settings first.' mod='genzo_krona'}</p>
-                <a href="{$action_url}&importCustomers" type="submit" class="btn-default btn">{l s='Import' mod='genzo_krona'}</a>
-                <a type="submit" style="float: right;" href="{$action_url}&dontImportCustomers" class="btn-default btn">{l s='Don\'t show this tab' mod='genzo_krona'}</a>
-            </div>
-            <div class="clearfix"></div>
+            {include file="./import.tpl"}
         {/if}
 
 

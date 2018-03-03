@@ -324,14 +324,14 @@ class Genzo_Krona extends Module
             $customers = Customer::getCustomers(true);
 
             foreach ($customers as $customer) {
-                Player::createPlayer($customer['id_customer']);
+                Player::importPlayer($customer['id_customer']);
             }
             // No multistore handling
-            foreach (Shop::getShops() as $shop) {
-                Configuration::updateValue('krona_import_customer', 1, false, $shop['id_shop_group'], $shop['id_shop']);
+                foreach (Shop::getContextListShopID() as $id_shop) {
+                Configuration::updateValue('krona_import_customer', 1, false, $this->id_shop_group, $id_shop);
             }
-            Configuration::updateGlobalValue('krona_import_customer', 1);
 
+            $this->confirmation = $this->l('Player were sucessfully imported.');
         }
         elseif (Tools::isSubmit('dontImportCustomers')) {
             // No multistore handling
@@ -465,8 +465,8 @@ class Genzo_Krona extends Module
         }
         elseif ($tab == 'Players') {
             $this->context->smarty->assign(array(
-                'import'  => Configuration::get('krona_import_customer'),
-                'dont'    => Configuration::get('krona_dont_import_customer'),
+                'import'  => Configuration::get('krona_import_customer', null, $this->id_shop_group, $this->id_shop),
+                'dont'    => Configuration::get('krona_dont_import_customer', null, $this->id_shop_group, $this->id_shop),
             ));
         }
 
@@ -477,6 +477,7 @@ class Genzo_Krona extends Module
             'content'       => $content,
             'tab'           => $tab,
             'action_url'    => $this->context->link->getAdminLink('AdminModules', true) . '&configure=' . $this->name . '&module_name=' . $this->name,
+            'points_name'   => $this->points_name,
         ));
 
 

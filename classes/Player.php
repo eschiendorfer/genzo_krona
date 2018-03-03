@@ -193,7 +193,9 @@ class Player extends \ObjectModel {
         $acronym = "";
 
         foreach ($words as $w) {
-            $acronym .= $w[0].'. ';
+            if (!empty($w[0])) {
+                $acronym .= $w[0] . '. ';
+            }
         }
 
         return $acronym;
@@ -247,6 +249,27 @@ class Player extends \ObjectModel {
         $query->from(self::$definition['table']);
         $query->where('`id_customer` = ' . (int)$id_customer);
         return \Db::getInstance()->getValue($query);
+    }
+
+
+    public static function importPlayer($id_customer) {
+        $id_customer = (int)$id_customer;
+        Player::createPlayer($id_customer);
+
+        $import_points = \Tools::getValue('import_points');
+
+        if ($import_points > 0) {
+            $query = new \DbQuery();
+            $query->select('SUM(points)');
+            $query->from('loyalty');
+            $query->where('id_customer = ' . $id_customer);
+            $points =  \Db::getInstance()->getValue($query);
+
+            $points_change = ceil($points * $import_points);
+
+            Player::updatePoints($id_customer, $points_change);
+        }
+
     }
 
 }
