@@ -1,0 +1,1 @@
+<li><a href="/{$slack}/overview">{$game_name}</a></li>

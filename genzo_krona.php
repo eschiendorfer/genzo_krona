@@ -2831,11 +2831,12 @@ class Genzo_Krona extends Module
 
     public function hookDisplayCustomerAccount () {
 
-	    $game_name = Configuration::get('krona_game_name', $this->context->language->id, $this->id_shop_group, $this->id_shop);
-	    $slack = Configuration::get('krona_url', null, $this->id_shop_group, $this->id_shop);
+        $this->context->smarty->assign(array(
+            'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
+            'slack' => Configuration::get('krona_url', null, $this->id_shop_group, $this->id_shop),
+        ));
 
-	    return '<li><a href="/'.$slack.'/overview">'.$game_name.'</a></li>';
-
+        return $this->display(__FILE__, 'views/templates/front/customer_account.tpl');
     }
 
     public function hookActionExecuteKronaAction($params) {
