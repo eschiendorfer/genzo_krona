@@ -8,7 +8,13 @@
         {foreach from=$history item=his}
             <div class="timeline-item {if $his.points_change > 0}green{else}red{/if}" points-is="{$his.points_change|replace:"-":""}">
                 <h3>{$his.title}</h3>
-                <p>{$his.date_add|date_format:"%d. %b"}: {$his.message} {if $his.url}<a href="{$his.url}"><i class="fa fa-link"></i></a>{/if}</p>
+                <p>{if $his.date_add|date_format:"%Y" == 'Y'|date}
+                        {$his.date_add|date_format:"%d. %b"}:
+                    {else}
+                        {$his.date_add|date_format:"%d. %b %Y"}:
+                    {/if}
+                    {$his.message} {if $his.url}<a href="{$his.url}"><i class="fa fa-link"></i></a>{/if}
+                </p>
             </div>
         {/foreach}
     </div>

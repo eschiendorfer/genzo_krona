@@ -253,11 +253,15 @@ class Player extends \ObjectModel {
 
 
     public static function importPlayer($id_customer) {
+
         $id_customer = (int)$id_customer;
+
         Player::createPlayer($id_customer);
 
-        $import_points = \Tools::getValue('import_points');
+        $import_points = (float)\Tools::getValue('import_points');
+        $import_orders = (bool)\Tools::getValue('import_orders');
 
+        // Handling Core Loyalty Points
         if ($import_points > 0) {
             $query = new \DbQuery();
             $query->select('SUM(points)');
@@ -269,6 +273,91 @@ class Player extends \ObjectModel {
 
             Player::updatePoints($id_customer, $points_change);
         }
+
+        // Handling old orders
+        if ($import_orders) {
+
+            $orders = \Order::getCustomerOrders($id_customer);
+            $orders = array_reverse($orders);
+
+            if (!empty($orders)) {
+
+                $customer = new \Customer($id_customer);
+
+                foreach ($orders as $order) {
+
+                    if (!$order['id_order_state']) { break; }
+                    $orderState = new \OrderState($order['id_order_state']);
+
+                    if ($orderState->paid) {
+
+                        // Check ActionOrder -> This is basically checking the currency
+                        $id_actionOrder = ActionOrder::getIdActionOrderByCurrency($order['id_currency']);
+                        $actionOrder = new ActionOrder($id_actionOrder);
+
+                        // Get Total amount of the order
+                        $order_amount = \Configuration::get('krona_order_amount', null, $customer->id_shop_group, $customer->id_shop);
+
+                        if ($order_amount == 'total_wt') {
+                            $total = $order['total_paid']; // Total with taxes
+                        } elseif ($order_amount == 'total') {
+                            $total = $order['total_paid_tax_excl'];
+                        } elseif ($order_amount == 'total_products_wt') {
+                            $total = $order['total_products_wt'];
+                        } elseif ($order_amount == 'total_products') {
+                            $total = $order['total_products'];
+                        } else {
+                            $total = $order['total_paid']; // Standard if nothing is set
+                        }
+
+                        // Check the rounding method -> up is standard
+                        $order_rounding = \Configuration::get('krona_order_rounding', null, $customer->id_shop_group, $customer->id_shop);
+
+                        if ($order_rounding == 'down') {
+                            $points_change = floor($total * $actionOrder->points_change);
+                        } else {
+                            $points_change = ceil($total * $actionOrder->points_change);
+                        }
+
+                        Player::updatePoints($id_customer, $points_change);
+
+                        $history = new PlayerHistory();
+                        $history->id_customer = $id_customer;
+                        $history->id_action_order = $id_actionOrder;
+                        $history->url = \Context::getContext()->link->getPageLink('history');
+                        $history->points_change = $points_change;
+                        $history->date_add = $order['date_add'];
+
+                        // Handling lang fields for Player History
+                        $ids_lang = \Language::getIDs();
+                        $title = array();
+                        $message = array();
+
+                        foreach ($ids_lang as $id_lang) {
+
+                            $title[$id_lang] = \Configuration::get('krona_order_title', $id_lang, $customer->id_shop_group, $customer->id_shop);
+                            $message[$id_lang] = \Configuration::get('krona_order_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
+
+                            // Replace message variables
+                            $search = array('{points}', '{reference}', '{amount}');
+
+                            $total_currency = \Tools::displayPrice(\Tools::convertPrice($total, $order['id_currency']));
+
+                            $replace = array($points_change, $order['reference'], $total_currency);
+                            $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
+
+                            $history->message[$id_lang] = pSQL($message[$id_lang]);
+                            $history->title[$id_lang] = pSQL($title[$id_lang]);
+                        }
+
+                        $history->add(false);
+                    }
+
+                }
+            }
+        }
+
+        PlayerLevel::updatePlayerLevel($id_customer, 0);
 
     }
 
