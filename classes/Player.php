@@ -188,70 +188,6 @@ class Player extends \ObjectModel {
         return true;
     }
 
-    private static function shortenWord($string) {
-        $words = explode(" ", $string);
-        $acronym = "";
-
-        foreach ($words as $w) {
-            if (!empty($w[0])) {
-                $acronym .= $w[0] . '. ';
-            }
-        }
-
-        return $acronym;
-    }
-
-
-    public static function updatePoints($id_customer, $points_change) {
-
-        $id_customer = (int)$id_customer;
-        $points_change = (int)$points_change;
-
-        $player = new Player($id_customer);
-        $player->points = $player->points + $points_change;
-        $player->update();
-        return true;
-    }
-
-    public static function getRank($id_customer) {
-        $id_customer = (int)$id_customer;
-
-        $points = self::getPoints($id_customer);
-
-        $query = new \DbQuery();
-        $query->select('COUNT(*)');
-        $query->from(self::$definition['table']);
-        $query->where('points > ' . $points);
-        return \Db::getInstance()->getValue($query)+1;
-
-    }
-
-    public static function getPoints($id_customer) {
-        $query = new \DbQuery();
-        $query->select('points');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . (int)$id_customer);
-        return \Db::getInstance()->getValue($query);
-    }
-
-    public static function getAvatar($id_customer) {
-        $id_customer = (int)$id_customer;
-
-        $player = new Player($id_customer);
-        $image = $player->avatar.'?='.$player->date_upd;
-
-        return _MODULE_DIR_.'genzo_krona/views/img/avatar/'.$image;
-    }
-
-    public static function getPseudonym($id_customer) {
-        $query = new \DbQuery();
-        $query->select('pseudonym');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . (int)$id_customer);
-        return \Db::getInstance()->getValue($query);
-    }
-
-
     public static function importPlayer($id_customer) {
 
         $id_customer = (int)$id_customer;
@@ -263,15 +199,16 @@ class Player extends \ObjectModel {
 
         // Handling Core Loyalty Points
         if ($import_points > 0) {
-            $query = new \DbQuery();
-            $query->select('SUM(points)');
-            $query->from('loyalty');
-            $query->where('id_customer = ' . $id_customer);
-            $points =  \Db::getInstance()->getValue($query);
+            if (\Module::isInstalled('loyalty')) {
 
-            $points_change = ceil($points * $import_points);
+                require_once _PS_MODULE_DIR_ . 'loyalty/classes/LoyaltyModule.php';
+                require_once _PS_MODULE_DIR_ . 'loyalty/classes/LoyaltyStateModule.php';
 
-            Player::updatePoints($id_customer, $points_change);
+                $points = \LoyaltyModule\LoyaltyModule::getPointsByCustomer($id_customer);
+                $points_change = ceil($points * $import_points);
+
+                Player::updatePoints($id_customer, $points_change);
+            }
         }
 
         // Handling old orders
@@ -359,6 +296,69 @@ class Player extends \ObjectModel {
 
         PlayerLevel::updatePlayerLevel($id_customer, 0);
 
+    }
+
+    private static function shortenWord($string) {
+        $words = explode(" ", $string);
+        $acronym = "";
+
+        foreach ($words as $w) {
+            if (!empty($w[0])) {
+                $acronym .= $w[0] . '. ';
+            }
+        }
+
+        return $acronym;
+    }
+
+
+    public static function updatePoints($id_customer, $points_change) {
+
+        $id_customer = (int)$id_customer;
+        $points_change = (int)$points_change;
+
+        $player = new Player($id_customer);
+        $player->points = $player->points + $points_change;
+        $player->update();
+        return true;
+    }
+
+    public static function getRank($id_customer) {
+        $id_customer = (int)$id_customer;
+
+        $points = self::getPoints($id_customer);
+
+        $query = new \DbQuery();
+        $query->select('COUNT(*)');
+        $query->from(self::$definition['table']);
+        $query->where('points > ' . $points);
+        return \Db::getInstance()->getValue($query)+1;
+
+    }
+
+    public static function getPoints($id_customer) {
+        $query = new \DbQuery();
+        $query->select('points');
+        $query->from(self::$definition['table']);
+        $query->where('`id_customer` = ' . (int)$id_customer);
+        return \Db::getInstance()->getValue($query);
+    }
+
+    public static function getAvatar($id_customer) {
+        $id_customer = (int)$id_customer;
+
+        $player = new Player($id_customer);
+        $image = $player->avatar.'?='.$player->date_upd;
+
+        return _MODULE_DIR_.'genzo_krona/views/img/avatar/'.$image;
+    }
+
+    public static function getPseudonym($id_customer) {
+        $query = new \DbQuery();
+        $query->select('pseudonym');
+        $query->from(self::$definition['table']);
+        $query->where('`id_customer` = ' . (int)$id_customer);
+        return \Db::getInstance()->getValue($query);
     }
 
 }
