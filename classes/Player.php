@@ -324,13 +324,20 @@ class Player extends \ObjectModel {
     }
 
     public static function getRank($id_customer) {
+
         $id_customer = (int)$id_customer;
+
+        (\Shop::isFeatureActive()) ? $id_shop = \Context::getContext()->shop->id_shop :$id_shop = null;
 
         $points = self::getPoints($id_customer);
 
         $query = new \DbQuery();
         $query->select('COUNT(*)');
-        $query->from(self::$definition['table']);
+        $query->from(self::$definition['table'], 'p');
+        if ($id_shop) {
+            $query->innerJoin('customer', 'c', 'c.id_customer = p.id_customer');
+            $query->where('id_shop='.$id_shop);
+        }
         $query->where('points > ' . $points);
         return \Db::getInstance()->getValue($query)+1;
 
