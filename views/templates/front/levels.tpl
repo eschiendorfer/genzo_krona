@@ -1,4 +1,4 @@
-{capture name=path}<a href="/{$slack}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Levels' mod='genzo_krona'}{/capture}
+{capture name=path}<a href="{$link->getModuleLink('genzo_krona', 'home')}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Levels' mod='genzo_krona'}{/capture}
 
 <h1>{l s='Your achieved levels' mod='genzo_krona'}</h1>
 
@@ -7,7 +7,7 @@
 <div id="levels">
     {foreach from=$levels item=level}
         <div class="level krona-box">
-            <div class="icon"><img src="/modules/genzo_krona/views/img/icon/{$level.icon}"></div>
+            <div class="icon"><img src="{$modules_dir}genzo_krona/views/img/icon/{$level.icon}"></div>
             <h3>{$level.name}</h3>
             <div style="clear:both;"></div>
             <div class="level-row">

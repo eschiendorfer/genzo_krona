@@ -2836,7 +2836,6 @@ class Genzo_Krona extends Module
 
         $this->context->smarty->assign(array(
             'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
-            'overview' => $this->context->link->getModuleLink('genzo_krona', 'overview'),
         ));
 
         return $this->display(__FILE__, 'views/templates/front/customer_account.tpl');

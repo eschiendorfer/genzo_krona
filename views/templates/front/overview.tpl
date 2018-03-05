@@ -1,4 +1,4 @@
-{capture name=path}<a href="/{$slack}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Overview' mod='genzo_krona'}{/capture}
+{capture name=path}<a href="{$link->getModuleLink('genzo_krona', 'home')}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Overview' mod='genzo_krona'}{/capture}
 
 <h1>{$game_name}</h1>
 

@@ -9,6 +9,6 @@
         <a href="{$link->getModuleLink('genzo_krona', 'levels')}">{l s='Levels' mod='genzo_krona'}</a>
     </li>
     <li {if $active=='Settings'}class="active"{/if}>
-        <a href="{$link->getModuleLink('genzo_krona', 'settings')}">{l s='Settings' mod='genzo_krona'}</a>
+        <a href="{$link->getModuleLink('genzo_krona', 'customersettings')}">{l s='Settings' mod='genzo_krona'}</a>
     </li>
 </ul>

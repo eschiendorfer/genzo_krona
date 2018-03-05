@@ -1,4 +1,4 @@
-{capture name=path}<a href="/{$slack}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Timeline' mod='genzo_krona'}{/capture}
+{capture name=path}<a href="{$link->getModuleLink('genzo_krona', 'home')}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Timeline' mod='genzo_krona'}{/capture}
 
 {include file="./nav.tpl"}
 

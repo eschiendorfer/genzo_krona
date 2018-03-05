@@ -1,4 +1,4 @@
-{capture name=path}<a href="/{$slack}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Leaderboard' mod='genzo_krona'}{/capture}
+{capture name=path}<a href="{$link->getModuleLink('genzo_krona', 'home')}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Leaderboard' mod='genzo_krona'}{/capture}
 
 {include file="./nav.tpl"}
 
@@ -7,7 +7,7 @@
     <div id="players">
         {foreach from=$players item=player}
             <div class="player">
-                <img src="/modules/genzo_krona/views/img/avatar/{$player.avatar}">
+                <img src="{$modules_dir}genzo_krona/views/img/avatar/{$player.avatar}">
                 <h3>{$player.pseudonym}</h3>
                 <div>{$points_name}: {$player.points}</div>
                 <div style="clear: both;"></div>
