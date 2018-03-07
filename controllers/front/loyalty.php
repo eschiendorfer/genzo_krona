@@ -141,6 +141,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
             $code = strtoupper(\Tools::passwdGen(6));
 
             $coupon->code = ($prefix) ? $prefix.'-'.$code : $code;
+            $coupon->highlight = 1;
             $coupon->add();
 
             $this->confirmation = $this->module->l('Your Coupon was sucessfully created.');
