@@ -141,7 +141,7 @@ class PlayerLevel extends \ObjectModel {
                 $level = new Level($id_level);
 
                 // Check if customer still has the right, to achieve this level
-                if ($level->achieve_max > $playerLevel->achieved) {
+                if ($level->achieve_max > $playerLevel->achieved OR $level->achieve_max == 0) {
 
                     // How many points did the customer collect in the time condition
                     $dateStart = null;
