@@ -63,10 +63,12 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
             'meta_title' => $game_name.': '.$this->module->l('Leaderboard'),
             'game_name' => $game_name,
             'total_name' => Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop),
+            'loyalty_name' => Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop),
             'active' => 'Players',
             'players' => Player::getAllPlayers($filters, $player_pagination, $order),
             'pages' => $pages,
             'page' => $page,
+            'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
 		));
 
 		$this->setTemplate('leaderboard.tpl');
