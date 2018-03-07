@@ -2008,9 +2008,7 @@ class Genzo_Krona extends Module
             'class'  => 'input fixed-width-sm',
             'suffix' => $this->l('Times'),
         );
-
-
-        if ($data) {
+        if ($id_level) {
             $inputs[] = array(
                 'type' => 'html',
                 'name' => 'html_icon',
@@ -2072,6 +2070,8 @@ class Genzo_Krona extends Module
     private function generateFormSettings() {
 
 	    $id_lang = $this->context->language->id;
+	    $loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
+	    $gamifaction = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
 
 	    // FrontOffice General
         $inputs[] = array(
@@ -2159,27 +2159,33 @@ class Genzo_Krona extends Module
             'label' => $this->l('Url'),
             'desc'  => $this->l('The url in the frontoffice will look like: domain.com/url'),
         );
-        $inputs[] = array(
-            'type'  => 'text',
-            'name'  => 'game_name',
-            'label' => $this->l('Game Name'),
-            'desc'  => $this->l('What is the name of your loyalty system?'),
-            'lang'  => true,
-        );
-        $inputs[] = array(
-            'type'  => 'text',
-            'name'  => 'total_name',
-            'label' => $this->l('Gamification Points Name'),
-            'desc'  => $this->l('How shall the total points be called? You could consider total points as "Lifetime points".'),
-            'lang'  => true,
-        );
-        $inputs[] = array(
-            'type'  => 'text',
-            'name'  => 'loyalty_name',
-            'label' => $this->l('Loyalty Points Name'),
-            'desc'  => $this->l('Loyalty points are the points, which can be converted directly into coupons.'),
-            'lang'  => true,
-        );
+        if ($loyalty) {
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'game_name',
+                'label' => $this->l('Name'),
+                'desc' => $this->l('What is the name of your loyalty system?'),
+                'lang' => true,
+            );
+        }
+        if ($loyalty) {
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'loyalty_name',
+                'label' => $this->l('Loyalty Points Name'),
+                'desc' => $this->l('Loyalty points are the points, which can be converted directly into coupons.'),
+                'lang' => true,
+            );
+        }
+        if ($gamifaction) {
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'total_name',
+                'label' => $this->l('Gamification Points Name'),
+                'desc' => $this->l('How shall the total points be called? You could consider total points as "Lifetime points".'),
+                'lang' => true,
+            );
+        }
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Customer Activation'),
@@ -2198,59 +2204,64 @@ class Genzo_Krona extends Module
                 )
             ),
         );
-        $inputs[] =array(
-            'type' => 'select',
-            'label' => $this->l('Default Display Name'),
-            'name' => 'display_name',
-            'options' => array(
-                'query' => array(
-                    array('value' => 1, 'name' => $this->l('John Doe')),
-                    array('value' => 2, 'name' => $this->l('John D.')),
-                    array('value' => 3, 'name' => $this->l('J. Doe')),
-                    array('value' => 4, 'name' => $this->l('J. D.')),
-                    array('value' => 5, 'name' => $this->l('John')),
+        if ($gamifaction) {
+            $inputs[] = array(
+                'type' => 'select',
+                'label' => $this->l('Default Display Name'),
+                'name' => 'display_name',
+                'options' => array(
+                    'query' => array(
+                        array('value' => 1, 'name' => $this->l('John Doe')),
+                        array('value' => 2, 'name' => $this->l('John D.')),
+                        array('value' => 3, 'name' => $this->l('J. Doe')),
+                        array('value' => 4, 'name' => $this->l('J. D.')),
+                        array('value' => 5, 'name' => $this->l('John')),
+                    ),
+                    'id' => 'value',
+                    'name' => 'name',
                 ),
-                'id' => 'value',
-                'name' => 'name',
-            ),
-        );
-        $inputs[] = array(
-            'type' => 'switch',
-            'label' => $this->l('Pseudonym'),
-            'desc' => $this->l('Are customers allowed to set a pseudonym as display name?'),
-            'name' => 'pseudonym',
-            'values' => array(
-                array(
-                    'id' => 'active_on',
-                    'value' => 1,
-                    'label' => $this->l('Yes')
+            );
+        }
+        if ($gamifaction) {
+            $inputs[] = array(
+                'type' => 'switch',
+                'label' => $this->l('Pseudonym'),
+                'desc' => $this->l('Are customers allowed to set a pseudonym as display name?'),
+                'name' => 'pseudonym',
+                'values' => array(
+                    array(
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes')
+                    ),
+                    array(
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('No')
+                    )
                 ),
-                array(
-                    'id' => 'active_off',
-                    'value' => 0,
-                    'label' => $this->l('No')
-                )
-            ),
-        );
-        $inputs[] = array(
-            'type' => 'switch',
-            'label' => $this->l('Avatar'),
-            'desc' => $this->l('Are customers allowed to upload an avatar?'),
-            'name' => 'avatar',
-            'values' => array(
-                array(
-                    'id' => 'active_on',
-                    'value' => 1,
-                    'label' => $this->l('Yes')
+            );
+        }
+        if ($gamifaction) {
+            $inputs[] = array(
+                'type' => 'switch',
+                'label' => $this->l('Avatar'),
+                'desc' => $this->l('Are customers allowed to upload an avatar?'),
+                'name' => 'avatar',
+                'values' => array(
+                    array(
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes')
+                    ),
+                    array(
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('No')
+                    )
                 ),
-                array(
-                    'id' => 'active_off',
-                    'value' => 0,
-                    'label' => $this->l('No')
-                )
-            ),
-        );
-
+            );
+        }
         $inputs[] = array(
             'type'  => 'textarea',
             'name'  => 'home_description',
@@ -2731,6 +2742,9 @@ class Genzo_Krona extends Module
 
     private function saveSettings() {
 
+	    $loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
+	    $gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
+
 	    // Settings
 	    $ids_lang = Language::getIDs();
 	    $game_names = array();
@@ -2743,7 +2757,6 @@ class Genzo_Krona extends Module
 	    $home_descriptions = array();
 
 	    // Lang fields
-
 	    foreach ($ids_lang as $id_lang) {
 	        $game_names[$id_lang] = Tools::getValue('game_name_'.$id_lang);
 	        $total_names[$id_lang] = Tools::getValue('total_name_'.$id_lang);
@@ -2756,8 +2769,8 @@ class Genzo_Krona extends Module
         }
 
         Configuration::updateValue('krona_game_name', $game_names, false, $this->id_shop_group, $this->id_shop);
-	    Configuration::updateValue('krona_total_name', $total_names, false, $this->id_shop_group, $this->id_shop);
-	    Configuration::updateValue('krona_loyalty_name', $loyalty_names, false, $this->id_shop_group, $this->id_shop);
+	    if ($gamification) { Configuration::updateValue('krona_total_name', $total_names, false, $this->id_shop_group, $this->id_shop); }
+	    if ($loyalty) { Configuration::updateValue('krona_loyalty_name', $loyalty_names, false, $this->id_shop_group, $this->id_shop); }
 	    Configuration::updateValue('krona_order_title', $order_titles, false, $this->id_shop_group, $this->id_shop);
 	    Configuration::updateValue('krona_order_message', $order_messages, false, $this->id_shop_group, $this->id_shop);
 	    Configuration::updateValue('krona_order_canceled_title', $order_canceled_titles, false, $this->id_shop_group, $this->id_shop);
@@ -2766,14 +2779,19 @@ class Genzo_Krona extends Module
 
 	    // Basic Fields
         Configuration::updateValue('krona_loyalty_active', pSQL(Tools::getValue('loyalty_active')), false, $this->id_shop_group, $this->id_shop);
-        Configuration::updateValue('krona_loyalty_total', pSQL(Tools::getValue('loyalty_total')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_gamification_active', pSQL(Tools::getValue('gamification_active')), false, $this->id_shop_group, $this->id_shop);
-        Configuration::updateValue('krona_gamification_total', pSQL(Tools::getValue('gamification_total')), false, $this->id_shop_group, $this->id_shop);
+
+        if ($loyalty) {
+            Configuration::updateValue('krona_loyalty_total', pSQL(Tools::getValue('loyalty_total')), false, $this->id_shop_group, $this->id_shop);
+        }
+        if ($gamification) {
+            Configuration::updateValue('krona_gamification_total', pSQL(Tools::getValue('gamification_total')), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_pseudonym', (bool)Tools::getValue('pseudonym'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_avatar', (bool)Tools::getValue('avatar'), false, $this->id_shop_group, $this->id_shop);
+        }
         Configuration::updateValue('krona_url', pSQL(Tools::getValue('url')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'), false, $this->id_shop_group, $this->id_shop);
-        Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'), false, $this->id_shop_group, $this->id_shop);
-        Configuration::updateValue('krona_pseudonym', (bool)Tools::getValue('pseudonym'), false, $this->id_shop_group, $this->id_shop);
-        Configuration::updateValue('krona_avatar', (bool)Tools::getValue('avatar'), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_order_amount', pSQL(Tools::getValue('order_amount')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_order_rounding', pSQL(Tools::getValue('order_rounding')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_order_state', pSQL(Tools::getValue('order_state')), false, $this->id_shop_group, $this->id_shop);
