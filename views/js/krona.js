@@ -9,4 +9,19 @@ $(document).ready(function() {
         var filename = $('input#avatar-input')[0].files[0].name;
         $( 'input#avatar-fake' ).val(filename);
     });
+
+
+    // Loyalty Conversion: Coupon Calculation
+    $('#loyalty').on('input', function() {
+
+        var loyalty = parseFloat($(this).val());
+
+        if (loyalty > loyalty_max) {
+            $(this).val(loyalty_max) ;
+        }
+
+        var coupon = (loyalty * conversion).toFixed(2);
+
+        $('#coupon-value').text(coupon);
+    });
 });

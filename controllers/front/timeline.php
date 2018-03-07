@@ -60,13 +60,15 @@ class Genzo_KronaTimelineModuleFrontController extends ModuleFrontController
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
-            'slack' => Configuration::get('krona_url', null, $id_shop_group, $id_shop),
+            'loyalty_name' => Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop),
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Timeline',
             'history' => PlayerHistory::getHistoryByPlayer($id_customer, null, $history_pagination),
             'pages' => $pages,
             'page' => $page,
+            'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
+            'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
 		));
 
 		$this->setTemplate('timeline.tpl');

@@ -39,22 +39,19 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController
         }
 
 
-        // Customer Saves Settings Form
-        if (Tools::isSubmit('saveCustomerSettings')) {
-            $this->saveCustomerSettings($id_customer);
-        }
-
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
-        $total_name = Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop);
 
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
-            'total_name' => $total_name,
+            'total_name' => Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop),
+            'loyalty_name' => Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop),
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Levels',
             'levels' => PlayerLevel::getAllPlayerLevels($id_customer),
+            'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
+            'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
 		));
 
 		$this->setTemplate('levels.tpl');

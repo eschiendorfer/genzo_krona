@@ -34,7 +34,7 @@ class Player extends \ObjectModel {
             'pseudonym'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'avatar'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'points'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'coins'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins'        => array('type' => self::TYPE_INT, 'validate' => 'isFloat'),
             'loyalty'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'active'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'banned'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),

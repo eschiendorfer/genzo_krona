@@ -54,7 +54,7 @@ class Genzo_Krona extends Module
 
 		$this->bootstrap = true;
 
-		$this->controllers = array('home', 'overview', 'customersettings', 'timeline', 'levels', 'leaderboard');
+		$this->controllers = array('home', 'overview', 'customersettings', 'timeline', 'levels', 'leaderboard', 'loyalty');
 
 	 	parent::__construct();
 
@@ -320,7 +320,7 @@ class Genzo_Krona extends Module
         }
         elseif (Tools::isSubmit('saveActionOrder')) {
             $this->saveActionOrder();
-            $content = 'ListActions';
+            $content = 'ListOrders';
         }
         elseif (Tools::isSubmit('toggleActiveActionOrder')) {
             $this->saveToggle('genzo_krona_action_order', 'id_action_order', 'active');
@@ -1609,7 +1609,6 @@ class Genzo_Krona extends Module
                 )
             ),
         );
-
         $inputs[] = array(
             'type'  => 'text',
             'name'  => 'coins_change',
@@ -1625,6 +1624,14 @@ class Genzo_Krona extends Module
             'desc'  => sprintf($this->l('Needs there to be a minimum amount of %s to get coins? If not, set it equal to 0.'), $actionOrder->currency),
             'class'  => 'input fixed-width-sm',
             'suffix' => $actionOrder->currency_iso,
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'coins_conversion',
+            'label' => $this->l('Coins conversion'),
+            'desc'  => sprintf($this->l('Example: For every coin a customer collected, he can generate a voucher with the value of X %s.'),$actionOrder->currency),
+            'class'  => 'input fixed-width-sm',
+            'suffix' => $actionOrder->currency_iso.'/'.$this->l('Coins'),
         );
 
         $fields_form = array(
@@ -2517,13 +2524,17 @@ class Genzo_Krona extends Module
 
 	    $action = new ActionOrder($id_action_order);
 
-
         // Basic Fields
         $action->coins_change = (int)Tools::getValue('coins_change');
+        $action->coins_conversion = (float)Tools::getValue('coins_conversion');
         $action->minimum_amount = (int)Tools::getValue('minimum_amount');
         $action->active = (bool)Tools::getValue('active');
 
         $action->update();
+
+        if (empty($this->errors)) {
+            $this->confirmation = $this->l('Currency of order was successfully saved.');
+        }
 
     }
 
@@ -3038,8 +3049,6 @@ class Genzo_Krona extends Module
 	    // CSS
         $this->context->controller->addCSS($this->_path.'/views/css/krona.css');
 
-        $this->context->controller->add;
-
         // JS
         $this->context->controller->addJquery();
         $this->context->controller->addJS($this->_path.'/views/js/krona.js');
@@ -3376,6 +3385,16 @@ class Genzo_Krona extends Module
                     'fc' => 'module',
                     'module' => 'genzo_krona',
                     'controller' => 'leaderboard',
+                ),
+            ),
+            'module-genzo_krona-loyalty' => array(
+                'controller' => 'loyalty',
+                'rule' => $slack.'/loyalty',
+                'keywords' => array(),
+                'params' => array(
+                    'fc' => 'module',
+                    'module' => 'genzo_krona',
+                    'controller' => 'loyalty',
                 ),
             ),
         );

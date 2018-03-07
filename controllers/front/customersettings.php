@@ -50,6 +50,7 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Settings'),
             'game_name' => $game_name,
+            'loyalty_name' => Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop),
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Settings',
@@ -58,6 +59,7 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
             'pseudonym' => Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop),
             'avatar' => Configuration::get('krona_avatar', null, $id_shop_group, $id_shop),
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
+            'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
 		));
 
 		$this->setTemplate('customersettings.tpl');

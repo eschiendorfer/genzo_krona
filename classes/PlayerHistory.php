@@ -16,6 +16,7 @@ class PlayerHistory extends \ObjectModel {
     public $id_action;
     public $id_action_order;
     public $change;
+    public $change_loyalty;
     public $message;
     public $title;
     public $url;
@@ -30,7 +31,8 @@ class PlayerHistory extends \ObjectModel {
             'id_customer'      => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action'        => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action_order'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'change'            => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'change'           => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'change_loyalty'   => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'title'            => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false, 'lang' => true),
             'message'          => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false, 'lang' => true),
             'url'              => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false),
@@ -43,7 +45,7 @@ class PlayerHistory extends \ObjectModel {
         $id_lang = \Context::getContext()->language->id;
 
         $query = new \DbQuery();
-        $query->select('*');
+        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, h.change+h.change_loyalty AS `change`, l.*');
         $query->from(self::$definition['table'], 'h');
         $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history`');
         $query->where('`id_customer` = ' . (int)$id_customer);
