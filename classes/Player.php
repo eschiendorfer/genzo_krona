@@ -12,6 +12,7 @@ namespace KronaModule;
 
 
 class Player extends \ObjectModel {
+
     public $id_customer;
     public $pseudonym;
     public $avatar;
@@ -24,12 +25,12 @@ class Player extends \ObjectModel {
     public $date_add;
     public $date_upd;
 
-
     public static $definition = array(
         'table' => "genzo_krona_player",
         'primary' => 'id_customer',
         'multilang' => false,
         'fields' => array(
+            'id_customer'        => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'pseudonym'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'avatar'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'points'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
@@ -42,32 +43,30 @@ class Player extends \ObjectModel {
         )
     );
 
-    public function __construct($id_customer)
+    public function __construct($id_customer = null)
     {
         parent::__construct($id_customer);
 
-        if (\Genzo_Krona::isGamificationActive()) {
+        if ($id_customer) {
+            if (\Genzo_Krona::isGamificationActive()) {
 
-            $total = \Genzo_Krona::getGamificationTotalMethod();
+                $total = \Genzo_Krona::getGamificationTotalMethod();
 
-            if ($total == 'points_coins') {
-                $this->total = $this->points + $this->coins;
-            }
-            elseif ($total == 'points') {
-                $this->total = $this->points;
-            }
-            elseif ($total == 'coins') {
-                $this->total = $this->coins;
-            }
+                if ($total == 'points_coins') {
+                    $this->total = $this->points + $this->coins;
+                } elseif ($total == 'points') {
+                    $this->total = $this->points;
+                } elseif ($total == 'coins') {
+                    $this->total = $this->coins;
+                }
 
-            if (!\Configuration::get('krona_pseudonym') OR !$this->pseudonym) {
-                $this->pseudonym = self::getDisplayName($this->id_customer);
+                if (!\Configuration::get('krona_pseudonym') OR !$this->pseudonym) {
+                    $this->pseudonym = self::getDisplayName($this->id_customer);
+                }
+            } else {
+                $this->total = 0;
             }
         }
-        else {
-            $this->total = 0;
-        }
-
     }
 
     public static function getAllPlayers($filters = null, $pagination = null, $order = null) {
@@ -203,7 +202,6 @@ class Player extends \ObjectModel {
 
             $player = new Player();
             $player->id_customer = $id_customer;
-
             $player->points = 0;
             $player->coins = 0;
             $player->loyalty = 0;
