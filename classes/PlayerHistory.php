@@ -15,7 +15,7 @@ class PlayerHistory extends \ObjectModel {
     public $id_customer;
     public $id_action;
     public $id_action_order;
-    public $points_change;
+    public $change;
     public $message;
     public $title;
     public $url;
@@ -27,10 +27,10 @@ class PlayerHistory extends \ObjectModel {
         'primary' => 'id_history',
         'multilang' => true,
         'fields' => array(
-            'id_customer'      => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
+            'id_customer'      => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action'        => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action_order'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'points_change'    => array('type' => self::TYPE_INT, 'validate' => 'isInt', 'required' => true),
+            'change'            => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'title'            => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false, 'lang' => true),
             'message'          => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false, 'lang' => true),
             'url'              => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false),
@@ -106,16 +106,16 @@ class PlayerHistory extends \ObjectModel {
 
     public static function sumActionPointsByPlayer($id_customer, $condition_type, $startDate = null, $endDate = null) {
         $query = new \DbQuery();
-        $query->select('SUM(points_change)');
+        $query->select('Sum(ph.`change`)');
         $query->from(self::$definition['table'], 'ph');
         $query->where('`id_customer` = ' . (int)$id_customer);
         if ($startDate && $endDate) {
             $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
-        if ($condition_type == 'pointsAction') {
+        if ($condition_type == 'points') {
             $query->where("`id_action` > 0"); // We only wanna normal actions
         }
-        elseif ($condition_type == 'pointsOrder') {
+        elseif ($condition_type == 'coins') {
             $query->where("`id_action_order` > 0"); // We only wanna actionOrders
         }
         return \Db::getInstance()->getValue($query);

@@ -16,7 +16,7 @@ class ActionOrder extends \ObjectModel {
     public $id_currency;
     public $currency;
     public $currency_iso;
-    public $points_change;
+    public $coins_change;
     public $minimum_amount;
     public $active;
 
@@ -26,7 +26,7 @@ class ActionOrder extends \ObjectModel {
         'multilang' => false,
         'fields' => array(
             'id_currency'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
-            'points_change'  => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins_change'  => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'minimum_amount'  => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'active'         => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
         )

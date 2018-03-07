@@ -45,13 +45,12 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController
         }
 
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
-        $points_name = Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop);
+        $total_name = Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop);
 
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
-            'points_name' => $points_name,
-            'slack' => Configuration::get('krona_url', null, $id_shop_group, $id_shop),
+            'total_name' => $total_name,
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Levels',

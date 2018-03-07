@@ -10,16 +10,19 @@
 
 namespace KronaModule;
 
+
 class Player extends \ObjectModel {
     public $id_customer;
     public $pseudonym;
     public $avatar;
     public $points;
+    public $coins;
+    public $total;
+    public $loyalty;
     public $active;
     public $banned;
     public $date_add;
     public $date_upd;
-
 
 
     public static $definition = array(
@@ -27,10 +30,11 @@ class Player extends \ObjectModel {
         'primary' => 'id_customer',
         'multilang' => false,
         'fields' => array(
-            'id_customer'        => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
-            'pseudonym'        => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true),
+            'pseudonym'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'avatar'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'points'        => array('type' => self::TYPE_INT, 'validate' => 'isInt', 'required' => true),
+            'points'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'active'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'banned'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'date_add'    => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
@@ -38,18 +42,57 @@ class Player extends \ObjectModel {
         )
     );
 
+    public function __construct($id_customer)
+    {
+        parent::__construct($id_customer);
+
+        if (\Genzo_Krona::isGamificationActive()) {
+
+            $total = \Genzo_Krona::getGamificationTotalMethod();
+
+            if ($total == 'points_coins') {
+                $this->total = $this->points + $this->coins;
+            }
+            elseif ($total == 'points') {
+                $this->total = $this->points;
+            }
+            elseif ($total == 'coins') {
+                $this->total = $this->coins;
+            }
+
+            if (!\Configuration::get('krona_pseudonym') OR !$this->pseudonym) {
+                $this->pseudonym = self::getDisplayName($this->id_customer);
+            }
+        }
+        else {
+            $this->total = 0;
+        }
+
+    }
+
     public static function getAllPlayers($filters = null, $pagination = null, $order = null) {
 
         // Multistore Handling
-        (\Shop::isFeatureActive()) ? $ids_shop = \Shop::getContextListShopID() :$ids_shop = null;
+        (\Shop::isFeatureActive()) ? $ids_shop = \Shop::getContextListShopID() : $ids_shop = null;
+
+        // Gamification Total
+        (\Genzo_Krona::isGamificationActive()) ? $total = \Genzo_Krona::getGamificationTotalMethod() : $total = null;
 
         $query = new \DbQuery();
+        $query->select('p.*');
         if ($ids_shop) {
-            $query->select('p.*, c.id_shop');
+            $query->select('c.id_shop');
         }
-        else {
-            $query->select('p.*');
+        if ($total == 'points_coins') {
+            $query->select('p.points+p.coins AS total');
         }
+        elseif ($total == 'points') {
+            $query->select('p.points AS total');
+        }
+        elseif ($total == 'coins') {
+            $query->select('p.coins AS total');
+        }
+
         $query->from(self::$definition['table'], 'p');
         if ($ids_shop) {
             $query->innerJoin('customer', 'c', 'p.id_customer = c.id_customer');
@@ -72,7 +115,18 @@ class Player extends \ObjectModel {
             $query->orderBy("{$alias}`{$order['order_by']}` {$order['order_way']}");
         }
 
-        return \Db::getInstance()->ExecuteS($query);
+        $players = \Db::getInstance()->ExecuteS($query);
+
+        $pseudonym = \Configuration::get('krona_pseudonym');
+
+        foreach ($players as &$player) {
+            if (!$pseudonym OR !$player['pseudonym']) {
+                $player['pseudonym'] = self::getDisplayName($player['id_customer']);
+            }
+        }
+
+        return $players;
+
     }
 
     public static function getTotalPlayers($filters = null) {
@@ -150,27 +204,9 @@ class Player extends \ObjectModel {
             $player = new Player();
             $player->id_customer = $id_customer;
 
-            $display_name = \Configuration::get('krona_display_name', null, $customer->id_shop_group, $customer->id_shop);
-
-            \Configuration::updateGlobalValue('mandi_superstar', 'ja_'.$display_name);
-
-            if ($display_name == 1) {
-                $player->pseudonym = $customer->firstname . ' ' . $customer->lastname; // John Doe
-            }
-            elseif ($display_name == 2) {
-                $player->pseudonym = $customer->firstname . ' ' . self::shortenWord($customer->lastname); // John D.
-            }
-            elseif ($display_name == 3) {
-                $player->pseudonym = self::shortenWord($customer->firstname) . ' ' . $customer->lastname; // J. Doe
-            }
-            elseif ($display_name == 4) {
-                $player->pseudonym = self::shortenWord($customer->firstname . ' ' . $customer->lastname); // J. D.
-            }
-            elseif ($display_name == 5) {
-                $player->pseudonym = $customer->firstname; // John
-            }
-
             $player->points = 0;
+            $player->coins = 0;
+            $player->loyalty = 0;
             $player->avatar = 'no-avatar.jpg';
             $customer_active = \Configuration::get('krona_customer_active', null, $customer->id_shop_group, $customer->id_shop);
             $player->active = ($customer_active) ? 1 : 0;
@@ -205,9 +241,9 @@ class Player extends \ObjectModel {
                 require_once _PS_MODULE_DIR_ . 'loyalty/classes/LoyaltyStateModule.php';
 
                 $points = \LoyaltyModule\LoyaltyModule::getPointsByCustomer($id_customer);
-                $points_change = ceil($points * $import_points);
+                $coins_change = ceil($points * $import_points);
 
-                Player::updatePoints($id_customer, $points_change);
+                Player::updateCoins($id_customer, $coins_change);
             }
         }
 
@@ -251,18 +287,18 @@ class Player extends \ObjectModel {
                         $order_rounding = \Configuration::get('krona_order_rounding', null, $customer->id_shop_group, $customer->id_shop);
 
                         if ($order_rounding == 'down') {
-                            $points_change = floor($total * $actionOrder->points_change);
+                            $coins_change = floor($total * $actionOrder->coins_change);
                         } else {
-                            $points_change = ceil($total * $actionOrder->points_change);
+                            $coins_change = ceil($total * $actionOrder->coins_change);
                         }
 
-                        Player::updatePoints($id_customer, $points_change);
+                        Player::updateCoins($id_customer, $coins_change);
 
                         $history = new PlayerHistory();
                         $history->id_customer = $id_customer;
                         $history->id_action_order = $id_actionOrder;
                         $history->url = \Context::getContext()->link->getPageLink('history');
-                        $history->points_change = $points_change;
+                        $history->change = $coins_change;
                         $history->date_add = $order['date_add'];
 
                         // Handling lang fields for Player History
@@ -280,7 +316,7 @@ class Player extends \ObjectModel {
 
                             $total_currency = \Tools::displayPrice(\Tools::convertPrice($total, $order['id_currency']));
 
-                            $replace = array($points_change, $order['reference'], $total_currency);
+                            $replace = array($coins_change, $order['reference'], $total_currency);
                             $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
                             $history->message[$id_lang] = pSQL($message[$id_lang]);
@@ -291,10 +327,9 @@ class Player extends \ObjectModel {
                     }
 
                 }
+                PlayerLevel::updatePlayerLevel($customer, 'coins', 0);
             }
         }
-
-        PlayerLevel::updatePlayerLevel($id_customer, 0);
 
     }
 
@@ -319,8 +354,38 @@ class Player extends \ObjectModel {
 
         $player = new Player($id_customer);
         $player->points = $player->points + $points_change;
+
+        if (\Genzo_Krona::isLoyaltyActive()) {
+            $total = \Genzo_Krona::getLoyaltyTotalMethod();
+
+            if ($total == 'points_coins' OR $total == 'points') {
+                $player->loyalty = $player->loyalty + $points_change;
+            }
+        }
+
         $player->update();
         return true;
+    }
+
+    public static function updateCoins($id_customer, $coins_change) {
+
+        $id_customer = (int)$id_customer;
+        $coins_change = (int)$coins_change;
+
+        $player = new Player($id_customer);
+        $player->coins = $player->coins + $coins_change;
+
+        if (\Genzo_Krona::isLoyaltyActive()) {
+            $total = \Genzo_Krona::getLoyaltyTotalMethod();
+
+            if ($total == 'points_coins' OR $total == 'coins') {
+                $player->loyalty = $player->loyalty + $coins_change;
+            }
+        }
+
+        $player->update();
+        return true;
+
     }
 
     public static function getRank($id_customer) {
@@ -366,6 +431,37 @@ class Player extends \ObjectModel {
         $query->from(self::$definition['table']);
         $query->where('`id_customer` = ' . (int)$id_customer);
         return \Db::getInstance()->getValue($query);
+
+        // Todo: Update this function
+    }
+
+    public static function getDisplayName($id_customer) {
+
+        $customer = new \Customer($id_customer);
+
+        $display_name = \Configuration::get('krona_display_name', null, $customer->id_shop_group, $customer->id_shop);
+
+        if ($display_name == 1) {
+            $pseudonym = $customer->firstname . ' ' . $customer->lastname; // John Doe
+        }
+        elseif ($display_name == 2) {
+            $pseudonym = $customer->firstname . ' ' . self::shortenWord($customer->lastname); // John D.
+        }
+        elseif ($display_name == 3) {
+            $pseudonym = self::shortenWord($customer->firstname) . ' ' . $customer->lastname; // J. Doe
+        }
+        elseif ($display_name == 4) {
+            $pseudonym = self::shortenWord($customer->firstname . ' ' . $customer->lastname); // J. D.
+        }
+        elseif ($display_name == 5) {
+            $pseudonym = $customer->firstname; // John
+        }
+        else {
+            $pseudonym = 'No name';
+        }
+
+        return $pseudonym;
+
     }
 
 }

@@ -47,16 +47,17 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
         $player_obj = new Player($id_customer);
         $player = json_decode(json_encode($player_obj), true); // Turns an object into an array
 
-
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Settings'),
             'game_name' => $game_name,
-            'slack' => Configuration::get('krona_url', null, $id_shop_group, $id_shop),
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Settings',
             'player' => $player,
-            'avatar' => Player::getAvatar($id_customer),
+            'avatar_img' => Player::getAvatar($id_customer),
+            'pseudonym' => Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop),
+            'avatar' => Configuration::get('krona_avatar', null, $id_shop_group, $id_shop),
+            'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
 		));
 
 		$this->setTemplate('customersettings.tpl');

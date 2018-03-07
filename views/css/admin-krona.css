@@ -27,3 +27,8 @@ table#sortable input {
     margin-left: 10px;
     background: transparent;
 }
+
+/* Fix display bug -> translatable fields with descriptions */
+.bootstrap form .form-group .form-group {
+    margin-bottom: 0;
+}

@@ -112,34 +112,34 @@ class PlayerLevel extends \ObjectModel {
         return \Db::getInstance()->getValue($query);
     }
 
-    public static function updatePlayerLevel($id_customer, $id_action, $actionOrder = null) {
+
+    /**
+     * @var \CustomerCore $customer
+     * @param $actionType
+     * @param $id_action
+     * @return bool
+     * @throws \PrestaShopException
+     */
+    public static function updatePlayerLevel($customer, $actionType, $id_action) {
 
         // Multistore check
         if (\Shop::isFeatureActive()) {
-            $customer = new \Customer($id_customer);
             $id_shop = $customer->id_shop;
         } else {
             $id_shop = null;
         }
 
-        // Handling Levels with condition_type = points
-        if ($actionOrder === true) {
-            $ids_level_points = self::getLevelsByConditionType('pointsOrder', null, $id_shop);
-        }
-        elseif ($actionOrder === false) {
-            $ids_level_points = self::getLevelsByConditionType('pointsAction', null, $id_shop);
-        }
-        else {
-            $ids_level_points = self::getLevelsByConditionType('points', null, $id_shop);
-        }
+        // Handling Levels with Thresholds
 
-        foreach ($ids_level_points as $id_level) {
+        $ids_level = self::getLevelsByConditionType($actionType, $id_shop, $id_action);
+
+        foreach ($ids_level as $id_level) {
 
             $id_level = $id_level['id_level'];
 
             if (Level::checkIfLevelActive($id_level, $id_shop)) {
 
-                $id = self::getId($id_customer, $id_level); // The customer could have reached this level in the past
+                $id = self::getId($customer->id, $id_level); // The customer could have reached this level in the past
 
                 $playerLevel = new PlayerLevel($id);
                 $level = new Level($id_level);
@@ -153,26 +153,36 @@ class PlayerLevel extends \ObjectModel {
 
                     if ($level->condition_time OR $playerLevel->achieved_last) {
 
+                        $dateStartCondition = 0;
+                        $dateStartLevel = 0;
+
                         if ($level->condition_time) {
-                            $dateStart = date('Y-m-d 00:00:00', strtotime("-{$level->condition_time} days"));
-                        } else {
-                            $dateStart = date('2000-01-01'); // This basically means unlimited...
+                            $dateStartCondition = date('Y-m-d 00:00:00', strtotime("-{$level->condition_time} days"));
                         }
 
                         // If a player has achieved a level, he has to achieve it again from scratch
                         if ($playerLevel->achieved_last > $dateStart) {
-                            $dateStart = $playerLevel->achieved_last;
+                            $dateStartLevel = $playerLevel->achieved_last;
                         }
+
+                        // Take the newer StartDate
+                        ($dateStartCondition > $dateStartLevel) ? $dateStart = $dateStartCondition : $dateStart = $dateStartLevel;
 
                         $dateEnd = date('Y-m-d 23:59:59');
                     }
 
-                    $reached_points = PlayerHistory::sumActionPointsByPlayer($id_customer, $level->condition_type, $dateStart, $dateEnd);
+
+                    if ($level->id_action > 0) {
+                        $condition = PlayerHistory::countActionByPlayer($customer->id, $id_action, $dateStart, $dateEnd);
+                    }
+                    else {
+                        $condition = PlayerHistory::sumActionPointsByPlayer($customer->id, $level->condition_type, $dateStart, $dateEnd);
+                    }
 
                     // Check if the customer has fulfilled the condition
-                    if ($reached_points >= $level->condition) {
+                    if ($condition >= $level->condition) {
 
-                        $playerLevel->id_customer = $id_customer;
+                        $playerLevel->id_customer = $customer->id;
                         $playerLevel->id_level = $id_level;
                         $playerLevel->active = 1;
 
@@ -185,70 +195,7 @@ class PlayerLevel extends \ObjectModel {
 
                         $playerLevel->save();
 
-                        self::giveTheReward($id_customer, $level);
-                    }
-                }
-            }
-
-        }
-
-        // Destroy objects for a fresh start
-        unset($level);
-        unset($levelPlayer);
-
-        // Handling levels with condition type action
-        $ids_level_action = self::getLevelsByConditionType('action', $id_action, $id_shop);
-
-        foreach ($ids_level_action as $id_level) {
-
-            $id_level = $id_level['id_level'];
-
-            if (Level::checkIfLevelActive($id_level, $id_shop)) {
-
-                $id = self::getId($id_customer, $id_level); // The customer could have reached this level in the past
-
-                $level = new Level($id_level);
-                $playerLevel = new PlayerLevel($id);
-
-                // Check if customer still has the right, to achieve this level
-                if ($level->achieve_max > $playerLevel->achieved) {
-
-                    $dateStart = null;
-                    $dateEnd = null;
-
-                    if ($level->condition_time OR $playerLevel->achieved_last) {
-
-                        if ($level->condition_time) {
-                            $dateStart = date('Y-m-d 00:00:00', strtotime("-{$level->condition_time} days"));
-                        } else {
-                            $dateStart = date('2000-01-01'); // This basically means unlimited...
-                        }
-
-                        // If a player has achieved a level, he has to achieve it again from scratch
-                        if ($playerLevel->achieved_last > $dateStart) {
-                            $dateStart = $playerLevel->achieved_last;
-                        }
-
-                        $dateEnd = date('Y-m-d 23:59:59');
-                    }
-
-                    $executions = PlayerHistory::countActionByPlayer($id_customer, $id_action, $dateStart, $dateEnd);
-
-                    if ($executions >= $level->condition) {
-                        $playerLevel->id_customer = $id_customer;
-                        $playerLevel->id_level = $id_level;
-                        $playerLevel->active = 1;
-
-                        // If duration is not set, it means unlimited
-                        ($level->duration > 0) ? $active_until = date('Y-m-d 23:59:59', strtotime("+{$level->duration} days")) : $active_until = '0000-00-00 00:00:00';
-                        $playerLevel->active_until = $active_until;
-
-                        $playerLevel->achieved = $playerLevel->achieved + 1;
-                        $playerLevel->achieved_last = date("Y-m-d H:i:s", strtotime("+1 second")); // This is securing that the last done action, wont be taken again
-
-                        $playerLevel->save();
-
-                        self::giveTheReward($id_customer, $level);
+                        self::giveTheReward($customer, $level);
                     }
                 }
             }
@@ -257,38 +204,24 @@ class PlayerLevel extends \ObjectModel {
         return true;
     }
 
-    private static function getLevelsByConditionType($condition_type, $id_action = null, $id_shop = null) {
-
-        if (\Shop::isFeatureActive()) {
-            ($id_shop) ? $id_shop = (int)$id_shop : $id_shop = \Context::getContext()->shop->id;
-        }
-
+    public static function getLevelsByConditionType($condition_type, $id_shop, $id_action) {
         $query = new \DbQuery();
         $query->select('l.id_level');
         $query->from('genzo_krona_level', 'l');
         $query->innerJoin('genzo_krona_level_shop', 's', 's.`id_level` = l.`id_level`');
         $query->where('l.`active` = 1');
-        if ($condition_type == 'points') {
-            $query->where("`condition_type` LIKE 'points%'");
-        }
-        elseif ($condition_type == 'pointsOrder' OR $condition_type == 'pointsAction') {
-            $query->where("`condition_type` = '{$condition_type}' OR `condition_type` = 'points'");
-        }
-        else {
-            $query->where("`condition_type` = '{$condition_type}'"); // For Actions
-        }
-
-        if ($id_shop) {
-            $query->where('`id_shop`=' . (int)$id_shop);
-        }
-
-        if ($id_action) {
-            $query->where('`id_action`='.(int)$id_action);
-        }
+        $query->where("`condition_type` LIKE '{$condition_type}' OR `condition_type`='total' OR `id_action`={$id_action}");
+        $query->where('`id_shop`=' . (int)$id_shop);
         return \Db::getInstance()->ExecuteS($query);
     }
 
-    private static function giveTheReward($id_customer, $level) {
+
+    /**
+     * @var \CustomerCore $customer
+     * @var Level $level
+     * @throws
+     */
+    private static function giveTheReward($customer, $level) {
         $ids_lang = \Language::getIDs();
 
         if($level->reward_type == 'coupon') {
@@ -296,7 +229,7 @@ class PlayerLevel extends \ObjectModel {
             $coupon = new \CartRule($id_cart_rule);
 
             // Clone the cart rule and override some values
-            $coupon->id_customer = (int)$id_customer;
+            $coupon->id_customer = $customer->id;
 
             // Merchant can set date in cart rule, we need the difference between the dates
             if ($coupon->date_from && $coupon->date_to) {
@@ -313,8 +246,6 @@ class PlayerLevel extends \ObjectModel {
                 $coupon->name[$id_lang] = Coupon::getCouponName($coupon->name[$id_lang]);
             }
 
-            $customer = new \Customer($id_customer);
-
             $prefix = \Configuration::get('krona_coupon_prefix', null, $customer->id_shop_group, $customer->id_shop);
             $code = strtoupper(\Tools::passwdGen(6));
 
@@ -328,7 +259,6 @@ class PlayerLevel extends \ObjectModel {
             $id_group = $level->id_reward;
             $groups[] = $id_group;
 
-            $customer = new \Customer($id_customer);
             $customer->addGroups($groups);
 
             // Smaller means higher priority

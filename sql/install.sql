@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player` (
   `pseudonym` VARCHAR(40) NOT NULL,
   `avatar` VARCHAR(200) DEFAULT NULL,
   `points` INT(12) NOT NULL,
+  `coins` INT(12) NOT NULL,
+  `loyalty` INT(12) NOT NULL,
   `active` BOOL DEFAULT 1 NOT NULL,
   `banned` BOOL DEFAULT 0 NOT NULL,
   `date_add` DATETIME NULL,
@@ -30,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history` (
   `id_customer` INT(12) NOT NULL,
   `id_action` INT(12) NULL,
   `id_action_order` INT(12) NULL,
-  `points_change` INT(12) NOT NULL,
+  `change` INT(12) NOT NULL,
   `url` VARCHAR(200) NULL,
   `date_add` DATETIME NULL,
   `date_upd` DATETIME NULL,
@@ -87,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_action` (
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_action_order` (
   `id_action_order` INT(12) NOT NULL AUTO_INCREMENT,
   `id_currency` INT(12) NOT NULL,
-  `points_change` INT(12) NOT NULL,
+  `coins_change` INT(12) NOT NULL,
   `minimum_amount` INT(12) NOT NULL,
   `active` BOOL DEFAULT 0 NOT NULL,
   PRIMARY KEY ( `id_action_order` )

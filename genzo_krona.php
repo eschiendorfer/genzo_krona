@@ -35,11 +35,15 @@ class Genzo_Krona extends Module
     public $errors;
     public $confirmation;
     public $table_name;
-	public $points_name;
-	public $order_active;
 	public $is_multishop;
 	public $id_shop_group;
 	public $id_shop;
+	public $is_loyalty;
+	public $is_gamification;
+	public $loyalty_total;
+	public $gamification_total;
+    public $total_name;
+    public $loyalty_name;
 
 	function __construct() {
 		$this->name = 'genzo_krona';
@@ -117,7 +121,7 @@ class Genzo_Krona extends Module
 	    foreach ($currencies as $currency) {
             $actionOrder = new ActionOrder();
             $actionOrder->id_currency = $currency['id_currency'];
-            $actionOrder->points_change = 1;
+            $actionOrder->coins_change = 1;
             $actionOrder->minimum_amount = 0;
             $actionOrder->active = 1;
             $actionOrder->add();
@@ -205,32 +209,71 @@ class Genzo_Krona extends Module
         // Save Settings
         // Lang fields
         $game_names = array();
-        $points_names = array();
+        $total_names = array();
+        $loyalty_names = array();
 
         foreach ($ids_lang as $id_lang) {
-            $game_names[$id_lang] = 'Loyalty Points'; // Just as an example
-            $points_names[$id_lang] = 'Crowns'; // Just as an example
+            $game_names[$id_lang] = 'Loyalty Reward Program'; // Just as an example
+            $total_names[$id_lang] = 'Lifetime Points'; // Just as an example
+            $loyalty_names[$id_lang] = 'Loyalty Points'; // Just as an example
         }
 
         foreach (Shop::getShops() as $shop) {
 
-            Configuration::updateValue('krona_game_name', $game_names, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_points_name', $points_names, false, $shop['id_shop_group'], $shop['id_shop']);
+            $id_shop_group = $shop['id_shop_group'];
+            $id_shop = $shop['id_shop'];
+
+            // Lang fields
+            if (!Configuration::get('krona_game_name', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_game_name', $game_names, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_total_name', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_total_name', $total_names, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_loyalty_name', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_name', $loyalty_names, false, $id_shop_group, $id_shop);
+            }
 
             // Basic Fields
-            Configuration::updateValue('krona_url', 'krona', false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_customer_active', 1, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_display_name', 1, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_pseudonym', 1, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_order_active', 1, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_order_amount', 'total_wt', false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_order_rounding', 'up', false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_order_state', 1, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_order_state_cancel', 1, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_coupon_prefix', 'KR', false, $shop['id_shop_group'], $shop['id_shop']);
+            if (!Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_active', 0, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_loyalty_total', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_total', 'points_coins', false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_gamification_active', 0, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_gamification_total', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_gamification_total', 'points_coins', false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_url', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_url', 'krona', false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_customer_active', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_customer_active', 1, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_display_name', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_display_name', 1, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_pseudonym', 1, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_avatar', 1, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_order_amount', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_order_amount', 'total_wt', false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_order_rounding', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_order_rounding', 'up', false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_coupon_prefix', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_coupon_prefix', 'KR', false, $id_shop_group, $id_shop);
+            }
 
-            Configuration::updateValue('krona_import_customer', 0, false, $shop['id_shop_group'], $shop['id_shop']);
-            Configuration::updateValue('krona_dont_import_customer', 0, false, $shop['id_shop_group'], $shop['id_shop']);
+            Configuration::updateValue('krona_import_customer', 0, false, $id_shop_group, $id_shop);
+            Configuration::updateValue('krona_dont_import_customer', 0, false, $id_shop_group, $id_shop);
         }
 
         Configuration::updateGlobalValue('krona_import_customer', 0);
@@ -248,8 +291,14 @@ class Genzo_Krona extends Module
         $this->is_multishop = Shop::isFeatureActive();
         $this->id_shop = $this->context->shop->id;
         $this->id_shop_group = $this->context->shop->id_shop_group;
-        $this->points_name = Configuration::get('krona_points_name', $id_lang, $this->id_shop_group, $this->id_shop);
-        $this->order_active = Configuration::get('krona_order_active', null, $this->id_shop_group, $this->id_shop);
+
+        $this->is_loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
+        $this->is_gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
+        $this->loyalty_total = Configuration::get('krona_loyalty_total', null, $this->id_shop_group, $this->id_shop);
+        $this->gamification_total = Configuration::get('krona_gamification_total', null, $this->id_shop_group, $this->id_shop);
+
+        $this->total_name = Configuration::get('krona_total_name', $id_lang, $this->id_shop_group, $this->id_shop);
+        $this->loyalty_name = Configuration::get('krona_loyalty_name', $id_lang, $this->id_shop_group, $this->id_shop);
 
         // Content
         $tab = null;
@@ -264,9 +313,6 @@ class Genzo_Krona extends Module
         // Actions
         if (Tools::isSubmit('updateActionInbuilt') OR Tools::isSubmit('updateActionExternal')) {
             $content = 'FormAction';
-        }
-        elseif (Tools::isSubmit('updateActionOrder')) {
-            $content = 'FormActionOrder';
         }
         elseif (Tools::isSubmit('saveAction')) {
             $this->saveAction();
@@ -283,6 +329,11 @@ class Genzo_Krona extends Module
         elseif (Tools::isSubmit('toggleActiveActionInbuilt') OR Tools::isSubmit('toggleActiveActionExternal')) {
             $this->saveToggle('genzo_krona_action', 'id_action', 'active');
             $content = 'ListActions';
+        }
+
+        // Orders
+        if (Tools::isSubmit('updateOrder')) {
+            $content = 'FormOrder';
         }
 
         // Players
@@ -352,21 +403,30 @@ class Genzo_Krona extends Module
                 $content = 'ListLevels';
             }
         }
-        elseif (Tools::isSubmit('updateLevel_points') OR Tools::isSubmit('updateLevel_action')) {
+        elseif (Tools::isSubmit('updateLevel_total') OR
+                Tools::isSubmit('updateLevel_points') OR
+                Tools::isSubmit('updateLevel_coins') OR
+                Tools::isSubmit('updateLevel_action')
+        ) {
             $content = 'FormLevel';
         }
-        elseif (Tools::isSubmit('deleteLevel_points') OR Tools::isSubmit('deleteLevel_action')) {
+        elseif (Tools::isSubmit('deleteLevel_total') OR
+                Tools::isSubmit('deleteLevel_points') OR
+                Tools::isSubmit('deleteLevel_coins') OR
+                Tools::isSubmit('deleteLevel_action')
+        ) {
             $this->deleteLevel();
             $content = 'ListLevels';
         }
-        elseif (Tools::isSubmit('toggleActiveLevel_points')) {
+        elseif (Tools::isSubmit('toggleActiveLevel_total') OR
+                Tools::isSubmit('toggleActiveLevel_coins') OR
+                Tools::isSubmit('toggleActiveLevel_points') OR
+                Tools::isSubmit('toggleActiveLevel_points')
+        ) {
             $this->saveToggle('genzo_krona_level', 'id_level', 'active');
             $content = 'ListLevels';
         }
-        elseif (Tools::isSubmit('toggleActiveLevel_action')) {
-            $this->saveToggle('genzo_krona_level', 'id_level', 'active');
-            $content = 'ListLevels';
-        }
+
 
         // Coupons
         if (Tools::isSubmit('updateCoupon')) {
@@ -411,17 +471,20 @@ class Genzo_Krona extends Module
 
         switch ($content) {
             case 'ListActions' :
-                ($this->order_active) ? $actionOrders = $this->generateListActionsOrders() : $actionOrders = null;
-                $content = $actionOrders . $this->generateListActions(true) . $this->generateListActions(false);
+                $content = $this->generateListActions(true) . $this->generateListActions(false);
                 $tab = 'Actions';
                 break;
             case 'FormAction' :
                 $content = $this->generateFormAction();
                 $tab = 'Actions';
                 break;
-            case 'FormActionOrder' :
-                $content = $this->generateFormActionOrder();
-                $tab = 'Actions';
+            case 'ListOrders' :
+                $content = $this->generateListOrders();
+                $tab = 'Orders';
+                break;
+            case 'FormOrder' :
+                $content = $this->generateFormOrder();
+                $tab = 'Orders';
                 break;
             case 'ListPlayers' :
                 $content = $this->generateListPlayers();
@@ -444,7 +507,8 @@ class Genzo_Krona extends Module
                 $tab = 'Levels';
                 break;
             case 'ListLevels' :
-                $content = $this->generateListLevels('points') . $this->generateListLevels('action');
+                $content =  $this->generateListLevels('total') . $this->generateListLevels('points') .
+                            $this->generateListLevels('coins') . $this->generateListLevels('action');
                 $tab = 'Levels';
                 break;
             case 'ListCoupons' :
@@ -477,7 +541,8 @@ class Genzo_Krona extends Module
             'content'       => $content,
             'tab'           => $tab,
             'action_url'    => $this->context->link->getAdminLink('AdminModules', true) . '&configure=' . $this->name . '&module_name=' . $this->name,
-            'points_name'   => $this->points_name,
+            'total_name'    => $this->total_name,
+            'loyalty_name'    => $this->loyalty_name,
         ));
 
 
@@ -486,9 +551,7 @@ class Genzo_Krona extends Module
             $template = $this->display(__FILE__, 'views/templates/admin/support.tpl');
         }
         elseif ($tab == 'Actions') {
-            if ($this->order_active) {
-                $this->checkCurrencies();
-            }
+            $this->checkCurrencies();
         }
         else if (_PS_VERSION_!='1.6.1.999') {
             $template = $this->display(__FILE__, 'views/templates/admin/prestashop.tpl');
@@ -633,7 +696,7 @@ class Genzo_Krona extends Module
         return $helper->generateList($values, $fields_list);
     }
 
-    private function generateListActionsOrders() {
+    private function generateListOrders() {
         $fields_list = array(
             'id_action_order' => array(
                 'title' => 'ID',
@@ -645,8 +708,8 @@ class Genzo_Krona extends Module
                 'title' => $this->l('Currency'),
                 'align' => 'left',
             ),
-            'points_change' => array(
-                'title' => $this->l('Points Change'),
+            'coins_change' => array(
+                'title' => $this->l('Coins Change'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
                 'filter_type' => 'int'
@@ -669,11 +732,11 @@ class Genzo_Krona extends Module
         $helper->shopLinkType = '';
         $helper->actions = array('edit');
         $helper->identifier = 'id_action_order';
-        $helper->table = 'ActionOrder';
+        $helper->table = 'Order';
         $helper->_pagination = [2,20,50,100,300];
 
         $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $index = '&configure=' . $this->name . '&module_name=' . $this->name . '&content=ListActions';
+        $index = '&configure=' . $this->name . '&module_name=' . $this->name . '&content=ListOrders';
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . $index;
 
         // Filter, Pagination and Oder_By -> get Situation
@@ -771,8 +834,8 @@ class Genzo_Krona extends Module
                 'title' => $this->l('Message'),
                 'align' => 'left',
             ),
-            'points_change' => array(
-                'title' => $this->l('Points Change'),
+            'change' => array(
+                'title' => $this->l('Change'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
                 'filter_type' => 'int'
@@ -952,39 +1015,64 @@ class Genzo_Krona extends Module
 
     private function generateListPlayers() {
 
-        $fields_list = array(
-            'id_customer' => array(
-                'title' => 'ID',
-                'align' => 'center',
-                'class' => 'fixed-width-xs',
-                'filter_type' => 'int',
-            ),
-            'pseudonym' => array(
-                'title' => $this->l('Pseudonym'),
-                'align' => 'left',
-            ),
-            'points' => array(
-                'title' => $this->points_name,
-                'class' => 'fixed-width-xs',
-                'align' => 'left',
-            ),
-            'active' => array(
-                'title' => $this->l('Active'),
-                'active' => 'toggleActive',
-                'class' => 'fixed-width-xs',
-                'align' => 'center',
-                'type'  => 'bool',
-                'filter_type' => 'int',
-            ),
-            'banned' => array(
-                'title' => $this->l('Banned'),
-                'active' => 'toggleBanned',
-                'class' => 'fixed-width-xs',
-                'align' => 'center',
-                'type'  => 'bool',
-                'filter_type' => 'int',
-            ),
+        $fields_list['id_customer'] = array(
+            'title' => 'ID',
+            'align' => 'center',
+            'class' => 'fixed-width-xs',
+            'filter_type' => 'int',
         );
+
+        $fields_list['pseudonym'] = array(
+            'title' => $this->l('Pseudonym'),
+            'align' => 'left',
+        );
+        if (($this->is_loyalty AND $this->loyalty_total!='coins') OR ($this->is_gamification AND $this->gamification_total!='coins')) {
+            $fields_list['points'] = array(
+                'title' => $this->l('Points'),
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            );
+        }
+
+        if (($this->is_loyalty AND $this->loyalty_total!='points') OR ($this->is_gamification AND $this->gamification_total!='points')) {
+            $fields_list['coins'] = array(
+                'title' => $this->l('Coins'),
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            );
+        }
+
+        if ($this->is_gamification) {
+            $fields_list['total'] = array(
+                'title' => $this->total_name,
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            );
+        }
+        if ($this->is_loyalty) {
+            $fields_list['loyalty'] = array(
+                'title' => $this->loyalty_name,
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            );
+        }
+        $fields_list['active'] = array(
+            'title' => $this->l('Active'),
+            'active' => 'toggleActive',
+            'class' => 'fixed-width-xs',
+            'align' => 'center',
+            'type'  => 'bool',
+            'filter_type' => 'int',
+        );
+        $fields_list['banned'] = array(
+            'title' => $this->l('Banned'),
+            'active' => 'toggleBanned',
+            'class' => 'fixed-width-xs',
+            'align' => 'center',
+            'type'  => 'bool',
+            'filter_type' => 'int',
+        );
+
 
         $helper = new HelperList();
         $helper->shopLinkType = '';
@@ -1066,10 +1154,6 @@ class Genzo_Krona extends Module
             ),
             'name' => array(
                 'title' => $this->l('Name'),
-                'align' => 'left',
-            ),
-            'condition_type' => array(
-                'title' => $this->l('Condition Type'),
                 'align' => 'left',
             ),
             'condition' => array(
@@ -1179,7 +1263,11 @@ class Genzo_Krona extends Module
         $helper->listTotal = Level::getTotalLevels($filters);
 
         switch ($condition_type) {
+            case 'total' : $helper->title = $this->l('All Levels by').' '. $this->total_name;
+                break;
             case 'points' : $helper->title = $this->l('All Levels by Points');
+                break;
+            case 'coins' : $helper->title = $this->l('All Levels by Coins');
                 break;
             case 'action' : $helper->title = $this->l('All Levels by Actions');
                 break;
@@ -1427,10 +1515,8 @@ class Genzo_Krona extends Module
             'class'  => 'input fixed-width-sm',
         );
 
-        if ($order) {
-            $points_desc = $this->l('This Value will be multiplicated with the amount of order.');
-        }
-        elseif ($newsletter) {
+
+        if ($newsletter) {
             $points_desc = $this->l('Newsletter will be auto triggered by CronJob. For example every month a customer receives x amount of points. It\'s recommended
                                             to use execution type per Year, per Month or per Day.');
         }
@@ -1444,7 +1530,7 @@ class Genzo_Krona extends Module
             'label' => $this->l('Points Change'),
             'desc'  => $points_desc,
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->points_name,
+            'suffix' => $this->total_name,
         );
 
         if ($this->is_multishop) {
@@ -1488,7 +1574,7 @@ class Genzo_Krona extends Module
 
     }
 
-    private function generateFormActionOrder() {
+    private function generateFormOrder() {
 
 	    $id_action_order = Tools::getValue('id_action_order');
 
@@ -1526,17 +1612,17 @@ class Genzo_Krona extends Module
 
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'points_change',
-            'label' => $this->l('Points transformation'),
-            'desc'  => sprintf($this->l('Example: For every %s spent, the user will get X Points.'),$actionOrder->currency),
+            'name'  => 'coins_change',
+            'label' => $this->l('Coins reward'),
+            'desc'  => sprintf($this->l('Example: For every %s spent, the user will get X coins.'),$actionOrder->currency),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->points_name.'/'.$actionOrder->currency_iso,
+            'suffix' => $this->l('Coins').'/'.$actionOrder->currency_iso,
         );
         $inputs[] = array(
             'type'  => 'text',
             'name'  => 'minimum_amount',
             'label' => $this->l('Minimum Amount'),
-            'desc'  => sprintf($this->l('Needs there to be a minimum amount of %s to get points? If not, set it equal to 0.'), $actionOrder->currency),
+            'desc'  => sprintf($this->l('Needs there to be a minimum amount of %s to get coins? If not, set it equal to 0.'), $actionOrder->currency),
             'class'  => 'input fixed-width-sm',
             'suffix' => $actionOrder->currency_iso,
         );
@@ -1600,11 +1686,11 @@ class Genzo_Krona extends Module
 
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'points_change',
-            'label' => $this->l('Points Change'),
+            'name'  => 'change',
+            'label' => $this->l('Change'),
             'desc'  => $this->l('If you wanna give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->points_name,
+            'suffix' => $this->total_name,
         );
 
         $fields_form = array(
@@ -1633,14 +1719,8 @@ class Genzo_Krona extends Module
         $vars = json_decode(json_encode($level), true); // Turns an object into an array
 
         // Get Values
-        /*$ids_lang = Language::getIDs();
-        foreach ($ids_lang as $id_lang) {
-            $vars['title'][$id_lang] = '';
-            $vars['message'][$id_lang] = '';
-        }*/
 
         $vars['id_customer'] = $id_customer;
-        //$vars['points_change'] = '';
 
         $helper->tpl_vars = array(
             'fields_value' => $vars,
@@ -1723,7 +1803,31 @@ class Genzo_Krona extends Module
             'name'  => 'points',
             'readonly' => true,
             'desc' => $this->l('If you want to change points, please add a custom action below.'),
-            'label' => $this->points_name,
+            'label' => $this->l('Points'),
+            'class'  => 'input fixed-width-sm',
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'coins',
+            'readonly' => true,
+            'desc' => $this->l('If you want to change coins, please add a custom action below.'),
+            'label' => $this->l('Coins'),
+            'class'  => 'input fixed-width-sm',
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'total',
+            'readonly' => true,
+            'desc' => $this->l('If you want to change total, please add a custom action below.'),
+            'label' => $this->total_name,
+            'class'  => 'input fixed-width-sm',
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'loyalty',
+            'readonly' => true,
+            'desc' => $this->l('If you want to change loyalty, please add a custom action below.'),
+            'label' => $this->loyalty_name,
             'class'  => 'input fixed-width-sm',
         );
 
@@ -1786,12 +1890,10 @@ class Genzo_Krona extends Module
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
                 )
             ),
         );
@@ -1807,10 +1909,10 @@ class Genzo_Krona extends Module
             'name' => 'condition_type',
             'options' => array(
                 'query' => array(
-                    array('value' => 'points', 'name' => $this->l('Threshold points')),
-                    array('value' => 'pointsOrder', 'name' => $this->l('Threshold points only orders')),
-                    array('value' => 'pointsAction', 'name' => $this->l('Threshold points only actions')),
-                    array('value' => 'action', 'name' => $this->l('Executing action')),
+                    array('value' => 'total', 'name' => $this->l('Threshold:') . ' ' . $this->total_name),
+                    array('value' => 'points', 'name' => $this->l('Threshold:') . ' '. $this->l('Points')),
+                    array('value' => 'coins', 'name' => $this->l('Threshold:') . ' ' . $this->l('Coins')),
+                    array('value' => 'action', 'name' => $this->l('Executing Action')), // Todo: Executing Order
                 ),
                 'id' => 'value',
                 'name' => 'name',
@@ -1833,7 +1935,7 @@ class Genzo_Krona extends Module
             'type'  => 'text',
             'name'  => 'condition_points',
             'label' => $this->l('Condition'),
-            'suffix'=> $this->points_name,
+            'suffix'=> $this->total_name,
             'desc' => $this->l('Threshold: How many points need to be reached?'),
             'class'  => 'input fixed-width-sm',
         );
@@ -1906,11 +2008,15 @@ class Genzo_Krona extends Module
             'class'  => 'input fixed-width-sm',
             'suffix' => $this->l('Times'),
         );
-        $inputs[] = array(
-            'type'         => 'html',
-            'name'         => 'html_icon',
-            'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$vars['icon']}' width='30' height='30' />",
-        );
+
+
+        if ($data) {
+            $inputs[] = array(
+                'type' => 'html',
+                'name' => 'html_icon',
+                'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$vars['icon']}' width='30' height='30' />",
+            );
+        }
         $inputs[] = array(
             'type'  => 'file',
             'label' => 'Icon',
@@ -1967,7 +2073,81 @@ class Genzo_Krona extends Module
 
 	    $id_lang = $this->context->language->id;
 
-	    // FrontOffice Settings
+	    // FrontOffice General
+        $inputs[] = array(
+            'type'         => 'html',
+            'name'         => 'html_front',
+            'html_content' => "<h2>{$this->l('General')}</h2>",
+        );
+        $inputs[] = array(
+            'type' => 'switch',
+            'label' => $this->l('Loyalty Activation'),
+            'desc' => $this->l('Do you want to let the customer, convert loyalty points into coupons?'),
+            'name' => 'loyalty_active',
+            'values' => array(
+                array(
+                    'id' => 'active_on',
+                    'value' => 1,
+                    'label' => $this->l('Yes')
+                ),
+                array(
+                    'id' => 'active_off',
+                    'value' => 0,
+                    'label' => $this->l('No')
+                )
+            ),
+        );
+        $inputs[] =array(
+            'type' => 'select',
+            'label' => $this->l('Loyalty Total Value'),
+            'name' => 'loyalty_total',
+            'desc' => $this->l('Points are collected by actions like: newsletter registration, reviews etc. Coins are collected by placing orders.'),
+            'options' => array(
+                'query' => array(
+                    array('value' => 'points_coins', 'name' => $this->l('Points + Coins')),
+                    array('value' => 'points', 'name' => $this->l('Points')),
+                    array('value' => 'coins', 'name' => $this->l('Coins')),
+                ),
+                'id' => 'value',
+                'name' => 'name',
+            ),
+        );
+
+        $inputs[] = array(
+            'type' => 'switch',
+            'label' => $this->l('Gamification Activation'),
+            'desc' => $this->l('Do you want to use gamifacation with leaderboard, avatar, pseudonym etc.'),
+            'name' => 'gamification_active',
+            'values' => array(
+                array(
+                    'id' => 'active_on',
+                    'value' => 1,
+                    'label' => $this->l('Yes')
+                ),
+                array(
+                    'id' => 'active_off',
+                    'value' => 0,
+                    'label' => $this->l('No')
+                )
+            ),
+        );
+        $inputs[] =array(
+            'type' => 'select',
+            'label' => $this->l('Gamification Total Value'),
+            'name' => 'gamification_total',
+            'desc' => $this->l('Points are collected by actions like: newsletter registration, reviews etc. Coins are collected by placing orders.'),
+            'options' => array(
+                'query' => array(
+                    array('value' => 'points_coins', 'name' => $this->l('Points + Coins')),
+                    array('value' => 'points', 'name' => $this->l('Points')),
+                    array('value' => 'coins', 'name' => $this->l('Coins')),
+                ),
+                'id' => 'value',
+                'name' => 'name',
+            ),
+        );
+
+        // FrontOffice Settings
         $inputs[] = array(
             'type'         => 'html',
             'name'         => 'html_front',
@@ -1983,12 +2163,21 @@ class Genzo_Krona extends Module
             'type'  => 'text',
             'name'  => 'game_name',
             'label' => $this->l('Game Name'),
+            'desc'  => $this->l('What is the name of your loyalty system?'),
             'lang'  => true,
         );
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'points_name',
-            'label' => $this->l('Points Name'),
+            'name'  => 'total_name',
+            'label' => $this->l('Gamification Points Name'),
+            'desc'  => $this->l('How shall the total points be called? You could consider total points as "Lifetime points".'),
+            'lang'  => true,
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'loyalty_name',
+            'label' => $this->l('Loyalty Points Name'),
+            'desc'  => $this->l('Loyalty points are the points, which can be converted directly into coupons.'),
             'lang'  => true,
         );
         $inputs[] = array(
@@ -2043,6 +2232,24 @@ class Genzo_Krona extends Module
                 )
             ),
         );
+        $inputs[] = array(
+            'type' => 'switch',
+            'label' => $this->l('Avatar'),
+            'desc' => $this->l('Are customers allowed to upload an avatar?'),
+            'name' => 'avatar',
+            'values' => array(
+                array(
+                    'id' => 'active_on',
+                    'value' => 1,
+                    'label' => $this->l('Yes')
+                ),
+                array(
+                    'id' => 'active_off',
+                    'value' => 0,
+                    'label' => $this->l('No')
+                )
+            ),
+        );
 
         $inputs[] = array(
             'type'  => 'textarea',
@@ -2057,31 +2264,12 @@ class Genzo_Krona extends Module
         $inputs[] = array(
             'type'         => 'html',
             'name'         => 'html_coupon',
-            'html_content' => "<br><h2>{$this->l('Points for orders')}</h2>",
-        );
-
-        $inputs[] = array(
-            'type' => 'switch',
-            'label' => $this->l('Active'),
-            'desc' => $this->l('Do you want to give points for orders?'),
-            'name' => 'order_active',
-            'values' => array(
-                array(
-                    'id' => 'active_on',
-                    'value' => 1,
-                    'label' => $this->l('Yes')
-                ),
-                array(
-                    'id' => 'active_off',
-                    'value' => 0,
-                    'label' => $this->l('No')
-                )
-            ),
+            'html_content' => "<br><h2>{$this->l('Coins for orders')}</h2>",
         );
         $inputs[] =array(
             'type' => 'select',
             'label' => $this->l('Total Amount'),
-            'desc' => $this->l('Which total amount should be transformed into points?'),
+            'desc' => $this->l('Which total amount should be transformed into coins?'),
             'name' => 'order_amount',
             'options' => array(
                 'query' => array(
@@ -2111,7 +2299,7 @@ class Genzo_Krona extends Module
         $inputs[] = array(
             'type' => 'select',
             'label' => $this->l('Order State'),
-            'desc' => $this->l('On which order state will the order be transformed into points?'),
+            'desc' => $this->l('On which order state will the order be transformed into coins?'),
             'name' => 'order_state',
             'options' => array(
                 'query' => OrderState::getOrderStates($id_lang),
@@ -2122,7 +2310,7 @@ class Genzo_Krona extends Module
         $inputs[] = array(
             'type' => 'select',
             'label' => $this->l('Cancel Order State'),
-            'desc' => $this->l('On which order state should the points be taken back?'),
+            'desc' => $this->l('On which order state should the coins be taken back?'),
             'name' => 'order_state_cancel',
             'options' => array(
                 'query' => OrderState::getOrderStates($id_lang),
@@ -2141,7 +2329,7 @@ class Genzo_Krona extends Module
             'type'  => 'text',
             'name'  => 'order_message',
             'label' => $this->l('Message order'),
-            'desc'  => $this->l('You can use:'). ' {points} {reference} {amount}',
+            'desc'  => $this->l('You can use:'). ' {coins} {reference} {amount}',
             'lang'  => true,
         );
         $inputs[] = array(
@@ -2155,7 +2343,7 @@ class Genzo_Krona extends Module
             'type'  => 'text',
             'name'  => 'order_canceled_message',
             'label' => $this->l('Message canceled order'),
-            'desc'  => $this->l('You can use:'). ' {points} {reference} {amount}',
+            'desc'  => $this->l('You can use:'). ' {coins} {reference} {amount}',
             'lang'  => true,
         );
 
@@ -2198,7 +2386,8 @@ class Genzo_Krona extends Module
         // Get Values
         $ids_lang = Language::getIDs();
         foreach ($ids_lang as $id_lang) {
-            $vars['points_name'][$id_lang] = Configuration::get('krona_points_name', $id_lang, $this->id_shop_group, $this->id_shop);
+            $vars['total_name'][$id_lang] = Configuration::get('krona_total_name', $id_lang, $this->id_shop_group, $this->id_shop);
+            $vars['loyalty_name'][$id_lang] = Configuration::get('krona_loyalty_name', $id_lang, $this->id_shop_group, $this->id_shop);
             $vars['game_name'][$id_lang] = Configuration::get('krona_game_name', $id_lang, $this->id_shop_group, $this->id_shop);
             $vars['order_title'][$id_lang] = Configuration::get('krona_order_title', $id_lang, $this->id_shop_group, $this->id_shop);
             $vars['order_message'][$id_lang] = Configuration::get('krona_order_message', $id_lang, $this->id_shop_group, $this->id_shop);
@@ -2207,11 +2396,15 @@ class Genzo_Krona extends Module
             $vars['home_description'][$id_lang] = Configuration::get('krona_description', $id_lang, $this->id_shop_group, $this->id_shop);
         }
 
+        $vars['loyalty_active'] = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
+        $vars['loyalty_total'] = Configuration::get('krona_loyalty_total', null, $this->id_shop_group, $this->id_shop);
+        $vars['gamification_active'] = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
+        $vars['gamification_total'] = Configuration::get('krona_gamification_total', null, $this->id_shop_group, $this->id_shop);
         $vars['url'] = Configuration::get('krona_url', null, $this->id_shop_group, $this->id_shop);
         $vars['customer_active'] = Configuration::get('krona_customer_active', null, $this->id_shop_group, $this->id_shop);
         $vars['display_name'] = Configuration::get('krona_display_name', null, $this->id_shop_group, $this->id_shop);
         $vars['pseudonym'] = Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop);
-        $vars['order_active'] = Configuration::get('krona_order_active', null, $this->id_shop_group, $this->id_shop);
+        $vars['avatar'] = Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop);
         $vars['order_amount'] = Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop);
         $vars['order_rounding'] = Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop);
         $vars['order_state'] = Configuration::get('krona_order_state', null, $this->id_shop_group, $this->id_shop);
@@ -2315,7 +2508,7 @@ class Genzo_Krona extends Module
 
 
         // Basic Fields
-        $action->points_change = (int)Tools::getValue('points_change');
+        $action->coins_change = (int)Tools::getValue('coins_change');
         $action->minimum_amount = (int)Tools::getValue('minimum_amount');
         $action->active = (bool)Tools::getValue('active');
 
@@ -2336,21 +2529,19 @@ class Genzo_Krona extends Module
         }
 
         // Basic Fields
-	    $points_change = (int)Tools::getValue('points_change');
+	    $change = (int)Tools::getValue('change');
 
-	    if (empty($title) OR empty($message) OR !$points_change) {
-	        $this->errors[] = $this->l('Please fill in Title, Message and Points Change');
+	    if (empty($title) OR empty($message) OR !$change) {
+	        $this->errors[] = $this->l('Please fill in Title, Message and Change');
         }
 
         $history = new PlayerHistory();
         $history->id_customer = $id_customer;
         $history->id_action = 0;
-
-        // Manipulating points_change for inbuilt functions like orders
-        $history->points_change = $points_change;
+        $history->change = $change;
 
         foreach ($ids_lang as $id_lang) {
-            $message[$id_lang] = str_replace('{points}', $points_change, $message[$id_lang]);
+            $message[$id_lang] = str_replace('{points}', $change, $message[$id_lang]);
             $history->message[$id_lang] = $message[$id_lang];
             $history->title[$id_lang] = $title[$id_lang];
         }
@@ -2359,8 +2550,8 @@ class Genzo_Krona extends Module
             $history->add();
 
             // Making the actual Points change
-            Player::updatePoints($id_customer, $points_change);
-            PlayerLevel::updatePlayerLevel($id_customer, 0);
+            Player::updatePoints($id_customer, $change);
+            PlayerLevel::updatePlayerLevel($id_customer, 'points', 0); // Todo: Improve Custom Actions
 
             $this->confirmation = $this->l('Your custom Action was sucessfully saved.');
 
@@ -2397,7 +2588,7 @@ class Genzo_Krona extends Module
 
         // This if is needed, in case of a refresh of the same url
         if ($history->id_customer) {
-            Player::updatePoints($history->id_customer, ($history->points_change * (-1)));
+            Player::updatePoints($history->id_customer, ($history->change * (-1)));
         }
         $history->delete();
 
@@ -2416,9 +2607,13 @@ class Genzo_Krona extends Module
         // Basic Fields
         $player->active = (bool)Tools::getValue('active');
         $player->banned = (bool)Tools::getValue('banned');
-        $player->pseudonym = pSQL(Tools::getValue('pseudonym'));
-        $player->avatar = ($this->uploadAvatar($id_customer)) ? $id_customer.'.jpg' : $player->avatar;
-        $player->points = (int)Tools::getValue('points');
+
+        if (Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop)) {
+            $player->pseudonym = pSQL(Tools::getValue('pseudonym'));
+        }
+        if (Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop)) {
+            $player->avatar = ($this->uploadAvatar($id_customer)) ? $id_customer . '.jpg' : $player->avatar;
+        }
 
         $player->update();
 
@@ -2444,7 +2639,7 @@ class Genzo_Krona extends Module
         $level->active = (int)Tools::getValue('active');
         $level->condition_type = pSQL(Tools::getValue('condition_type'));
 
-        if ($level->condition_type == 'points' OR $level->condition_type == 'pointsAction' OR $level->condition_type=='pointsOrder') {
+        if ($level->condition_type == 'points' OR $level->condition_type == 'coins' OR $level->condition_type=='total') {
             $level->condition = (int)Tools::getValue('condition_points');
             $level->id_action = 0;
         }
@@ -2539,7 +2734,8 @@ class Genzo_Krona extends Module
 	    // Settings
 	    $ids_lang = Language::getIDs();
 	    $game_names = array();
-	    $points_names = array();
+	    $total_names = array();
+	    $loyalty_names = array();
 	    $order_titles = array();
 	    $order_messages = array();
 	    $order_canceled_titles = array();
@@ -2550,7 +2746,8 @@ class Genzo_Krona extends Module
 
 	    foreach ($ids_lang as $id_lang) {
 	        $game_names[$id_lang] = Tools::getValue('game_name_'.$id_lang);
-	        $points_names[$id_lang] = Tools::getValue('points_name_'.$id_lang);
+	        $total_names[$id_lang] = Tools::getValue('total_name_'.$id_lang);
+	        $loyalty_names[$id_lang] = Tools::getValue('loyalty_name_'.$id_lang);
 	        $order_titles[$id_lang] = Tools::getValue('order_title_'.$id_lang);
 	        $order_messages[$id_lang] = Tools::getValue('order_message_'.$id_lang);
 	        $order_canceled_titles[$id_lang] = Tools::getValue('order_canceled_title_'.$id_lang);
@@ -2559,7 +2756,8 @@ class Genzo_Krona extends Module
         }
 
         Configuration::updateValue('krona_game_name', $game_names, false, $this->id_shop_group, $this->id_shop);
-	    Configuration::updateValue('krona_points_name', $points_names, false, $this->id_shop_group, $this->id_shop);
+	    Configuration::updateValue('krona_total_name', $total_names, false, $this->id_shop_group, $this->id_shop);
+	    Configuration::updateValue('krona_loyalty_name', $loyalty_names, false, $this->id_shop_group, $this->id_shop);
 	    Configuration::updateValue('krona_order_title', $order_titles, false, $this->id_shop_group, $this->id_shop);
 	    Configuration::updateValue('krona_order_message', $order_messages, false, $this->id_shop_group, $this->id_shop);
 	    Configuration::updateValue('krona_order_canceled_title', $order_canceled_titles, false, $this->id_shop_group, $this->id_shop);
@@ -2567,11 +2765,15 @@ class Genzo_Krona extends Module
 	    Configuration::updateValue('krona_description', $home_descriptions, true, $this->id_shop_group, $this->id_shop);
 
 	    // Basic Fields
+        Configuration::updateValue('krona_loyalty_active', pSQL(Tools::getValue('loyalty_active')), false, $this->id_shop_group, $this->id_shop);
+        Configuration::updateValue('krona_loyalty_total', pSQL(Tools::getValue('loyalty_total')), false, $this->id_shop_group, $this->id_shop);
+        Configuration::updateValue('krona_gamification_active', pSQL(Tools::getValue('gamification_active')), false, $this->id_shop_group, $this->id_shop);
+        Configuration::updateValue('krona_gamification_total', pSQL(Tools::getValue('gamification_total')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_url', pSQL(Tools::getValue('url')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_pseudonym', (bool)Tools::getValue('pseudonym'), false, $this->id_shop_group, $this->id_shop);
-        Configuration::updateValue('krona_order_active', (int)Tools::getValue('order_active'), false, $this->id_shop_group, $this->id_shop);
+        Configuration::updateValue('krona_avatar', (bool)Tools::getValue('avatar'), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_order_amount', pSQL(Tools::getValue('order_amount')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_order_rounding', pSQL(Tools::getValue('order_rounding')), false, $this->id_shop_group, $this->id_shop);
         Configuration::updateValue('krona_order_state', pSQL(Tools::getValue('order_state')), false, $this->id_shop_group, $this->id_shop);
@@ -2764,7 +2966,7 @@ class Genzo_Krona extends Module
             foreach ($missing as $currency) {
                 $actionOrder = new ActionOrder();
                 $actionOrder->id_currency = $currency['id_currency'];
-                $actionOrder->points_change = 1;
+                $actionOrder->coins_change = 1;
                 $actionOrder->minimum_amount = 0;
                 $actionOrder->active = 0;
                 $actionOrder->add();
@@ -2847,12 +3049,15 @@ class Genzo_Krona extends Module
 	    $action_name = pSQL($params['action_name']);
 
 	    // Hook values: module_name, action_name, id_customer, action_url, action_message
+        $customer = new Customer((int)$params['id_customer']);
         $id_action   = Action::getIdAction($module_name, $action_name);
-        $id_customer = (int)$params['id_customer'];
+
+        if (!$id_action) {
+            return 'Action not found';
+        }
 
         // We have to check Multistore
         if (Shop::isFeatureActive()) {
-            $customer = new Customer($id_customer);
             $id_shop = $customer->id_shop;
         }
         else {
@@ -2860,16 +3065,16 @@ class Genzo_Krona extends Module
         }
 
         // Check if Player exits
-        if (!Player::checkIfPlayerExits($id_customer)) {
-            Player::createPlayer($id_customer);
+        if (!Player::checkIfPlayerExits($customer->id)) {
+            Player::createPlayer($customer->id);
         }
 
         if (
-            !Player::checkIfPlayerIsActive($id_customer) == 1 OR
-            !Player::checkIfPlayerIsBanned($id_customer) == 0 OR
-            !Action::checkIfActionIsActive($module_name, $action_name, $id_shop) == 1 OR
-            !$id_action > 0) {
-            return 'Player or Action not found';
+            !Player::checkIfPlayerIsActive($customer->id) == 1 OR
+            !Player::checkIfPlayerIsBanned($customer->id) == 0 OR
+            !Action::checkIfActionIsActive($module_name, $action_name, $id_shop) == 1
+        ) {
+            return 'Player or Action not active.';
         }
         else {
 
@@ -2896,14 +3101,24 @@ class Genzo_Krona extends Module
                     $endDate = null; // This is max_per_lifetime
                 }
 
-                $execution_times = PlayerHistory::countActionByPlayer($id_customer, $id_action, $startDate, $endDate);
+                $execution_times = PlayerHistory::countActionByPlayer($customer->id, $id_action, $startDate, $endDate);
 
             }
 
             // Check if the User is still allowed to execute this action
             if (($execution_times < $action->execution_max) OR ($action->execution_type == 'unlimited')) {
 
-                Player::updatePoints($id_customer, $action->points_change);
+                Player::updatePoints($customer->id, $action->points_change);
+
+                $history = new PlayerHistory();
+                $history->id_customer = $customer->id;
+                $history->id_action = $id_action;
+
+                if (!empty($params['action_url'])) {
+                    $history->url = $params['action_url']; // Action url is not mandatory
+                }
+
+                $history->change = $action->points_change;
 
                 // Preparing the lang array for the history message
                 $ids_lang = Language::getIDs();
@@ -2912,31 +3127,26 @@ class Genzo_Krona extends Module
                 if (!empty($params['action_message'])) {
                     $message = $params['action_message'];
                 }
-                else {
-                    foreach ($ids_lang as $id_lang) {
-                        $message[$id_lang] = $action->message[$id_lang];
-                    }
-                }
-
-                $history = new PlayerHistory();
-                $history->id_customer = $id_customer;
-                $history->id_action = $id_action;
-
-                if (!empty($params['action_url'])) {
-                    $history->url = $params['action_url']; // Action url is not mandatory
-                }
-
-                $history->points_change = $action->points_change;
 
                 foreach ($ids_lang as $id_lang) {
-                    $message[$id_lang] = str_replace('{points}', $history->points_change, $message[$id_lang]);
-                    $history->message[$id_lang] = pSQL($message[$id_lang]);
+
+                    if (empty($params['action_message'])) {
+                        $message[$id_lang] = $action->message[$id_lang];
+                    }
+
+                    // After defining the message array we replace the shortcodes -> shortcodes can be used for external messages too
+                    $search = array('{points}', '{coins}');
+                    $replace = array($history->change, $history->change);
+                    $history->message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
+
                     $history->title[$id_lang] = pSQL($action->title[$id_lang]);
                 }
 
+
+
                 $history->add();
 
-                PlayerLevel::updatePlayerLevel($id_customer, $id_action);
+                PlayerLevel::updatePlayerLevel($customer, 'points', $id_action);
 
             }
         }
@@ -2955,132 +3165,128 @@ class Genzo_Krona extends Module
         $id_customer = $order->id_customer;
         $customer = new Customer ($id_customer);
 
-        // Is OrderAction active?
-	    if (Configuration::get('krona_order_active', null, $customer->id_shop_group, $customer->id_shop)) {
+        $id_state_ok = (int)Configuration::get('krona_order_state', null, $customer->id_shop_group, $customer->id_shop);
+        $id_state_cancel = (int)Configuration::get('krona_order_state_cancel', null, $customer->id_shop_group, $customer->id_shop);
 
-            $id_state_ok = (int)Configuration::get('krona_order_state', null, $customer->id_shop_group, $customer->id_shop);
-            $id_state_cancel = (int)Configuration::get('krona_order_state_cancel', null, $customer->id_shop_group, $customer->id_shop);
+        // Check if the status is relevant
+        if ($id_state_new == $id_state_ok OR $id_state_new == $id_state_cancel) {
 
-	        // Check if the status is relevant
-	        if ($id_state_new == $id_state_ok OR $id_state_new == $id_state_cancel) {
+            // Check ActionOrder -> This is basically checking the currency
+            $id_actionOrder = ActionOrder::getIdActionOrderByCurrency($order->id_currency);
+            $actionOrder = new ActionOrder($id_actionOrder);
 
-                // Check ActionOrder -> This is basically checking the currency
-                $id_actionOrder = ActionOrder::getIdActionOrderByCurrency($order->id_currency);
-                $actionOrder = new ActionOrder($id_actionOrder);
+            if ($actionOrder->active) {
 
-                if ($actionOrder->active) {
+                // Get Total amount of the order
+                $order_amount = Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop);
 
-                    // Get Total amount of the order
-                    $order_amount = Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop);
+                if ($order_amount == 'total_wt') {
+                    $total = $order->total_paid; // Total with taxes
+                } elseif ($order_amount == 'total') {
+                    $total = $order->total_paid_tax_excl;
+                } elseif ($order_amount == 'total_products_wt') {
+                    $total = $order->total_products_wt;
+                } elseif ($order_amount == 'total_products') {
+                    $total = $order->total_products;
+                } else {
+                    $total = $order->total_paid; // Standard if nothing is set
+                }
 
-                    if ($order_amount == 'total_wt') {
-                        $total = $order->total_paid; // Total with taxes
-                    } elseif ($order_amount == 'total') {
-                        $total = $order->total_paid_tax_excl;
-                    } elseif ($order_amount == 'total_products_wt') {
-                        $total = $order->total_products_wt;
-                    } elseif ($order_amount == 'total_products') {
-                        $total = $order->total_products;
+                // Check if total is high enough
+                if ($total < $actionOrder->minimum_amount) {
+                    return false;
+                }
+
+                // Check if Player exits
+                if (!Player::checkIfPlayerExits($id_customer)) {
+                    Player::createPlayer($id_customer);
+                }
+
+                if ( Player::checkIfPlayerIsActive($id_customer) == 0 OR Player::checkIfPlayerIsBanned($id_customer) == 1 ) {
+                    return false;
+                }
+                else {
+                    // Check the rounding method -> up is standard
+                    $order_rounding = Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop);
+
+                    if ($order_rounding == 'down') {
+                        $coins_change = floor($total * $actionOrder->coins_change);
                     } else {
-                        $total = $order->total_paid; // Standard if nothing is set
+                        $coins_change = ceil($total * $actionOrder->coins_change);
                     }
 
-                    // Check if total is high enough
-                    if ($total < $actionOrder->minimum_amount) {
-                        return false;
-                    }
+                    if ($id_state_new == $id_state_ok) {
 
-                    // Check if Player exits
-                    if (!Player::checkIfPlayerExits($id_customer)) {
-                        Player::createPlayer($id_customer);
-                    }
+                        Player::updatePoints($id_customer, $coins_change);
 
-                    if ( Player::checkIfPlayerIsActive($id_customer) == 0 OR Player::checkIfPlayerIsBanned($id_customer) == 1 ) {
-                        return false;
-                    }
-                    else {
-                        // Check the rounding method -> up is standard
-                        $order_rounding = Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop);
+                        $history = new PlayerHistory();
+                        $history->id_customer = $id_customer;
+                        $history->id_action_order = $id_actionOrder;
+                        $history->url = $this->context->link->getPageLink('history');
+                        $history->change = $coins_change;
 
-                        if ($order_rounding == 'down') {
-                            $points_change = floor($total * $actionOrder->points_change);
-                        } else {
-                            $points_change = ceil($total * $actionOrder->points_change);
+                        // Handling lang fields for Player History
+                        $ids_lang = Language::getIDs();
+                        $title = array();
+                        $message = array();
+
+                        foreach ($ids_lang as $id_lang) {
+
+                            $title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $customer->id_shop_group, $customer->id_shop);
+                            $message[$id_lang] = Configuration::get('krona_order_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
+
+                            // Replace message variables
+                            $search = array('{points}', '{reference}', '{amount}');
+
+                            $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
+
+                            $replace = array($coins_change, $order->reference, $total_currency);
+                            $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
+
+                            $history->message[$id_lang] = pSQL($message[$id_lang]);
+                            $history->title[$id_lang] = pSQL($title[$id_lang]);
                         }
 
-                        if ($id_state_new == $id_state_ok) {
+                        $history->add();
 
-                            Player::updatePoints($id_customer, $points_change);
+                        PlayerLevel::updatePlayerLevel($customer, 'coins', $id_actionOrder);
+                    }
+                    elseif ($id_state_new == $id_state_cancel) {
 
-                            $history = new PlayerHistory();
-                            $history->id_customer = $id_customer;
-                            $history->id_action_order = $id_actionOrder;
-                            $history->url = $this->context->link->getPageLink('history');
-                            $history->points_change = $points_change;
+                        Configuration::updateValue('krona_cancel_test', 'ja');
 
-                            // Handling lang fields for Player History
-                            $ids_lang = Language::getIDs();
-                            $title = array();
-                            $message = array();
+                        $history = new PlayerHistory($id_customer);
+                        $history->id_customer = $id_customer;
+                        $history->id_action_order = $id_actionOrder;
+                        $history->url = $this->context->link->getPageLink('history');
+                        $history->change = $coins_change*(-1);
 
-                            foreach ($ids_lang as $id_lang) {
+                        $ids_lang = Language::getIDs();
 
-                                $title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $customer->id_shop_group, $customer->id_shop);
-                                $message[$id_lang] = Configuration::get('krona_order_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
+                        foreach ($ids_lang as $id_lang) {
+                            $title[$id_lang] = Configuration::get('krona_order_canceled_title', $id_lang, $customer->id_shop_group, $customer->id_shop);
+                            $message[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
 
-                                // Replace message variables
-                                $search = array('{points}', '{reference}', '{amount}');
+                            // Replace message variables
+                            $search = array('{points}', '{reference}', '{amount}');
 
-                                $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
+                            $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
 
-                                $replace = array($points_change, $order->reference, $total_currency);
-                                $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
+                            $replace = array($coins_change, $order->reference, $total_currency);
+                            $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
-                                $history->message[$id_lang] = pSQL($message[$id_lang]);
-                                $history->title[$id_lang] = pSQL($title[$id_lang]);
-                            }
-
-                            $history->add();
-
-                            PlayerLevel::updatePlayerLevel($id_customer, $id_actionOrder, true);
+                            $history->message[$id_lang] = pSQL($message[$id_lang]);
+                            $history->title[$id_lang] = pSQL($title[$id_lang]);
                         }
-                        elseif ($id_state_new == $id_state_cancel) {
+                        $history->add();
+                        Player::updatePoints($id_customer, $history->change);
 
-                            Configuration::updateValue('krona_cancel_test', 'ja');
-
-                            $history = new PlayerHistory($id_customer);
-                            $history->id_customer = $id_customer;
-                            $history->id_action_order = $id_actionOrder;
-                            $history->url = $this->context->link->getPageLink('history');
-                            $history->points_change = $points_change*(-1);
-
-                            $ids_lang = Language::getIDs();
-
-                            foreach ($ids_lang as $id_lang) {
-                                $title[$id_lang] = Configuration::get('krona_order_canceled_title', $id_lang, $customer->id_shop_group, $customer->id_shop);
-                                $message[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
-
-                                // Replace message variables
-                                $search = array('{points}', '{reference}', '{amount}');
-
-                                $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
-
-                                $replace = array($points_change, $order->reference, $total_currency);
-                                $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
-
-                                $history->message[$id_lang] = pSQL($message[$id_lang]);
-                                $history->title[$id_lang] = pSQL($title[$id_lang]);
-                            }
-                            $history->add();
-                            Player::updatePoints($id_customer, $history->points_change);
-
-                            // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
-                        }
+                        // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
                     }
                 }
             }
-
         }
+
         return true;
     }
 
@@ -3157,6 +3363,45 @@ class Genzo_Krona extends Module
         );
 
         return $my_routes;
+    }
+
+
+
+    // Helper for Configuration Values
+    public static function isLoyaltyActive() {
+
+        $id_shop_group = Context::getContext()->shop->id_shop_group;
+        $id_shop = Context::getContext()->shop->id_shop;
+
+        return Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop);
+
+    }
+
+    public static function isGamificationActive() {
+
+        $id_shop_group = Context::getContext()->shop->id_shop_group;
+        $id_shop = Context::getContext()->shop->id_shop;
+
+        return Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop);
+
+    }
+
+    public static function getLoyaltyTotalMethod() {
+
+        $id_shop_group = Context::getContext()->shop->id_shop_group;
+        $id_shop = Context::getContext()->shop->id_shop;
+
+        return Configuration::get('krona_loyalty_total', null, $id_shop_group, $id_shop);
+
+    }
+
+    public static function getGamificationTotalMethod() {
+
+        $id_shop_group = Context::getContext()->shop->id_shop_group;
+        $id_shop = Context::getContext()->shop->id_shop;
+
+       return Configuration::get('krona_gamification_total', null, $id_shop_group, $id_shop);
+
     }
 
 

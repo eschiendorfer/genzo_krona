@@ -61,8 +61,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign(array(
             'meta_title' => $game_name . ': ' . $this->module->l('Overview'),
             'game_name' => $game_name,
-            'points_name' => Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop),
-            'slack' => Configuration::get('krona_url', null, $id_shop_group, $id_shop),
+            'total_name' => Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop),
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Overview',
@@ -71,6 +70,8 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
             'avatar' => Player::getAvatar($id_customer),
             'history' => PlayerHistory::getHistoryByPlayer($id_customer, null, $history_pagination),
             'level' => PlayerLevel::getAllPlayerLevels($id_customer, null, $level_pagination, $level_order),
+            'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
+            'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
         ));
 
         $this->setTemplate('overview.tpl');

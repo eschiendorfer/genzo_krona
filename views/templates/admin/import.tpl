@@ -3,17 +3,16 @@
     <p>{l s='Do you wanna reward existing user with the account creation reward? Don\'t forget to save the display name settings first.' mod='genzo_krona'}</p>
 
     <form method="post">
-
         <div class="form-group">
             <label class="control-label col-lg-3">
                 {l s='Import Core Loyality Points' mod='genzo_krona'}
             </label>
             <div class="col-lg-9">
-                <div class="input-group fixed-width-md">
-                    <input type="text" name="import_points" value="" class="">
-                    <span class="input-group-addon">{$points_name}</span>
+                <div class="input-group fixed-width-lg">
+                    <input type="text" name="import_points" value="0" class="">
+                    <span class="input-group-addon">{$loyalty_name}</span>
                 </div>
-                <p class="help-block">{l s='1 old Point will be X new Points. Leave it empty, if you dont want to import it.' mod='genzo_krona'}</p>
+                <p class="help-block">{l s='1 old Point will be X new Points. If the value is 0, no import will happen. If you want to import, value equal 1 is recommended.' mod='genzo_krona'}</p>
             </div>
         </div>
         <div class="form-group">

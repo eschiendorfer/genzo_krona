@@ -36,7 +36,6 @@ class Genzo_KronaHomeModuleFrontController extends ModuleFrontController
             'meta_title' => $game_name,
             'game_name' => $game_name,
             'points_name' => Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop),
-            'slack' => Configuration::get('krona_url', null, $id_shop_group, $id_shop),
             'description' => Configuration::get('krona_description', $id_lang, $id_shop_group, $id_shop),
             'active' => 'Home',
             'nav' => $nav,

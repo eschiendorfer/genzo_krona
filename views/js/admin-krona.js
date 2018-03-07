@@ -17,6 +17,27 @@ $(document).ready(function() {
 
     }).trigger('change');
 
+    // Settings Form:
+    $('#genzo_krona_settings_form').on('change', function() {
+
+        id_form = 'genzo_krona_settings_form';
+
+        if (parseInt($("[name=loyalty_active]:checked").val()) === 0) {
+            hideElement(id_form, 'loyalty_total');
+        }
+        else {
+            showElement(id_form, 'loyalty_total');
+        }
+
+        if (parseInt($("[name=gamification_active]:checked").val()) === 0) {
+            hideElement(id_form, 'gamification_total');
+        }
+        else {
+            showElement(id_form, 'gamification_total');
+        }
+
+    }).trigger('change');
+
     // Level Form:
     $('#genzo_krona_level_form').on('change', function() {
 
@@ -32,6 +53,10 @@ $(document).ready(function() {
             hideElement(id_form, 'id_action');
             hideElement(id_form, 'condition_action');
             showElement(id_form, 'condition_points');
+
+            // Refresh if points, coins or lifetime
+            var type = $( "#condition_type option:selected" ).text().split(":").pop();
+            $("#condition_points").nextAll('span:first').text(type);
         }
 
         reward_type = $("#reward_type").val();

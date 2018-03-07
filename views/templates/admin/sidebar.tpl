@@ -4,6 +4,9 @@
             <a href="{$action_url}&content=ListActions" class="list-group-item  {if $tab=='Actions'}active{/if}" >
                 <i class="icon-play-circle"></i> {l s='Actions' mod='genzo_krona'}
             </a>
+            <a href="{$action_url}&content=ListOrders" class="list-group-item  {if $tab=='Orders'}active{/if}" >
+                <i class="icon-money"></i> {l s='Orders' mod='genzo_krona'}
+            </a>
             <a href="{$action_url}&content=ListPlayers" class="list-group-item  {if $tab=='Players'}active{/if}" >
                 <i class="icon-users"></i> {l s='Players' mod='genzo_krona'}
             </a>
