@@ -1,6 +1,7 @@
 /* Elements */
 [id^="module-genzo_krona"] {
     line-height: 24px;
+    color: #484848;
 }
 
 [id^="module-genzo_krona"] .krona-box {
