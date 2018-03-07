@@ -3235,7 +3235,7 @@ class Genzo_Krona extends Module
 
                     if ($id_state_new == $id_state_ok) {
 
-                        Player::updatePoints($id_customer, $coins_change);
+                        Player::updateCoins($id_customer, $coins_change);
 
                         $history = new PlayerHistory();
                         $history->id_customer = $id_customer;
@@ -3297,7 +3297,7 @@ class Genzo_Krona extends Module
                             $history->title[$id_lang] = pSQL($title[$id_lang]);
                         }
                         $history->add();
-                        Player::updatePoints($id_customer, $history->change);
+                        Player::updateCoins($id_customer, $history->change);
 
                         // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
                     }

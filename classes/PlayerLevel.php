@@ -175,8 +175,6 @@ class PlayerLevel extends \ObjectModel {
                         $condition = PlayerHistory::sumActionPointsByPlayer($customer->id, $level->condition_type, $dateStart, $dateEnd);
                     }
 
-                    \Configuration::updateValue('krona_conditii', $condition);
-
                     // Check if the customer has fulfilled the condition
                     if ($condition >= $level->condition) {
 
