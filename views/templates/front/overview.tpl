@@ -23,7 +23,7 @@
                 </li>
                 <li>
                     <b>{$total_name}</b><br>
-                    {$player.points}
+                    {$player.total}
                 </li>
                 <li>
                     <b>{l s='Rank' mod='genzo_krona'}</b><br>
