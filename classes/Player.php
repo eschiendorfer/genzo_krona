@@ -34,7 +34,7 @@ class Player extends \ObjectModel {
             'pseudonym'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'avatar'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'points'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'coins'        => array('type' => self::TYPE_INT, 'validate' => 'isFloat'),
+            'coins'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'loyalty'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'active'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'banned'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
@@ -392,7 +392,22 @@ class Player extends \ObjectModel {
 
         (\Shop::isFeatureActive()) ? $id_shop = \Context::getContext()->shop->id_shop :$id_shop = null;
 
-        $points = self::getPoints($id_customer);
+        $method = \Genzo_Krona::getGamificationTotalMethod();
+
+        $query = new \DbQuery();
+
+        if ($method == 'points_coins') {
+            $query->select('points+coins AS total');
+        } elseif ($method == 'points') {
+            $query->select('points');
+        } elseif ($method == 'coins') {
+            $query->select('coins');
+        }
+
+        $query->select('points');
+        $query->from(self::$definition['table']);
+        $query->where('`id_customer` = ' . (int)$id_customer);
+        $code = \Db::getInstance()->getValue($query);
 
         $query = new \DbQuery();
         $query->select('COUNT(*)');
@@ -401,17 +416,15 @@ class Player extends \ObjectModel {
             $query->innerJoin('customer', 'c', 'c.id_customer = p.id_customer');
             $query->where('id_shop='.$id_shop);
         }
-        $query->where('points > ' . $points);
+        if ($method == 'points_coins') {
+            $query->where('points+coins > ' . $code);
+        } elseif ($method == 'points') {
+            $query->where('points > ' . $code);
+        } elseif ($method == 'coins') {
+            $query->where('coins > ' . $code);
+        }
         return \Db::getInstance()->getValue($query)+1;
 
-    }
-
-    public static function getPoints($id_customer) {
-        $query = new \DbQuery();
-        $query->select('points');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . (int)$id_customer);
-        return \Db::getInstance()->getValue($query);
     }
 
     public static function getAvatar($id_customer) {
