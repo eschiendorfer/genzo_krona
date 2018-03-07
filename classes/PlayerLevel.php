@@ -123,11 +123,7 @@ class PlayerLevel extends \ObjectModel {
     public static function updatePlayerLevel($customer, $actionType, $id_action) {
 
         // Multistore check
-        if (\Shop::isFeatureActive()) {
-            $id_shop = $customer->id_shop;
-        } else {
-            $id_shop = null;
-        }
+        $id_shop = $customer->id_shop;
 
         // Handling Levels with Thresholds
 
@@ -178,6 +174,8 @@ class PlayerLevel extends \ObjectModel {
                     else {
                         $condition = PlayerHistory::sumActionPointsByPlayer($customer->id, $level->condition_type, $dateStart, $dateEnd);
                     }
+
+                    \Configuration::updateValue('krona_conditii', $condition);
 
                     // Check if the customer has fulfilled the condition
                     if ($condition >= $level->condition) {
