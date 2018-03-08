@@ -3259,7 +3259,7 @@ class Genzo_Krona extends Module
         return $this->display(__FILE__, 'views/templates/hook/customerAccount.tpl');
     }
 
-    public function hookRightColumnProduct ($params) {
+    public function hookDisplayRightColumnProduct ($params) {
 
 	    if (Configuration::get('krona_loyalty_product_page')) {
 
