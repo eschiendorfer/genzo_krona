@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player` (
   `pseudonym` VARCHAR(40) NOT NULL,
   `avatar` VARCHAR(200) DEFAULT NULL,
   `points` INT(12) NOT NULL,
-  `coins` FLOAT(12,2) NOT NULL,
+  `coins` INT(12) NOT NULL,
   `loyalty` INT(12) NOT NULL,
   `active` BOOL DEFAULT 1 NOT NULL,
   `banned` BOOL DEFAULT 0 NOT NULL,
