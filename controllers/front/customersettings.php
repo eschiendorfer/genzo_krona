@@ -27,9 +27,15 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
         $id_shop = $this->context->shop->id_shop;
         $id_customer = $this->context->customer->id;
 
+        $player_obj = new Player($id_customer);
+
         // Check if there needs to be a redirction
         if (!$this->context->customer->isLogged()) {
             $krona_url = $this->context->link->getModuleLink('genzo_krona', 'home');
+            Tools::redirect($krona_url);
+        }
+        elseif ($player_obj->banned) {
+            $krona_url = $this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1';
             Tools::redirect($krona_url);
         }
 
@@ -44,7 +50,6 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
 
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
 
-        $player_obj = new Player($id_customer);
         $player = json_decode(json_encode($player_obj), true); // Turns an object into an array
 
 		$this->context->smarty->assign(array(

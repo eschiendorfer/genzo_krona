@@ -32,6 +32,8 @@ class Genzo_KronaHomeModuleFrontController extends ModuleFrontController
 
         ($this->context->customer->isLogged()) ? $nav = true : $nav = false;
 
+        (Tools::getValue('banned')) ? $banned = true : $banned = false;
+
         $this->context->smarty->assign(array(
             'meta_title' => $game_name,
             'game_name' => $game_name,
@@ -41,6 +43,7 @@ class Genzo_KronaHomeModuleFrontController extends ModuleFrontController
             'active' => 'Home',
             'nav' => $nav,
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
+            'banned' => $banned,
         ));
 
         $this->setTemplate('home.tpl');

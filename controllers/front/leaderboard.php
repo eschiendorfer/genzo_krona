@@ -26,16 +26,6 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
         $id_shop = $this->context->shop->id_shop;
         $id_customer = $this->context->customer->id;
 
-        // Check if there needs to be a redirction
-        if (!$this->context->customer->isLogged()) {
-            $krona_url = $this->context->link->getModuleLink('genzo_krona', 'home');
-            Tools::redirect($krona_url);
-        }
-        elseif (!Player::checkIfPlayerIsActive($id_customer)) {
-            $settings_url = $this->context->link->getModuleLink('genzo_krona', 'customersettings');
-            Tools::redirect($settings_url);
-        }
-
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
 
         $filters = array(
