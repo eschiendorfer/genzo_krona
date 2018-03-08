@@ -73,6 +73,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayBackOfficeHeader') OR
             !$this->registerHook('displayHeader') OR
             !$this->registerHook('displayCustomerAccount') OR
+            !$this->registerHook('displayProductButtons') OR
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
@@ -2345,7 +2346,7 @@ class Genzo_Krona extends Module
         $inputs[] =array(
             'type' => 'select',
             'label' => $this->l('Total Amount'),
-            'desc' => $this->l('Which total amount should be transformed into coins?'),
+            'desc' => $this->l('Which total amount should be transformed into coins? It is highly recommended to chose a value WITH tax.'),
             'name' => 'order_amount',
             'options' => array(
                 'query' => array(
@@ -3226,7 +3227,57 @@ class Genzo_Krona extends Module
             'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
         ));
 
-        return $this->display(__FILE__, 'views/templates/front/customer_account.tpl');
+        return $this->display(__FILE__, 'views/templates/hook/customerAccount.tpl');
+    }
+
+    public function hookDisplayProductButtons ($params) {
+
+	    $id_currency = $this->context->currency->id;
+	    $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
+	    $actionOrder = new ActionOrder($id_ActionOrder);
+
+	    $order_amount = Configuration::get('krona_order_amount', null, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
+
+	    if ($order_amount == 'total_wt') {
+	        $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price'];
+	        $tax = true;
+        }
+        elseif ($order_amount == 'total') {
+            $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price_without_tax'];
+            $tax = false;
+        }
+        elseif ($order_amount == 'total_products_wt') {
+            $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products_wt'];
+            $tax = true;
+        }
+        elseif ($order_amount == 'total_products') {
+            $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products'];
+            $tax = false;
+        }
+        else {
+	        $coins_in_cart = 0;
+	        $tax = true;
+        }
+
+        ($tax) ? $tax_rate = 1 : $tax_rate = 1 + ($params['product']->tax_rate/100);
+
+        Media::addJsDef(array(
+            'krona_coins_change' => $actionOrder->coins_change,
+            'krona_coins_conversion' => $actionOrder->coins_conversion,
+            'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
+            'krona_order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
+            'krona_tax' => $tax,
+            'krona_tax_rate' => $tax_rate,
+        ));
+
+
+        $this->context->smarty->assign(array(
+            'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
+            'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
+            'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
+        ));
+
+        return $this->display(__FILE__, 'views/templates/hook/productButtons.tpl');
     }
 
     public function hookActionExecuteKronaAction($params) {
