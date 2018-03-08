@@ -247,6 +247,7 @@ class PlayerLevel extends \ObjectModel {
 
             $coupon->code = ($prefix) ? $prefix.'-'.$code : $code;
             $coupon->active = true;
+            $coupon->highlight = 1;
             $coupon->add();
 
             \CartRule::copyConditions($id_cart_rule, $coupon->id);
