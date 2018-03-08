@@ -228,7 +228,7 @@ class Player extends \ObjectModel {
 
         Player::createPlayer($id_customer);
 
-        $import_points = (float)\Tools::getValue('import_points');
+        $import_points = (int)\Tools::getValue('import_points');
         $import_orders = (bool)\Tools::getValue('import_orders');
 
         // Handling Core Loyalty Points
