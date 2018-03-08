@@ -65,6 +65,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
         // Check if there is a Conversion
         if (Tools::isSubmit('convertLoyalty')) {
             $this->convertLoyalty($player_obj, $actionOrder);
+            $player_obj = new Player($id_customer); // Just to refresh loyalty value
         }
 
         $player = json_decode(json_encode($player_obj), true); // Turns an object into an array
