@@ -260,6 +260,9 @@ class Genzo_Krona extends Module
             if (!Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_pseudonym', 1, false, $id_shop_group, $id_shop);
             }
+            if (!Configuration::get('krona_loyalty_product_page', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_product_page', 1, false, $id_shop_group, $id_shop);
+            }
             if (!Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_avatar', 1, false, $id_shop_group, $id_shop);
             }
@@ -2270,6 +2273,26 @@ class Genzo_Krona extends Module
                 )
             ),
         );
+        if ($loyalty) {
+            $inputs[] = array(
+                'type' => 'switch',
+                'label' => $this->l('Loyalty on product page'),
+                'desc' => $this->l('Show how many coins a customers receives, if he buys the product.'),
+                'name' => 'loyalty_product_page',
+                'values' => array(
+                    array(
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes')
+                    ),
+                    array(
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('No')
+                    )
+                ),
+            );
+        }
         if ($gamifaction) {
             $inputs[] = array(
                 'type' => 'select',
@@ -2500,6 +2523,7 @@ class Genzo_Krona extends Module
         $vars['customer_active'] = Configuration::get('krona_customer_active', null, $this->id_shop_group, $this->id_shop);
         $vars['display_name'] = Configuration::get('krona_display_name', null, $this->id_shop_group, $this->id_shop);
         $vars['pseudonym'] = Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop);
+        $vars['loyalty_product_page'] = Configuration::get('krona_loyalty_product_page', null, $this->id_shop_group, $this->id_shop);
         $vars['avatar'] = Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop);
         $vars['order_amount'] = Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop);
         $vars['order_rounding'] = Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop);
@@ -2933,6 +2957,7 @@ class Genzo_Krona extends Module
 
         if ($loyalty) {
             Configuration::updateValue('krona_loyalty_total', pSQL(Tools::getValue('loyalty_total')), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_loyalty_product_page', pSQL(Tools::getValue('loyalty_product_page')), false, $this->id_shop_group, $this->id_shop);
         }
         if ($gamification) {
             Configuration::updateValue('krona_gamification_total', pSQL(Tools::getValue('gamification_total')), false, $this->id_shop_group, $this->id_shop);
@@ -3213,6 +3238,10 @@ class Genzo_Krona extends Module
         $this->context->controller->addJquery();
         $this->context->controller->addJS($this->_path.'/views/js/krona.js');
 
+        if (Configuration::get('krona_loyalty_product_page')) {
+            $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
+        }
+
         if (Action::checkIfActionIsActive('genzo_krona', 'page_visit') AND
             $this->context->customer->isLogged()) {
             Media::addJsDef(array('id_customer' => $this->context->customer->id));
@@ -3232,52 +3261,51 @@ class Genzo_Krona extends Module
 
     public function hookDisplayProductButtons ($params) {
 
-	    $id_currency = $this->context->currency->id;
-	    $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
-	    $actionOrder = new ActionOrder($id_ActionOrder);
+	    if (Configuration::get('krona_loyalty_product_page')) {
 
-	    $order_amount = Configuration::get('krona_order_amount', null, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
+            $id_currency = $this->context->currency->id;
+            $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
+            $actionOrder = new ActionOrder($id_ActionOrder);
 
-	    if ($order_amount == 'total_wt') {
-	        $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price'];
-	        $tax = true;
+            $order_amount = Configuration::get('krona_order_amount', null, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
+
+            if ($order_amount == 'total_wt') {
+                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price'];
+                $tax = true;
+            } elseif ($order_amount == 'total') {
+                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price_without_tax'];
+                $tax = false;
+            } elseif ($order_amount == 'total_products_wt') {
+                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products_wt'];
+                $tax = true;
+            } elseif ($order_amount == 'total_products') {
+                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products'];
+                $tax = false;
+            } else {
+                $coins_in_cart = 0;
+                $tax = true;
+            }
+
+            ($tax) ? $tax_rate = 1 : $tax_rate = 1 + ($params['product']->tax_rate / 100);
+
+            Media::addJsDef(array(
+                'krona_coins_change' => $actionOrder->coins_change,
+                'krona_coins_conversion' => $actionOrder->coins_conversion,
+                'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
+                'krona_order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
+                'krona_tax' => $tax,
+                'krona_tax_rate' => $tax_rate,
+            ));
+
+
+            $this->context->smarty->assign(array(
+                'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
+                'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
+                'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
+            ));
+
+            return $this->display(__FILE__, 'views/templates/hook/productButtons.tpl');
         }
-        elseif ($order_amount == 'total') {
-            $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price_without_tax'];
-            $tax = false;
-        }
-        elseif ($order_amount == 'total_products_wt') {
-            $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products_wt'];
-            $tax = true;
-        }
-        elseif ($order_amount == 'total_products') {
-            $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products'];
-            $tax = false;
-        }
-        else {
-	        $coins_in_cart = 0;
-	        $tax = true;
-        }
-
-        ($tax) ? $tax_rate = 1 : $tax_rate = 1 + ($params['product']->tax_rate/100);
-
-        Media::addJsDef(array(
-            'krona_coins_change' => $actionOrder->coins_change,
-            'krona_coins_conversion' => $actionOrder->coins_conversion,
-            'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
-            'krona_order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
-            'krona_tax' => $tax,
-            'krona_tax_rate' => $tax_rate,
-        ));
-
-
-        $this->context->smarty->assign(array(
-            'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
-            'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
-            'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
-        ));
-
-        return $this->display(__FILE__, 'views/templates/hook/productButtons.tpl');
     }
 
     public function hookActionExecuteKronaAction($params) {
