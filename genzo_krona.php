@@ -1771,6 +1771,8 @@ class Genzo_Krona extends Module
 
         if ($data) {
             $vars = json_decode(json_encode($data), true);
+            if (empty($vars['points_change'])) {$vars['points_change'] = '';}
+            if (empty($vars['coins_change'])) {$vars['coins_change'] = '';}
         }
         else {
             foreach (Language::getIDs() as $id_lang) {
@@ -1781,8 +1783,8 @@ class Genzo_Krona extends Module
             $vars['action_type'] = 'custom';
             $vars['id_action'] = 1;
             $vars['id_action_order'] = 1;
-            $vars['points_change'] = 0;
-            $vars['coins_change'] = 0;
+            $vars['points_change'] = '';
+            $vars['coins_change'] = '';
         }
 
         $helper->tpl_vars = array(
@@ -2370,6 +2372,32 @@ class Genzo_Krona extends Module
                 'name' => 'name',
             ),
         );
+
+        $orderStates = OrderState::getOrderStates($id_lang);
+
+
+
+        $inputs[] = array(
+            'type'     => 'checkbox',
+            'label'    => $this->l('Show for these statuses'),
+            'desc'     => $this->l('If an order reaches one of these statuses the QR will be shown on the invoice'),
+            'name'     => 'order_state_new',
+            'multiple' => true,
+            'values'   => [
+                'query' => $orderStates,
+                'id'    => 'id_order_state',
+                'name'  => 'name',
+            ],
+            'expand'   => (count($orderStates) > 10) ? [
+                'print_total' => count($orderStates),
+                'default'     => 'show',
+                'show'        => ['text' => $this->l('Show'), 'icon' => 'plus-sign-alt'],
+                'hide'        => ['text' => $this->l('Hide'), 'icon' => 'minus-sign-alt'],
+            ] : null,
+        );
+
+
+
         $inputs[] = array(
             'type' => 'select',
             'label' => $this->l('Order State'),
@@ -2482,6 +2510,10 @@ class Genzo_Krona extends Module
         $vars['order_amount'] = Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop);
         $vars['order_rounding'] = Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop);
         $vars['order_state'] = Configuration::get('krona_order_state', null, $this->id_shop_group, $this->id_shop);
+        $array = [1,3,7,22];
+        foreach ($array as $id) {
+            $vars['order_state_new_'.$id] = true;
+        }
         $vars['order_state_cancel'] = Configuration::get('krona_order_state_cancel', null, $this->id_shop_group, $this->id_shop);
         $vars['coupon_prefix'] = Configuration::get('krona_coupon_prefix', null, $this->id_shop_group, $this->id_shop);
 
@@ -2600,8 +2632,8 @@ class Genzo_Krona extends Module
 
 	    // Check inputs
 	    $id_customer = (int)Tools::getValue('id_customer');
-	    $points_change = (int)Tools::getValue('points_change');
-	    $coins_change = (int)Tools::getValue('coins_change');
+	    $points_change = Tools::getValue('points_change'); // Dont put these on int since we check it later
+	    $coins_change = Tools::getValue('coins_change');
 	    $type = Tools::getValue('action_type');
 
         $history = new PlayerHistory();
@@ -2651,14 +2683,14 @@ class Genzo_Krona extends Module
             $this->errors[] = $this->l('Please fill in title and message');
         }
 
-        if (!$points_change AND !$coins_change) {
+        if ($points_change === '' AND $coins_change === '') {
             $this->errors[] = $this->l('Please fill in (at least one) a value for points or coins.');
         }
 
         if (empty($this->errors)) {
 
             // Keep in mind both points and coins could change (no else if)
-            if ($points_change > 0) {
+            if ($points_change !== '') {
                 $history->change = $points_change;
                 $history->add();
 
@@ -2666,7 +2698,7 @@ class Genzo_Krona extends Module
                 PlayerLevel::updatePlayerLevel(new Customer($id_customer), 'points', $history->id_action);
             }
 
-            if ($coins_change > 0 ) {
+            if ($coins_change !== '' ) {
                 $history->change = $coins_change;
                 $history->add();
 
@@ -2680,8 +2712,12 @@ class Genzo_Krona extends Module
         }
         else {
             $history->action_type = $type;
-            $history->points_change = $points_change;
-            $history->coins_change = $coins_change;
+            if ($points_change != 0) {
+                $history->points_change = $points_change;
+            }
+            if ($coins_change != 0) {
+                $history->coins_change = $coins_change;
+            }
 
             return $history;
         }
