@@ -73,7 +73,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayBackOfficeHeader') OR
             !$this->registerHook('displayHeader') OR
             !$this->registerHook('displayCustomerAccount') OR
-            !$this->registerHook('displayProductButtons') OR
+            !$this->registerHook('displayRightColumnProduct') OR
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
@@ -3259,7 +3259,7 @@ class Genzo_Krona extends Module
         return $this->display(__FILE__, 'views/templates/hook/customerAccount.tpl');
     }
 
-    public function hookDisplayProductButtons ($params) {
+    public function hookRightColumnProduct ($params) {
 
 	    if (Configuration::get('krona_loyalty_product_page')) {
 
@@ -3304,7 +3304,7 @@ class Genzo_Krona extends Module
                 'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
             ));
 
-            return $this->display(__FILE__, 'views/templates/hook/productButtons.tpl');
+            return $this->display(__FILE__, 'views/templates/hook/rightColumnProduct.tpl');
         }
     }
 
