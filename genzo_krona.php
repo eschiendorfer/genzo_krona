@@ -1675,6 +1675,20 @@ class Genzo_Krona extends Module
             'type' => 'hidden',
             'name' => 'id_customer'
         );
+        $inputs[] =array(
+            'type' => 'select',
+            'label' => $this->l('Type'),
+            'name' => 'action_type',
+            'options' => array(
+                'query' => array(
+                    array('value' => 'custom', 'name' => $this->l('Custom')),
+                    array('value' => 'action', 'name' => $this->l('Action')),
+                    array('value' => 'order', 'name' => $this->l('Order')),
+                ),
+                'id' => 'value',
+                'name' => 'name',
+            ),
+        );
 
         $inputs[] = array(
             'type'  => 'text',
@@ -1687,17 +1701,47 @@ class Genzo_Krona extends Module
             'type' => 'text',
             'label' => $this->l('Message'),
             'name' => 'message',
-            'desc' => $this->l('You can use:'). ' {points}',
             'lang' => true,
         );
 
         $inputs[] = array(
+            'type' => 'select',
+            'label' => $this->l('Action'),
+            'name' => 'id_action',
+            'class' => 'chosen',
+            'options' => array(
+                'query' => Action::getAllActions(),
+                'id' => 'id_action',
+                'name' => 'title',
+            ),
+        );
+        $inputs[] = array(
+            'type' => 'select',
+            'label' => $this->l('Order'),
+            'name' => 'id_action_order',
+            'class' => 'chosen',
+            'options' => array(
+                'query' => ActionOrder::getAllActionOrder(),
+                'id' => 'id_action_order',
+                'name' => 'name',
+            ),
+        );
+
+        $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'change',
+            'name'  => 'points_change',
             'label' => $this->l('Change'),
             'desc'  => $this->l('If you wanna give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->total_name,
+            'suffix' => $this->l('Points'),
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'coins_change',
+            'label' => $this->l('Change'),
+            'desc'  => $this->l('If you wanna give a penalty you can set -10 for example.'),
+            'class'  => 'input fixed-width-sm',
+            'suffix' => $this->l('Coins'),
         );
 
         $fields_form = array(
@@ -1719,15 +1763,27 @@ class Genzo_Krona extends Module
         $helper->default_form_language = $this->context->language->id;
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name .'&module_name=' . $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $helper->table = 'genzo_krona_action';
+        $helper->table = 'genzo_krona_custom_action';
 
-        ($data) ? $level = $data : $level = new Action();
-
-        $vars = json_decode(json_encode($level), true); // Turns an object into an array
 
         // Get Values
-
         $vars['id_customer'] = $id_customer;
+
+        if ($data) {
+            $vars = json_decode(json_encode($data), true);
+        }
+        else {
+            foreach (Language::getIDs() as $id_lang) {
+                $vars['title'][$id_lang] = '';
+                $vars['message'][$id_lang] = '';
+            }
+
+            $vars['action_type'] = 'custom';
+            $vars['id_action'] = 1;
+            $vars['id_action_order'] = 1;
+            $vars['points_change'] = 0;
+            $vars['coins_change'] = 0;
+        }
 
         $helper->tpl_vars = array(
             'fields_value' => $vars,
@@ -2539,47 +2595,94 @@ class Genzo_Krona extends Module
     }
 
     private function saveCustomAction() {
+
 	    $ids_lang = Language::getIDs();
 
 	    // Check inputs
 	    $id_customer = (int)Tools::getValue('id_customer');
-
-	    // Lang Fields
-	    foreach ($ids_lang as $id_lang) {
-            $title[$id_lang] = pSQL(Tools::getValue('title_'.$id_lang));
-            $message[$id_lang] = pSQL(Tools::getValue('message_'.$id_lang));
-        }
-
-        // Basic Fields
-	    $change = (int)Tools::getValue('change');
-
-	    if (empty($title) OR empty($message) OR !$change) {
-	        $this->errors[] = $this->l('Please fill in Title, Message and Change');
-        }
+	    $points_change = (int)Tools::getValue('points_change');
+	    $coins_change = (int)Tools::getValue('coins_change');
+	    $type = Tools::getValue('action_type');
 
         $history = new PlayerHistory();
         $history->id_customer = $id_customer;
-        $history->id_action = 0;
-        $history->change = $change;
+        ($type == 'action') ? $history->id_action = (int)Tools::getValue('id_action') : $history->id_action = 0;
+        ($type == 'order') ? $history->id_action_order = (int)Tools::getValue('id_action_order') : $history->id_action_order = 0;
 
-        foreach ($ids_lang as $id_lang) {
-            $message[$id_lang] = str_replace('{points}', $change, $message[$id_lang]);
-            $history->message[$id_lang] = $message[$id_lang];
-            $history->title[$id_lang] = $title[$id_lang];
+        $title = array();
+        $message = array();
+
+        if ($type == 'custom') {
+            foreach ($ids_lang as $id_lang) {
+
+                $history->title[$id_lang] = pSQL(Tools::getValue('title_' . $id_lang));
+                $history->message[$id_lang] = pSQL(Tools::getValue('message_' . $id_lang));
+
+                // Now we check if all titles and messages are empty. We have to do it like that otherwise there will be notice error after getting the $data
+                if (Tools::getValue('title_' . $id_lang)) {
+                    $title[$id_lang] = 'just for testing if empty';
+                }
+
+                if (Tools::getValue('message_' . $id_lang)) {
+                    $message[$id_lang] = 'just for testing if empty';
+                }
+            }
+        }
+        elseif ($type == 'action') {
+            $action = new Action($history->id_action);
+            $history->title = $action->title;
+            $history->message = $action->message;
+
+            foreach ($history->message as $id_lang => $message) {
+                $history->message[$id_lang] = str_replace('{points}', $points_change, $message);
+            }
+        }
+        elseif ($type == 'order') {
+
+            foreach (Language::getIDs() as $id_lang) {
+                $history->title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $this->id_shop_group, $this->id_shop);
+
+                $message = Configuration::get('krona_order_message', $id_lang, $this->id_shop_group, $this->id_shop);
+                $history->message[$id_lang] = str_replace('{coins}', $coins_change, $message);
+            }
+        }
+
+        if ($type == 'custom' AND (empty($title) OR empty($message))) {
+            $this->errors[] = $this->l('Please fill in title and message');
+        }
+
+        if (!$points_change AND !$coins_change) {
+            $this->errors[] = $this->l('Please fill in (at least one) a value for points or coins.');
         }
 
         if (empty($this->errors)) {
-            $history->add();
 
-            // Making the actual Points change
-            Player::updatePoints($id_customer, $change);
-            PlayerLevel::updatePlayerLevel($id_customer, 'points', 0); // Todo: Improve Custom Actions
+            // Keep in mind both points and coins could change (no else if)
+            if ($points_change > 0) {
+                $history->change = $points_change;
+                $history->add();
 
-            $this->confirmation = $this->l('Your custom Action was sucessfully saved.');
+                Player::updatePoints($id_customer, $points_change);
+                PlayerLevel::updatePlayerLevel(new Customer($id_customer), 'points', $history->id_action);
+            }
+
+            if ($coins_change > 0 ) {
+                $history->change = $coins_change;
+                $history->add();
+
+                Player::updateCoins($id_customer, $coins_change);
+                PlayerLevel::updatePlayerLevel(new Customer($id_customer), 'coins', $history->id_action);
+            }
+
+            $this->confirmation = $this->l('The player action was sucessfully saved.');
 
             return true;
         }
         else {
+            $history->action_type = $type;
+            $history->points_change = $points_change;
+            $history->coins_change = $coins_change;
+
             return $history;
         }
 

@@ -6,7 +6,7 @@ $(document).ready(function() {
     // Action Form: hide execution_max field if execution_type is unlimited
     $('#genzo_krona_action_form').on('change', function() {
 
-        id_form = 'genzo_krona_action_form';
+        var id_form = 'genzo_krona_action_form';
 
         if (($("#execution_type").val()) === "unlimited") {
             hideElement(id_form, 'execution_max');
@@ -17,10 +17,43 @@ $(document).ready(function() {
 
     }).trigger('change');
 
+    // Custom Action Form:
+    $('#genzo_krona_custom_action_form').on('change', function() {
+
+        var id_form = 'genzo_krona_custom_action_form';
+        var actionType = $("#action_type").val();
+
+        if (actionType === "custom") {
+            showElement(id_form, 'title_1');
+            showElement(id_form, 'message_1');
+            hideElement(id_form, 'id_action');
+            hideElement(id_form, 'id_action_order');
+            showElement(id_form, 'points_change');
+            showElement(id_form, 'coins_change');
+        }
+        else if (actionType === "action") {
+            hideElement(id_form, 'title_1');
+            hideElement(id_form, 'message_1');
+            showElement(id_form, 'id_action');
+            hideElement(id_form, 'id_action_order');
+            showElement(id_form, 'points_change');
+            hideElement(id_form, 'coins_change');
+        }
+        else if (actionType === "order"){
+            hideElement(id_form, 'title_1');
+            hideElement(id_form, 'message_1');
+            hideElement(id_form, 'id_action');
+            showElement(id_form, 'id_action_order');
+            hideElement(id_form, 'points_change');
+            showElement(id_form, 'coins_change');
+        }
+
+    }).trigger('change');
+
     // Settings Form:
     $('#genzo_krona_settings_form').on('change', function() {
 
-        id_form = 'genzo_krona_settings_form';
+        var id_form = 'genzo_krona_settings_form';
 
         if (parseInt($("[name=loyalty_active]:checked").val()) === 0) {
             hideElement(id_form, 'loyalty_total');
@@ -41,9 +74,10 @@ $(document).ready(function() {
     // Level Form:
     $('#genzo_krona_level_form').on('change', function() {
 
-        id_form = 'genzo_krona_level_form';
+        var id_form = 'genzo_krona_level_form';
 
-        condition_type = $("#condition_type").val();
+        var condition_type = $("#condition_type").val();
+
         if (condition_type === "action") {
             showElement(id_form, 'id_action');
             showElement(id_form, 'condition_action');
