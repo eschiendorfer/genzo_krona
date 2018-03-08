@@ -27,7 +27,7 @@
                 </li>
                 <li>
                     <b>{l s='Rank' mod='genzo_krona'}</b><br>
-                    {$rank}
+                    <a style="text-decoration: underline;" href="{$link->getModuleLink('genzo_krona', 'leaderboard')}">{$rank}</a>
                 </li>
                 <li>
                     <b>{l s='Last Level' mod='genzo_krona'}</b><br>
