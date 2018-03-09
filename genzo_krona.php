@@ -2052,6 +2052,22 @@ class Genzo_Krona extends Module
             'desc'   => $this->l('How long will the user stay on this level? If you set it to 365, the user will be one year on this level. Set the value to 0, if the user should never lose this level.'),
             'suffix' => $this->l('Days'),
         );
+        $inputs[] = array(
+            'type' => 'switch',
+            'label' => $this->l('Hide inactive'),
+            'name' => 'hide',
+            'desc' => $this->l('Should this level be hidden in customer account once it\'s inactive?'),
+            'values' => array(
+                array(
+                    'id' => 'active_on',
+                    'value' => 1,
+                ),
+                array(
+                    'id' => 'active_off',
+                    'value' => 0,
+                )
+            ),
+        );
         $inputs[] =array(
             'type' => 'select',
             'label' => $this->l('Reward Type'),
@@ -2145,6 +2161,10 @@ class Genzo_Krona extends Module
         $vars['id_reward_coupon'] = $vars['id_reward'];
         $vars['id_reward_group'] = $vars['id_reward'];
         $vars['id_action_order'] = $vars['id_action'];
+
+        if(!$data && !$id_level) {
+            $vars['active'] = 1; // Active -> yes -> when adding new level
+        }
 
         $helper->tpl_vars = array(
             'fields_value' => $vars,
@@ -2893,6 +2913,8 @@ class Genzo_Krona extends Module
             $this->errors = $this->l('Please fill Name, Condition and Time');
             return $level;
         }
+
+        $level->hide = ($level->duration) ? (bool)Tools::getValue('hide') : 0;
 
         $level->save();
 

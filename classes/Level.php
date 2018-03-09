@@ -22,6 +22,7 @@ class Level extends \ObjectModel {
     public $id_reward;
     public $achieve_max;
     public $icon;
+    public $hide;
     public $name;
     public $active;
 
@@ -40,6 +41,7 @@ class Level extends \ObjectModel {
             'achieve_max'   => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'icon'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'active'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'hide'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'name'        => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
         )
     );

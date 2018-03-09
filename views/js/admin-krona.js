@@ -101,7 +101,7 @@ $(document).ready(function() {
             $("#condition_points").nextAll('span:first').text(type);
         }
 
-        reward_type = $("#reward_type").val();
+        var reward_type = $("#reward_type").val();
         if (reward_type === "symbolic") {
             hideElement(id_form, 'id_reward_group');
             hideElement(id_form, 'id_reward_coupon');
@@ -116,6 +116,14 @@ $(document).ready(function() {
             showElement(id_form, 'id_reward_group');
             showElement(id_form, 'id_group');
             hideElement(id_form, 'id_reward_coupon');
+        }
+
+        var duration = $("#duration").val();
+        if (duration > 0) {
+            showElement(id_form, 'hide_on');
+        }
+        else {
+            hideElement(id_form, 'hide_on');
         }
 
     }).trigger('change');
