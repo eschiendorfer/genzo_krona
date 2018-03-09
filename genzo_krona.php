@@ -3238,10 +3238,6 @@ class Genzo_Krona extends Module
         $this->context->controller->addJquery();
         $this->context->controller->addJS($this->_path.'/views/js/krona.js');
 
-        if (Configuration::get('krona_loyalty_product_page')) {
-            $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
-        }
-
         if (Action::checkIfActionIsActive('genzo_krona', 'page_visit') AND
             $this->context->customer->isLogged()) {
             Media::addJsDef(array('id_customer' => $this->context->customer->id));
@@ -3262,6 +3258,8 @@ class Genzo_Krona extends Module
     public function hookDisplayRightColumnProduct ($params) {
 
 	    if (Configuration::get('krona_loyalty_product_page')) {
+
+            $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
 
             $id_currency = $this->context->currency->id;
             $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
@@ -3287,6 +3285,8 @@ class Genzo_Krona extends Module
             }
 
             ($tax) ? $tax_rate = 1 : $tax_rate = 1 + ($params['product']->tax_rate / 100);
+
+
 
             Media::addJsDef(array(
                 'krona_coins_change' => $actionOrder->coins_change,

@@ -37,3 +37,5 @@
         <button type="submit" name="saveCustomerSettings" class="krona-button">{l s='Save' mod='genzo_krona'}</button>
     </form>
 </div>
+
+{include file="./footer.tpl"}

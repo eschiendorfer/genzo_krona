@@ -42,7 +42,6 @@
     <div style="clear: both;"></div>
 </div>
 
-
 <div class="krona-box">
     <h2>{l s='Your last 5 actions' mod='genzo_krona'}</h2>
 
@@ -55,3 +54,5 @@
         {/foreach}
     </div>
 </div>
+
+{include file="./footer.tpl"}

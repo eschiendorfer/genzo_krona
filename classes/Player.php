@@ -437,13 +437,24 @@ class Player extends \ObjectModel {
     }
 
     public static function getPseudonym($id_customer) {
-        $query = new \DbQuery();
-        $query->select('pseudonym');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . (int)$id_customer);
-        return \Db::getInstance()->getValue($query);
 
-        // Todo: Update this function
+        $pseudonym = '';
+
+        $customer = new \Customer($id_customer);
+
+        if (\Configuration::get('krona_pseudonym', null, $customer->id_shop_group, $customer->id_shop)) {
+            $query = new \DbQuery();
+            $query->select('pseudonym');
+            $query->from(self::$definition['table']);
+            $query->where('`id_customer` = ' . (int)$id_customer);
+            $pseudonym = \Db::getInstance()->getValue($query);
+        }
+
+        if (!$pseudonym) {
+            $pseudonym = self::getDisplayName($id_customer);
+        }
+        return $pseudonym;
+
     }
 
     public static function getDisplayName($id_customer) {

@@ -12,3 +12,5 @@
         {$description}
     </div>
 {/if}
+
+{include file="./footer.tpl"}

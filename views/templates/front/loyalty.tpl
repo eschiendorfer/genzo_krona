@@ -21,4 +21,6 @@
         <button type="submit" name="convertLoyalty" class="krona-button">{l s='Convert' mod='genzo_krona'}</button>
     </form>
 </div>
-<a href="{$link->getPageLink('discount')}" class="krona-button">{l s='See all my coupons' mod='genzo_krona'}</a>
+<a style="float: right;" href="{$link->getPageLink('discount')}" class="krona-button">{l s='See all my coupons' mod='genzo_krona'}</a>
+
+{include file="./footer.tpl"}
