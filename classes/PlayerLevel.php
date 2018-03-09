@@ -169,7 +169,14 @@ class PlayerLevel extends \ObjectModel {
 
 
                     if ($level->id_action > 0) {
-                        $condition = PlayerHistory::countActionByPlayer($customer->id, $id_action, $dateStart, $dateEnd);
+
+                        if ($level->condition_type == 'action') {
+                            $condition = PlayerHistory::countActionByPlayer($customer->id, $id_action, $dateStart, $dateEnd);
+                        }
+                        else if ($level->condition_type == 'order') {
+                            $condition = PlayerHistory::countOrderByPlayer($customer->id, $id_action, $dateStart, $dateEnd);
+                        }
+
                     }
                     else {
                         $condition = PlayerHistory::sumActionPointsByPlayer($customer->id, $level->condition_type, $dateStart, $dateEnd);

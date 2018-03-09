@@ -82,11 +82,19 @@ $(document).ready(function() {
             showElement(id_form, 'id_action');
             showElement(id_form, 'condition_action');
             hideElement(id_form, 'condition_points');
+            hideElement(id_form, 'id_action_order');
+        }
+        else if (condition_type === "order") {
+            hideElement(id_form, 'id_action');
+            showElement(id_form, 'condition_action');
+            hideElement(id_form, 'condition_points');
+            showElement(id_form, 'id_action_order');
         }
         else {
             hideElement(id_form, 'id_action');
             hideElement(id_form, 'condition_action');
             showElement(id_form, 'condition_points');
+            hideElement(id_form, 'id_action_order');
 
             // Refresh if points, coins or lifetime
             var type = $( "#condition_type option:selected" ).text().split(":").pop();

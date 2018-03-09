@@ -322,14 +322,6 @@ class Genzo_Krona extends Module
             $this->saveAction();
             $content = 'ListActions';
         }
-        elseif (Tools::isSubmit('saveActionOrder')) {
-            $this->saveActionOrder();
-            $content = 'ListOrders';
-        }
-        elseif (Tools::isSubmit('toggleActiveActionOrder')) {
-            $this->saveToggle('genzo_krona_action_order', 'id_action_order', 'active');
-            $content = 'ListActions';
-        }
         elseif (Tools::isSubmit('toggleActiveActionInbuilt') OR Tools::isSubmit('toggleActiveActionExternal')) {
             $this->saveToggle('genzo_krona_action', 'id_action', 'active');
             $content = 'ListActions';
@@ -338,6 +330,14 @@ class Genzo_Krona extends Module
         // Orders
         if (Tools::isSubmit('updateOrder')) {
             $content = 'FormOrder';
+        }
+        elseif (Tools::isSubmit('saveActionOrder')) {
+            $this->saveActionOrder();
+            $content = 'ListOrders';
+        }
+        elseif (Tools::isSubmit('toggleActiveOrder')) {
+            $this->saveToggle('genzo_krona_action_order', 'id_action_order', 'active');
+            $content = 'ListOrders';
         }
 
         // Players
@@ -410,14 +410,16 @@ class Genzo_Krona extends Module
         elseif (Tools::isSubmit('updateLevel_total') OR
                 Tools::isSubmit('updateLevel_points') OR
                 Tools::isSubmit('updateLevel_coins') OR
-                Tools::isSubmit('updateLevel_action')
+                Tools::isSubmit('updateLevel_action') OR
+                Tools::isSubmit('updateLevel_order')
         ) {
             $content = 'FormLevel';
         }
         elseif (Tools::isSubmit('deleteLevel_total') OR
                 Tools::isSubmit('deleteLevel_points') OR
                 Tools::isSubmit('deleteLevel_coins') OR
-                Tools::isSubmit('deleteLevel_action')
+                Tools::isSubmit('deleteLevel_action') OR
+                Tools::isSubmit('deleteLevel_order')
         ) {
             $this->deleteLevel();
             $content = 'ListLevels';
@@ -425,7 +427,8 @@ class Genzo_Krona extends Module
         elseif (Tools::isSubmit('toggleActiveLevel_total') OR
                 Tools::isSubmit('toggleActiveLevel_coins') OR
                 Tools::isSubmit('toggleActiveLevel_points') OR
-                Tools::isSubmit('toggleActiveLevel_points')
+                Tools::isSubmit('toggleActiveLevel_action') OR
+                Tools::isSubmit('toggleActiveLevel_order')
         ) {
             $this->saveToggle('genzo_krona_level', 'id_level', 'active');
             $content = 'ListLevels';
@@ -512,7 +515,8 @@ class Genzo_Krona extends Module
                 break;
             case 'ListLevels' :
                 $content =  $this->generateListLevels('total') . $this->generateListLevels('points') .
-                            $this->generateListLevels('coins') . $this->generateListLevels('action');
+                            $this->generateListLevels('coins') . $this->generateListLevels('action') .
+                            $this->generateListLevels('order');
                 $tab = 'Levels';
                 break;
             case 'ListCoupons' :
@@ -1267,13 +1271,15 @@ class Genzo_Krona extends Module
         $helper->listTotal = Level::getTotalLevels($filters);
 
         switch ($condition_type) {
-            case 'total' : $helper->title = $this->l('All Levels by').' '. $this->total_name;
+            case 'total' : $helper->title = $this->l('Levels by').' '. $this->total_name;
                 break;
-            case 'points' : $helper->title = $this->l('All Levels by Points');
+            case 'points' : $helper->title = $this->l('Levels by Points');
                 break;
-            case 'coins' : $helper->title = $this->l('All Levels by Coins');
+            case 'coins' : $helper->title = $this->l('Levels by Coins');
                 break;
-            case 'action' : $helper->title = $this->l('All Levels by Actions');
+            case 'action' : $helper->title = $this->l('Levels by executing Actions');
+                break;
+            case 'order' : $helper->title = $this->l('Levels by executing Orders');
                 break;
         }
 
@@ -1981,7 +1987,8 @@ class Genzo_Krona extends Module
                     array('value' => 'total', 'name' => $this->l('Threshold:') . ' ' . $this->total_name),
                     array('value' => 'points', 'name' => $this->l('Threshold:') . ' '. $this->l('Points')),
                     array('value' => 'coins', 'name' => $this->l('Threshold:') . ' ' . $this->l('Coins')),
-                    array('value' => 'action', 'name' => $this->l('Executing Action')), // Todo: Executing Order
+                    array('value' => 'action', 'name' => $this->l('Executing Action')),
+                    array('value' => 'order', 'name' => $this->l('Executing Order')),
                 ),
                 'id' => 'value',
                 'name' => 'name',
@@ -1997,6 +2004,18 @@ class Genzo_Krona extends Module
                 'query' => Action::getAllActions(array('active=1')),
                 'id' => 'id_action',
                 'name' => 'title',
+            ),
+        );
+
+        $inputs[] =array(
+            'type' => 'select',
+            'label' => $this->l('Order'),
+            'name' => 'id_action_order',
+            'class' => 'chosen',
+            'options' => array(
+                'query' => ActionOrder::getAllActionOrder(array('o.active=1')),
+                'id' => 'id_action_order',
+                'name' => 'name',
             ),
         );
 
@@ -2125,6 +2144,7 @@ class Genzo_Krona extends Module
         $vars['condition_action'] = $vars['condition'];
         $vars['id_reward_coupon'] = $vars['id_reward'];
         $vars['id_reward_group'] = $vars['id_reward'];
+        $vars['id_action_order'] = $vars['id_action'];
 
         $helper->tpl_vars = array(
             'fields_value' => $vars,
@@ -2832,6 +2852,10 @@ class Genzo_Krona extends Module
             $level->condition = (int)Tools::getValue('condition_action');
             $level->id_action = (int)Tools::getValue('id_action');
         }
+        elseif ($level->condition_type == 'order') {
+            $level->condition = (int)Tools::getValue('condition_action');
+            $level->id_action = (int)Tools::getValue('id_action_order');
+        }
 
         $level->condition_time = (int)Tools::getValue('condition_time');
         $level->duration = (int)Tools::getValue('duration');
@@ -2857,6 +2881,10 @@ class Genzo_Krona extends Module
             if (isset($icon_old) && $icon_old != 'no-icon.png' && $icon_old != $level->icon) {
                 unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old);
             }
+        }
+
+        if (!$level->icon) {
+            $level->icon = 'no-icon.png'; // For new levels without an upload
         }
 
         if (empty($level->name) OR

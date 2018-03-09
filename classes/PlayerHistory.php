@@ -106,6 +106,19 @@ class PlayerHistory extends \ObjectModel {
         return \Db::getInstance()->getValue($query);
     }
 
+    public static function countOrderByPlayer($id_customer, $id_action, $startDate = null, $endDate = null) {
+        $query = new \DbQuery();
+        $query->select('Count(*)');
+        $query->from(self::$definition['table']);
+        $query->where('`id_customer` = ' . (int)$id_customer);
+        $query->where('`id_action_order` = ' . (int)$id_action);
+        if ($startDate && $endDate) {
+            $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
+        }
+
+        return \Db::getInstance()->getValue($query);
+    }
+
     public static function sumActionPointsByPlayer($id_customer, $condition_type, $startDate = null, $endDate = null) {
         $query = new \DbQuery();
         $query->select('Sum(ph.`change`)');

@@ -12,11 +12,11 @@
             <div style="clear:both;"></div>
             <div class="level-row">
                 <div class="headline">
-                    {if $level.condition_type=='points'}
+                    {if $level.condition_type=='points_coins'}
                         {$total_name}
-                    {elseif $level.condition_type=='pointsOrder'}
+                    {elseif $level.condition_type=='coins'}
                         {$total_name} {l s='by orders' mod='genzo_krona'}
-                    {elseif $level.condition_type=='pointsAction'}
+                    {elseif $level.condition_type=='points'}
                         {$total_name} {l s='by actions' mod='genzo_krona'}
                     {else}
                         {l s='Action executed' mod='genzo_krona'}
