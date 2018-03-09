@@ -3,6 +3,13 @@
     line-height: 24px;
 }
 
+.myaccount-link-list i.genzo-krona::before {
+    font-family: FontAwesome;
+    content: "\f079";
+    margin-right: 6px;
+    font-style: normal;
+}
+
 [id^="module-genzo_krona"] .krona-box {
     background: #FCFCFC;
     border: solid 1px #DDD;
