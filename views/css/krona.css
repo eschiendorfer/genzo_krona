@@ -3,11 +3,6 @@
     line-height: 24px;
 }
 
-[id^="module-genzo_krona"] label {
-    color: #484848;
-}
-
-
 [id^="module-genzo_krona"] .krona-box {
     background: #FCFCFC;
     border: solid 1px #DDD;
