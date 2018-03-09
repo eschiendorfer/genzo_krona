@@ -1,3 +1,4 @@
+<div style="clear: both;"></div>
 <nav>
     <ul class="pager">
         <li class="previous">
