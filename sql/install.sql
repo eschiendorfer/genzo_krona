@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_level` (
   `active_until` DATETIME NOT NULL,
   `achieved` INT(12) NOT NULL,
   `achieved_last` DATETIME NOT NULL,
-  `hide` BOOL DEFAULT 1 NOT NULL,
+  `hide` BOOL DEFAULT 0 NOT NULL,
   `date_add` DATETIME NULL,
   `date_upd` DATETIME NULL,
   PRIMARY KEY ( `id` )
