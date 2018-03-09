@@ -43,7 +43,7 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
         );
 
         $order = array(
-            'order_by' => 'points` DESC, `pseudonym', // a bit ugly... consider to go for a multidimensional array
+            'order_by' => 'total` DESC, `pseudonym', // a bit ugly... consider to go for a multidimensional array
             'order_way' => 'ASC',
         );
 
