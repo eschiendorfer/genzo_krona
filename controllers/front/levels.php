@@ -55,7 +55,7 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Levels',
-            'levels' => PlayerLevel::getAllPlayerLevels($id_customer, array('l.active=1', 'l.hide=0')),
+            'levels' => PlayerLevel::getAllPlayerLevels($id_customer, array('l.active=1 OR l.hide=0')),
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
 		));
