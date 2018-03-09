@@ -4,7 +4,7 @@
 
 <div class="krona-box">
     <h1>{l s='Leaderboard' mod='genzo_krona'}</h1>
-    <div id="players">
+    <div id="leaderboard">
         {foreach from=$players item=player}
             <div class="player">
                 <img src="{$modules_dir}genzo_krona/views/img/avatar/{$player.avatar}">

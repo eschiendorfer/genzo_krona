@@ -305,11 +305,15 @@
     margin-bottom: -3px;
 }
 
-[id^="module-genzo_krona"] #players .player {
+[id^="module-genzo_krona"] #leaderboard .player {
     margin-bottom: 15px;
 }
 
-[id^="module-genzo_krona"] #players .player img {
+[id^="module-genzo_krona"] #leaderboard .player h3 {
+    margin: 0 0 4px 0;
+}
+
+[id^="module-genzo_krona"] #leaderboard .player img {
     width: 50px;
     height: 50px;
     float: left;
