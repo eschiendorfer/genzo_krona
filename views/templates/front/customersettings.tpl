@@ -12,7 +12,7 @@
             {if $gamification && $avatar}
                 <img id="avatar" src="{$avatar_img}">
             {/if}
-            <div class="label"><label for="active">{l s='Using' mod='genzo_krona'} {$game_name}</label></div>
+            <div class="krona-label"><label for="active">{l s='Using' mod='genzo_krona'} {$game_name}</label></div>
             <input type="radio" id="yes" name="active" value="1" {if $player.active==1}checked{/if}>
             <label for="yes">{l s='Yes' mod='genzo_krona'}</label>
             <input style="margin-left: 10px;" type="radio" id="no" name="active" value="0" {if $player.active==0}checked{/if}>
@@ -20,13 +20,13 @@
         </div>
         {if $gamification && $pseudonym}
             <div class="form-row">
-                <div class="label"><label for="pseudonym">{l s='Pseudonym' mod='genzo_krona'}</label></div>
+                <div class="krona-label"><label for="pseudonym">{l s='Pseudonym' mod='genzo_krona'}</label></div>
                 <input type="text" class="form-control" id="pseudonym" name="pseudonym" value="{$player.pseudonym}">
             </div>
         {/if}
         {if $gamification && $avatar}
             <div class="form-row">
-                <div class="label"><label for="avatar-fake">{l s='Avatar' mod='genzo_krona'}</label></div>
+                <div class="krona-label"><label for="avatar-fake">{l s='Avatar' mod='genzo_krona'}</label></div>
                 <div id="avatar-upload">
                     <input type="text" id="avatar-fake" value="">
                     <span id="avatar-button">{l s='Select Avatar' mod='genzo_krona'}</span>

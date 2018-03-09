@@ -10,7 +10,7 @@
     <form method="post" enctype="multipart/form-data">
 
             <div class="form-row">
-                <div class="label"><label for="loyalty"><b>{l s='Loyalty Points to convert:' mod='genzo_krona'}</b></label></div>
+                <div class="krona-label"><label for="loyalty"><b>{l s='Loyalty Points to convert:' mod='genzo_krona'}</b></label></div>
                 <input type="text" class="form-control" id="loyalty" name="loyalty" placeholder="0">
             </div>
 
