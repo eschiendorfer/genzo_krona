@@ -1,1 +1,1 @@
-<li><a href="{$link->getModuleLink('genzo_krona', 'overview')}"><i class="genzo-krona"></i>{$game_name}</a></li>
+<li><a href="{$link->getModuleLink('genzo_krona', 'overview')}"><i class="icon icon-krona"></i>{$game_name}</a></li>
