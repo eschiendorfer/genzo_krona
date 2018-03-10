@@ -291,6 +291,10 @@ class Genzo_Krona extends Module
 
     public function getContent() {
 
+        $modules = Hook::exec('displayKronaCustomer', array('id_customer' => 1045), null, true, false);
+
+        print_r($modules);
+
         // Context
         $id_lang = $this->context->language->id;
         $this->is_multishop = Shop::isFeatureActive();
@@ -3281,16 +3285,27 @@ class Genzo_Krona extends Module
         }
     }
 
-    public function hookDisplayKronaCustomer ($id_customer) {
+    public function hookDisplayKronaCustomer ($params) {
 
-	    $id_customer = (int)$id_customer;
+	    $id_customer = (int)$params['id_customer'];
 
-	    $player = array(
-	        'pseudonym' => Player::getDisplayName($id_customer),
-            'avatar' => Player::getAvatar($id_customer),
-        );
+	    if (Player::checkIfPlayerIsActive($id_customer)) {
 
-	    return $player;
+            $player = new Player($id_customer);
+
+            $name = Configuration::get('krona_total_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
+
+            $player = array(
+                'pseudonym' => $player->pseudonym,
+                'avatar' => $player->avatar_full,
+                'total' => $player->total . ' ' . $name,
+            );
+
+            return $player;
+        }
+        else {
+	        return false;
+        }
 
     }
 

@@ -16,6 +16,7 @@ class Player extends \ObjectModel {
     public $id_customer;
     public $pseudonym;
     public $avatar;
+    public $avatar_full;
     public $points;
     public $coins;
     public $total;
@@ -60,9 +61,17 @@ class Player extends \ObjectModel {
                     $this->total = $this->coins;
                 }
 
-                if (!\Configuration::get('krona_pseudonym') OR !$this->pseudonym) {
+                $id_shop_group = \Context::getContext()->shop->id_shop_group;
+                $id_shop = \Context::getContext()->shop->id_shop;
+
+                if (!\Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop) OR !$this->pseudonym) {
                     $this->pseudonym = self::getDisplayName($this->id_customer);
                 }
+
+                if (\Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
+                    $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
+                }
+
             } else {
                 $this->total = 0;
             }
