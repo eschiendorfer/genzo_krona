@@ -18,6 +18,8 @@
                         {$total_name} {l s='by orders' mod='genzo_krona'}
                     {elseif $level.condition_type=='points'}
                         {$total_name} {l s='by actions' mod='genzo_krona'}
+                    {elseif $level.condition_type=='order'}
+                        {$total_name} {l s='by orders' mod='genzo_krona'}
                     {else}
                         {l s='Action executed' mod='genzo_krona'}
                     {/if}

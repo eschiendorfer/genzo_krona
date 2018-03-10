@@ -71,6 +71,9 @@ class PlayerLevel extends \ObjectModel {
             (!empty($order['alias'])) ? $alias = $order['alias'].'.' : $alias = '';
             $query->orderBy("{$alias}`{$order['order_by']}` {$order['order_way']}");
         }
+        else {
+            $query->orderBy('l.`condition_type` ASC, ll.`name` ASC');
+        }
 
         return \Db::getInstance()->ExecuteS($query);
     }
