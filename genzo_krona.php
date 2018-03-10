@@ -74,6 +74,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayHeader') OR
             !$this->registerHook('displayCustomerAccount') OR
             !$this->registerHook('displayRightColumnProduct') OR
+            !$this->registerHook('displayKronaCustomer') OR
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
@@ -3278,6 +3279,19 @@ class Genzo_Krona extends Module
             $this->context->controller->addJS($this->_path . '/views/js/admin-krona.js');
             $this->context->controller->addJqueryUI('ui.sortable');
         }
+    }
+
+    public function hookDisplayKronaCustomer ($id_customer) {
+
+	    $id_customer = (int)$id_customer;
+
+	    $player = array(
+	        'pseudonym' => Player::getDisplayName($id_customer),
+            'avatar' => Player::getAvatar($id_customer),
+        );
+
+	    return $player;
+
     }
 
     public function hookDisplayHeader () {
