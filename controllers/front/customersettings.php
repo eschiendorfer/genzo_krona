@@ -42,6 +42,7 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
         // Customer Saves Settings Form
         if (Tools::isSubmit('saveCustomerSettings')) {
             $this->saveCustomerSettings($id_customer);
+            $player_obj = new Player($id_customer);
         }
 
         if (!Player::checkIfPlayerIsActive($id_customer)) {
