@@ -121,17 +121,17 @@ class PlayerHistory extends \ObjectModel {
 
     public static function sumActionPointsByPlayer($id_customer, $condition_type, $startDate = null, $endDate = null) {
         $query = new \DbQuery();
-        $query->select('Sum(ph.`change`)');
+        $query->select('SUM(ph.`change`)');
         $query->from(self::$definition['table'], 'ph');
         $query->where('`id_customer` = ' . (int)$id_customer);
         if ($startDate && $endDate) {
             $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
         if ($condition_type == 'points') {
-            $query->where("`id_action` > 0"); // We only wanna normal actions
+            $query->where("`id_action_order` = 0"); // We only wanna normal actions
         }
         elseif ($condition_type == 'coins') {
-            $query->where("`id_action_order` > 0"); // We only wanna actionOrders
+            $query->where("`id_action` = 0"); // We only wanna actionOrders
         }
         return \Db::getInstance()->getValue($query);
     }

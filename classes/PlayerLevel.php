@@ -167,6 +167,7 @@ class PlayerLevel extends \ObjectModel {
                         $dateEnd = date('Y-m-d 23:59:59');
                     }
 
+                    $condition = 0;
 
                     if ($level->id_action > 0) {
 
