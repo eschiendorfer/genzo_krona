@@ -61,7 +61,6 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
             'errors' => $this->errors,
             'active' => 'Settings',
             'player' => $player,
-            'avatar_img' => Player::getAvatar($id_customer),
             'pseudonym' => Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop),
             'avatar' => Configuration::get('krona_avatar', null, $id_shop_group, $id_shop),
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),

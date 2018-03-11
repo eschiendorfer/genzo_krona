@@ -291,10 +291,6 @@ class Genzo_Krona extends Module
 
     public function getContent() {
 
-        $modules = Hook::exec('displayKronaCustomer', array('id_customer' => 1045), null, true, false);
-
-        print_r($modules);
-
         // Context
         $id_lang = $this->context->language->id;
         $this->is_multishop = Shop::isFeatureActive();
@@ -1815,8 +1811,11 @@ class Genzo_Krona extends Module
     private function generateFormPlayer() {
 
         $id_customer = (int)Tools::getValue('id_customer');
-
 	    $id_lang = $this->context->language->id;
+
+        // Get Values
+        $player = new Player($id_customer);
+        $vars = json_decode(json_encode($player), true); // Turns an object into an array
 
         $inputs[] = array(
             'type' => 'hidden',
@@ -1863,13 +1862,10 @@ class Genzo_Krona extends Module
             'label' => $this->l('Pseudonym'),
         );
 
-
-        $avatar = Player::getAvatar($id_customer);
-
         $inputs[] = array(
             'type'         => 'html',
             'name'         => 'html_avatar',
-            'html_content' => "<img src='{$avatar}' width='70' height='70' />",
+            'html_content' => "<img src='{$vars['avatar_full']}' width='70' height='70' />",
         );
 
         $inputs[] = array(
@@ -1933,10 +1929,6 @@ class Genzo_Krona extends Module
         $helper->id = $id_customer;
         $helper->table = 'genzo_krona_player';
         $helper->identifier = 'id_customer';
-
-        // Get Values
-        $player = new Player($id_customer);
-        $vars = json_decode(json_encode($player), true); // Turns an object into an array
 
         $helper->tpl_vars = array(
             'fields_value' => $vars,

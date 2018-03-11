@@ -34,7 +34,7 @@
                     {if !empty($level)}{$level[0].name}{else}-{/if}
                 </li>
                 <li class="avatar">
-                    <img src="{$avatar}" style="float: right;">
+                    <img src="{$player.avatar_full}" style="float: right;">
                 </li>
             </ul>
         </div>

@@ -436,15 +436,6 @@ class Player extends \ObjectModel {
 
     }
 
-    public static function getAvatar($id_customer) {
-        $id_customer = (int)$id_customer;
-
-        $player = new Player($id_customer);
-        $image = $player->avatar.'?='.$player->date_upd;
-
-        return _MODULE_DIR_.'genzo_krona/views/img/avatar/'.$image;
-    }
-
     public static function getPseudonym($id_customer) {
 
         $pseudonym = '';

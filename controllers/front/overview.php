@@ -73,7 +73,6 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
             'active' => 'Overview',
             'player' => $player,
             'rank' => Player::getRank($id_customer),
-            'avatar' => Player::getAvatar($id_customer),
             'history' => PlayerHistory::getHistoryByPlayer($id_customer, null, $history_pagination),
             'level' => PlayerLevel::getAllPlayerLevels($id_customer, null, $level_pagination, $level_order),
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),

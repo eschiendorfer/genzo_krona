@@ -10,7 +10,7 @@
 
         <div class="form-row">
             {if $gamification && $avatar}
-                <img id="avatar" src="{$avatar_img}">
+                <img id="avatar" src="{$player.avatar_full}">
             {/if}
             <div class="krona-label"><label for="active">{l s='Using' mod='genzo_krona'} {$game_name}</label></div>
             <input type="radio" id="yes" name="active" value="1" {if $player.active==1}checked{/if}>
