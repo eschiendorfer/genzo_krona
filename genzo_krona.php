@@ -79,7 +79,8 @@ class Genzo_Krona extends Module
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
 			!$this->registerHook('ModuleRoutes') OR
-            !$this->registerInbuiltActions()
+            !$this->registerInbuiltActions() OR
+            !$this->registerExternalActions()
         )
 			return false;
 		return true;
@@ -275,6 +276,22 @@ class Genzo_Krona extends Module
         return true;
     }
 
+    private function registerExternalActions() {
+        $modules = Hook::exec('actionRegisterKronaAction', [], null, true, false);
+        if(!empty($modules)) {
+            foreach ($modules as $module_name => $actions) {
+                if (!empty($actions)) {
+                    foreach ($actions as $action_name => $action) {
+                        if ($action_name!='' && !empty($action['title']) && !empty($action['message'])) {
+                            $this->registerAction($module_name, $action_name, $action['title'], $action['message']);
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
 	// Backoffice
 
     public function getContent() {
@@ -445,22 +462,7 @@ class Genzo_Krona extends Module
 
         // Register all Actions from (external) Modules
         if ($content == 'ListActions') {
-
-            $modules = Hook::exec('actionRegisterKronaAction', [], null, true, false);
-
-            if(!empty($modules)) {
-                foreach ($modules as $module_name => $actions) {
-                    if (!empty($actions)) {
-                        foreach ($actions as $action_name => $action) {
-                            if ($action_name!='' && !empty($action['title']) && !empty($action['message'])) {
-                                $this->registerAction($module_name, $action_name, $action['title'], $action['message']);
-                            }
-                        }
-                    }
-                }
-                $url = $this->context->link->getAdminLink('AdminModules', true) . '&configure=' . $this->name . '&module_name=' . $this->name;
-                Tools::redirectAdmin($url);
-            }
+            $this->registerExternalActions();
         }
 
         if (!$content) {
