@@ -130,10 +130,27 @@ class Genzo_Krona extends Module
         }
 
         // Inbuilt Actions
-        $actions = array('account_creation', 'page_visit', 'avatar_upload', 'newsletter');
+        $actions = array(
+            'account_creation' => array(
+                'title' => 'Account Creation',
+                'message' => 'You created an account. This brought you {points} points.',
+            ),
+            'page_visit' => array(
+                'title' => 'Page Visit',
+                'message' => 'You visited our page today. This brought you {points} points.',
+            ),
+            'avatar_upload' => array(
+                'title' => 'Avatar Upload',
+                'message' => 'The avatar upload brought you {points} points.',
+            ),
+            'newsletter' => array(
+                'title' => 'Newsletter Subscription',
+                'message' => 'You a subscribed to our newsletter. This just brought you {points} points.',
+            )
+        );
 
-        foreach ($actions as $action) {
-            $this->registerAction($this->name, $action);
+        foreach ($actions as $action_name => $action) {
+            $this->registerAction($this->name, $action_name, $action['title'], $action['message']);
         }
 
         $this->updateInbuiltActions();
@@ -146,29 +163,12 @@ class Genzo_Krona extends Module
 
 	    $ids_lang = Language::getIDs();
 
-	    // Order Action
-        $id_order = Action::getIdAction($this->name, 'order');
-        $order = new Action($id_order);
-        $order->execution_type = 'unlimited';
-        $order->execution_max = 0;
-        $order->points_change = 100;
-        foreach ($ids_lang as $id_lang) {
-            $order->title[$id_lang] = 'New Order';
-            $order->message[$id_lang] = 'You received {points} Points for the order ({reference}) with the amount {amount}.';
-        }
-        $order->update();
-
-
 	    // Account Creation
 	    $id_account = Action::getIdAction($this->name, 'account_creation');
 	    $account = new Action($id_account);
 	    $account->execution_type = 'per_lifetime';
 	    $account->execution_max = 1;
 	    $account->points_change = 100;
-	    foreach ($ids_lang as $id_lang) {
-	        $account->title[$id_lang] = 'Account Creation';
-	        $account->message[$id_lang] = 'You received {points} Points for creating an account.';
-        }
 	    $account->update();
 
 	    // Page Visit
@@ -177,10 +177,6 @@ class Genzo_Krona extends Module
 	    $visit->execution_type = 'per_day';
 	    $visit->execution_max = 1;
 	    $visit->points_change = 5;
-        foreach ($ids_lang as $id_lang) {
-            $visit->title[$id_lang] = 'Page Visit';
-            $visit->message[$id_lang] = 'You received {points} Points for visiting our website today.';
-        }
 	    $visit->update();
 
 	    // Avatar Upload
@@ -189,10 +185,6 @@ class Genzo_Krona extends Module
         $avatar->execution_type = 'per_lifetime';
         $avatar->execution_max = 1;
         $avatar->points_change = 50;
-        foreach ($ids_lang as $id_lang) {
-            $avatar->title[$id_lang] = 'Avatar Upload';
-            $avatar->message[$id_lang] = 'You received {points} Points for uploading an avatar.';
-        }
         $avatar->update();
 
 	    // Newsletter
@@ -201,10 +193,6 @@ class Genzo_Krona extends Module
         $newsletter->execution_type = 'per_month';
         $newsletter->execution_max = 1;
         $newsletter->points_change = 20;
-        foreach ($ids_lang as $id_lang) {
-            $newsletter->title[$id_lang] = 'Newsletter Subscription';
-            $newsletter->message[$id_lang] = 'You received {points} because you are subscribed to our newsletter.';
-        }
         $newsletter->update();
 
 
@@ -463,8 +451,10 @@ class Genzo_Krona extends Module
             if(!empty($modules)) {
                 foreach ($modules as $module_name => $actions) {
                     if (!empty($actions)) {
-                        foreach ($actions as $action_name) {
-                            $this->registerAction($module_name, $action_name);
+                        foreach ($actions as $action_name => $action) {
+                            if ($action_name!='' && !empty($action['title']) && !empty($action['message'])) {
+                                $this->registerAction($module_name, $action_name, $action['title'], $action['message']);
+                            }
                         }
                     }
                 }
@@ -2590,7 +2580,7 @@ class Genzo_Krona extends Module
 
 
     // Saving
-    private function registerAction($module_name, $action_name) {
+    private function registerAction($module_name, $action_name, $title, $message) {
 
         $module_name = pSQL($module_name);
         $action_name = pSQL($action_name);
@@ -2609,8 +2599,8 @@ class Genzo_Krona extends Module
             $action->execution_type = 'unlimited';
 
             foreach ($ids_lang as $id_lang) {
-                $action->title[$id_lang] = $action_name;
-                $action->message[$id_lang] = '';
+                $action->title[$id_lang] = $title;
+                $action->message[$id_lang] = $message;
             }
 
             $action->add();
