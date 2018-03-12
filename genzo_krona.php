@@ -3150,7 +3150,7 @@ class Genzo_Krona extends Module
                 $avatar->source_path = $file_path;
                 $avatar->target_path = $file_path;
                 $avatar->png_compression = 1;
-                $avatar->resize(30, 30, ZEBRA_IMAGE_CROP_CENTER, -1);
+                $avatar->resize(100, 100, ZEBRA_IMAGE_CROP_CENTER, -1);
             }
             else {
                 $this->errors[] = $this->l('Image Upload failed');
