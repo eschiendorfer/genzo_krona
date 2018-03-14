@@ -69,7 +69,7 @@ class Genzo_Krona extends Module
 
 	public function install() {
 		if (!parent::install() OR
-			!$this->executeSqlScript('install') OR
+			//!$this->executeSqlScript('install') OR
             !$this->registerHook('displayBackOfficeHeader') OR
             !$this->registerHook('displayHeader') OR
             !$this->registerHook('displayCustomerAccount') OR
@@ -80,15 +80,16 @@ class Genzo_Krona extends Module
             !$this->registerHook('actionOrderStatusUpdate') OR
 			!$this->registerHook('ModuleRoutes') OR
             !$this->registerInbuiltActions() OR
-            !$this->registerExternalActions()
+            !$this->registerExternalActions() OR
+            !$this->registerAdminMenu('home', 'AdminGenzoKronaLevels', 'Krona Levels', 0)
         )
 			return false;
 		return true;
 	}
 
 	public function uninstall() {
-		if (!parent::uninstall() OR
-			  !$this->executeSqlScript('uninstall')
+		if (!parent::uninstall() //OR
+			  //!$this->executeSqlScript('uninstall')
 			)
 			return false;
 		return true;
@@ -290,6 +291,19 @@ class Genzo_Krona extends Module
             }
         }
         return true;
+    }
+
+    private function registerAdminMenu($parent, $class_name, $name, $active = true) {
+        // Create new admin tab -> This is needed, otherwise the Admin Controller aren't working
+        $tab = new Tab();
+        $tab->id_parent = (int)Tab::getIdFromClassName($parent);
+        $tab->name = array();
+        foreach (Language::getLanguages(true) as $lang)
+            $tab->name[$lang['id_lang']] = $name;
+        $tab->class_name = $class_name;
+        $tab->module = $this->name;
+        $tab->active = ($active) ? 1 : 0;
+        return $tab->add();
     }
 
 	// Backoffice
@@ -1149,6 +1163,7 @@ class Genzo_Krona extends Module
         $fields_list = array(
             'id_level' => array(
                 'title' => 'ID',
+                'alias' => 'l',
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
                 'filter_type' => 'int',
