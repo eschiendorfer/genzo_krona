@@ -1,6 +1,6 @@
 {include file="./error.tpl"}
 
-<div class="clearfix">
+<div id="genzo_krona" class="clearfix">
     {include file="./sidebar.tpl"}
 
     <div class="col-md-10">
