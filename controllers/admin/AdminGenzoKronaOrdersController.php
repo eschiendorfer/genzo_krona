@@ -25,27 +25,6 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
 
         Shop::addTableAssociation($this->table, array('type' => 'shop'));
 
-
-        parent::__construct();
-
-    }
-
-    public function init() {
-
-        parent::init();
-
-        // Configuration
-        $id_lang = $this->context->language->id;
-        $id_shop_group = $this->context->shop->id_shop_group;
-        $id_shop = $this->context->shop->id_shop;
-
-        $this->total_name = Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop);
-    }
-
-    public function renderList() {
-
-        ActionOrder::checkCurrencies();
-
         $this->_select = 'c.name';
         $this->_join = 'LEFT JOIN '._DB_PREFIX_.'currency c ON (c.id_currency = a.id_currency) ';
 
@@ -85,6 +64,26 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
         $this->_orderBy = 'id_action_order';
         $this->_orderWay = 'ASC';
         $this->bulk_actions = [];
+
+        parent::__construct();
+
+    }
+
+    public function init() {
+
+        parent::init();
+
+        // Configuration
+        $id_lang = $this->context->language->id;
+        $id_shop_group = $this->context->shop->id_shop_group;
+        $id_shop = $this->context->shop->id_shop;
+
+        $this->total_name = Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop);
+    }
+
+    public function renderList() {
+
+        ActionOrder::checkCurrencies();
 
         return parent::renderList();
     }

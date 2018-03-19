@@ -37,6 +37,84 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->table = 'genzo_krona_player';
         $this->identifier = 'id_customer';
         $this->lang = false;
+        $this->allow_export = true;
+
+        $this->_select = 'c.`firstname`, c.`lastname` ';
+        $this->_join = 'INNER JOIN '._DB_PREFIX_.'customer AS c ON c.id_customer = a.id_customer';
+
+
+        $fields_list['id_customer'] = array(
+            'title' => 'ID',
+            'align' => 'center',
+            'class' => 'fixed-width-xs',
+            'filter_type' => 'int',
+        );
+
+        $fields_list['firstname'] = array(
+            'title' => $this->l('Firstname'),
+            'align' => 'left',
+            'filter_type' => 'string',
+            'filter_key' => 'c!firstname'
+        );
+
+        $fields_list['lastname'] = array(
+            'title' => $this->l('Lastname'),
+            'align' => 'left',
+            'filter_type' => 'string',
+            'filter_key' => 'c!lastname'
+        );
+
+            $fields_list['pseudonym'] = array(
+                'title' => $this->l('Pseudonym'),
+                'align' => 'left',
+            );
+
+        $fields_list['points'] = array(
+            'title' => $this->l('Points'),
+            'class' => 'fixed-width-xs',
+            'align' => 'left',
+        );
+
+        $fields_list['coins'] = array(
+            'title' => $this->l('Coins'),
+            'class' => 'fixed-width-xs',
+            'align' => 'left',
+        );
+
+        $fields_list['total'] = array(
+            'title' => $this->total_name,
+            'class' => 'fixed-width-xs',
+            'align' => 'left',
+        );
+
+        $fields_list['loyalty'] = array(
+            'title' => $this->loyalty_name,
+            'class' => 'fixed-width-xs',
+            'align' => 'left',
+        );
+
+        $fields_list['active'] = array(
+            'title' => $this->l('Active'),
+            'active' => 'status',
+            'class' => 'fixed-width-xs',
+            'align' => 'center',
+            'type'  => 'bool',
+            'filter_type' => 'int',
+        );
+        $fields_list['banned'] = array(
+            'title' => $this->l('Banned'),
+            'active' => 'toggleBanned',
+            'class' => 'fixed-width-xs',
+            'align' => 'center',
+            'type'  => 'bool',
+            'filter_type' => 'int',
+        );
+
+        $this->fields_list = $fields_list;
+        $this->actions = array('edit');
+        $this->_orderBy = 'total';
+        $this->_orderWay = 'DESC';
+        $this->bulk_actions = [];
 
         parent::__construct();
 
@@ -111,9 +189,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
     public function renderList() {
 
-        $this->_select = 'c.`firstname`, c.`lastname` ';
-        $this->_join = 'INNER JOIN '._DB_PREFIX_.'customer AS c ON c.id_customer = a.id_customer';
-
         if ($this->gamification_total == 'points_coins') {
             $this->_select .= ', `points`+`coins` as total ';
         }
@@ -171,6 +246,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 'title' => $this->total_name,
                 'class' => 'fixed-width-xs',
                 'align' => 'left',
+                'search' => false,
             );
         }
         if ($this->is_loyalty) {
@@ -202,7 +278,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->_orderBy = 'total';
         $this->_orderWay = 'DESC';
         $this->bulk_actions = [];
-        $this->allow_export = true;
 
         if (Shop::isFeatureActive()) {
             $ids_shop = Shop::getContextListShopID();
