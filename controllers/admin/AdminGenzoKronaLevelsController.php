@@ -329,7 +329,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
             $inputs[] = array(
                 'type' => 'html',
                 'name' => 'html_icon',
-                'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$this->object->icon}' width='30' height='30' />",
+                'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$this->object->icon}' width='50' height='50' />",
             );
         }
         $inputs[] = array(
