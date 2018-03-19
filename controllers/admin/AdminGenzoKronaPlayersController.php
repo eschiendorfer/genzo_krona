@@ -37,7 +37,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->table = 'genzo_krona_player';
         $this->identifier = 'id_customer';
         $this->lang = false;
-        $this->allow_export = true;
 
         $this->context = Context::getContext();
 
@@ -46,6 +45,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
     }
 
     public function init() {
+
         parent::init();
 
         // Configuration
@@ -204,6 +204,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->_orderBy = 'total';
         $this->_orderWay = 'DESC';
         $this->bulk_actions = [];
+        $this->allow_export = true;
 
         if (Shop::isFeatureActive()) {
             $ids_shop = Shop::getContextListShopID();

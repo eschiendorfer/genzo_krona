@@ -8,7 +8,7 @@
         {foreach from=$players item=player}
             <div class="player">
                 <img src="{$modules_dir}genzo_krona/views/img/avatar/{$player.avatar}">
-                <h3>{$player.pseudonym}</h3>
+                <h3>{$player.display_name}</h3>
                 <div>{$total_name}: {$player.total}</div>
                 <div style="clear: both;"></div>
             </div>

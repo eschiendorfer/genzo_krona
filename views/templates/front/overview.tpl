@@ -19,7 +19,7 @@
             <ul class="overview">
                 <li>
                     <b>{l s='Display Name' mod='genzo_krona'}</b><br>
-                    {$player.pseudonym}
+                    {$player.display_name}
                 </li>
                 <li>
                     <b>{$total_name}</b><br>

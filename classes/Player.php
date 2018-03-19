@@ -15,6 +15,7 @@ class Player extends \ObjectModel {
 
     public $id_customer;
     public $pseudonym;
+    public $display_name;
     public $avatar;
     public $avatar_full;
     public $points;
@@ -44,7 +45,7 @@ class Player extends \ObjectModel {
         )
     );
 
-    public function __construct($id_customer = null, $import = false) {
+    public function __construct($id_customer = null) {
 
         parent::__construct($id_customer);
 
@@ -64,14 +65,15 @@ class Player extends \ObjectModel {
                 $id_shop_group = \Context::getContext()->shop->id_shop_group;
                 $id_shop = \Context::getContext()->shop->id_shop;
 
-                if (!$import) {
-                    if (!\Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop) OR !$this->pseudonym) {
-                        $this->pseudonym = self::getDisplayName($this->id_customer);
-                    }
+                if (\Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop) && $this->pseudonym) {
+                    $this->display_name = $this->pseudonym;
+                }
+                else {
+                    $this->display_name = self::getDisplayName($this->id_customer);
+                }
 
-                    if (\Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
-                        $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
-                    }
+                if (\Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
+                    $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
                 }
 
             } else {
@@ -127,12 +129,13 @@ class Player extends \ObjectModel {
 
         $players = \Db::getInstance()->ExecuteS($query);
 
-        $pseudonym = \Configuration::get('krona_pseudonym');
-
         foreach ($players as &$player) {
-            if (!$pseudonym OR !$player['pseudonym']) {
-                $player['pseudonym'] = self::getDisplayName($player['id_customer']);
+            if (\Configuration::get('krona_pseudonym') AND $player['pseudonym']) {
+                $player['display_name'] = $player['pseudonym'];
             }
+            else {
+                $player['display_name'] = self::getDisplayName($player['id_customer']);
+            };
         }
 
         return $players;
@@ -197,7 +200,7 @@ class Player extends \ObjectModel {
         return  \Db::getInstance()->getValue($query);
     }
 
-    public static function createPlayer($id_customer, $import = false) {
+    public static function createPlayer($id_customer) {
 
         $id_customer = (int)$id_customer;
 
@@ -211,7 +214,7 @@ class Player extends \ObjectModel {
         else {
             $customer = new \Customer($id_customer);
 
-            $player = new Player($id_customer, $import);
+            $player = new Player($id_customer);
             $player->id_customer = $id_customer;
             $player->points = 0;
             $player->coins = 0;
