@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_level` (
   `id_reward` INT(12) DEFAULT 0 NOT NULL,
   `icon` VARCHAR(200) NULL,
   `active` INT(12) DEFAULT 0 NOT NULL,
+  `position` INT(12) DEFAULT 0 NOT NULL,
   `hide` BOOL DEFAULT 0 NOT NULL,
   PRIMARY KEY ( `id_level` )
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
@@ -110,6 +111,12 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_action_shop` (
   `id_action` INT(12) NOT NULL,
   `id_shop` INT(12) NOT NULL,
   PRIMARY KEY ( `id_action`, `id_shop` )
+) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
+
+CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_action_order_shop` (
+  `id_action_order` INT(12) NOT NULL,
+  `id_shop` INT(12) NOT NULL,
+  PRIMARY KEY ( `id_action_order`, `id_shop` )
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
 
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_settings_group` (

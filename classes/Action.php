@@ -13,6 +13,7 @@ namespace KronaModule;
 require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Player.php';
 
 class Action extends \ObjectModel {
+
     public $id;
     public $id_action;
     public $module;
@@ -53,7 +54,7 @@ class Action extends \ObjectModel {
         return \Db::getInstance()->getValue($query);
     }
 
-    public static function getAllActions ($filters = null, $pagination = null, $order = null, $inbuilt_actions = null) {
+    public static function getAllActions ($filters = null) {
 
         $id_lang = \Context::getContext()->language->id;
 
@@ -74,58 +75,9 @@ class Action extends \ObjectModel {
             }
         }
 
-        if($inbuilt_actions===true) {
-            $query->where("`module`='genzo_krona'");
-        }
-        elseif($inbuilt_actions===false) {
-            $query->where("`module`!='genzo_krona'");
-        }
-
-        if ($pagination) {
-            $limit = (int) $pagination['limit'];
-            $offset = (int)$pagination['offset'];
-            $query->limit($limit, $offset);
-        }
-
         $query->groupBy('a.`id_action`');
-        if ($order) {
-            (!empty($order['alias'])) ? $alias = $order['alias'].'.' : $alias = '';
-            $query->orderBy("{$alias}`{$order['order_by']}` {$order['order_way']}");
-        }
 
         return \Db::getInstance()->ExecuteS($query);
-    }
-
-    public static function getTotalActions($filters = null, $inbuilt_actions) {
-        // This Function is quite important, since we always (also when filtering) have to get correct totalActions Value
-        $id_lang = \Context::getContext()->language->id;
-        $shop_ids = \Shop::getContextListShopID();
-
-        $query = new \DbQuery();
-        $query->select('a.id_action'); // Strangely it doesn't work to Count direct
-        $query->from(self::$definition['table'], 'a');
-        $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_action` = a.`id_action`');
-        $query->innerJoin(self::$definition['table'].'_shop', 's', 's.`id_action` = a.`id_action`');
-        $query->where('l.`id_lang`='.pSQL($id_lang));
-        $query->where('s.`id_shop` IN (' . implode(',', array_map('intval', $shop_ids)) . ')');
-
-        if (!empty($filters)) {
-            foreach ($filters as $filter) {
-                $query->where($filter);
-            }
-        }
-
-        if($inbuilt_actions===true) {
-            $query->where("`module`='genzo_krona'");
-        }
-        elseif($inbuilt_actions===false) {
-            $query->where("`module`!='genzo_krona'");
-        }
-
-        $query->groupBy('a.`id_action`');
-        $rows = \Db::getInstance()->ExecuteS($query);
-
-        return count($rows);
     }
 
     public static function checkIfActionIsActive($module_name, $action_name, $id_shop = null) {

@@ -139,7 +139,7 @@ $(document).ready(function() {
 
     // Sortable for Group Priority in Settings Tab
 
-    var fixHelper = function(e, ui) { ui.children().each(function() { $(this).width($(this).width()); }); return ui; };
+    /*var fixHelper = function(e, ui) { ui.children().each(function() { $(this).width($(this).width()); }); return ui; };
 
     var sortOrder = [];
     var $sortableTable  = $("#sortable tbody");
@@ -161,7 +161,7 @@ $(document).ready(function() {
 
     $('tr [name^=position]', $sortableTable).on('keydown', function(){
         $(this).closest('tr').data()
-    });
+    });*/
 
 
 

@@ -31,7 +31,7 @@
             </div>
         </div>
         <button name="importCustomers" type="submit" class="btn-default btn">{l s='Import' mod='genzo_krona'}</button>
-        <a type="submit" style="float: right;" href="{$action_url}&dontImportCustomers" class="btn-default btn">{l s='Don\'t show this tab' mod='genzo_krona'}</a>
+        <button name="dontImportCustomers" type="submit" style="float: right;" class="btn-default btn">{l s='Don\'t show this tab' mod='genzo_krona'}</button>
     </form>
 
 </div>

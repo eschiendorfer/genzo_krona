@@ -12,7 +12,7 @@ namespace KronaModule;
 
 class Coupon {
 
-    public static function getAllCoupons ($filters = null, $pagination = null, $order = null) {
+    public static function getAllCoupons ($filters = null) {
 
         $id_lang = (int)\Context::getContext()->language->id;
 
@@ -33,17 +33,6 @@ class Coupon {
             }
         }
 
-        if ($pagination) {
-            $limit = (int) $pagination['limit'];
-            $offset = (int)$pagination['offset'];
-            $query->limit($limit, $offset);
-        }
-
-        if ($order) {
-            (!empty($order['alias'])) ? $alias = $order['alias'].'.' : $alias = '';
-            $query->orderBy("{$alias}`{$order['order_by']}` {$order['order_way']}");
-        }
-
         $rules = \Db::getInstance()->ExecuteS($query);
         $coupons = array();
 
@@ -61,26 +50,6 @@ class Coupon {
 
         return $coupons;
 
-    }
-
-    public static function getTotalActions($filters = null) {
-
-        $id_lang = (int)\Context::getContext()->language->id;
-
-        $query = new \DbQuery();
-        $query->select('Count(*)');
-        $query->from('cart_rule', 'c');
-        $query->innerJoin('cart_rule_lang', 'l', 'l.`id_cart_rule` = c.`id_cart_rule`');
-        $query->where('l.`id_lang` = ' . $id_lang);
-        $query->where("l.`name` LIKE 'KronaTemplate%'");
-
-        if (!empty($filters)) {
-            foreach ($filters as $filter) {
-                $query->where($filter);
-            }
-        }
-
-        return \Db::getInstance()->getValue($query);
     }
 
     public static function getCouponName($cart_rule_name) {

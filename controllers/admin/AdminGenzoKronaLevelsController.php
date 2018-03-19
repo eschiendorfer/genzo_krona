@@ -105,14 +105,14 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
                 'title' => $this->l('Position'),
                 'position' => 'position',
                 'align' => 'center',
-                'class' => 'fixed-width-md'
+                'class' => 'fixed-width-md',
+                'search' => false
             ),
         );
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit', 'delete');
         $this->position_identifier = 'position';
-        $this->_pagination = [2,50,100];
         $this->_orderBy = 'position';
         $this->_orderWay = 'ASC';
         $this->bulk_actions = [];
@@ -128,16 +128,6 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
 
     }
 
-    public function renderList() {
-
-        $this->context->smarty->assign(array(
-            "content" => parent::renderList(),
-        ));
-
-        return $this->module->display(_PS_MODULE_DIR_.'genzo_krona', 'views/templates/admin/main.tpl');
-
-    }
-
     public function initContent() {
 
         // Some Basic Display functions
@@ -150,27 +140,28 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
                 return;
             }
             $this->content = $this->renderForm();
-        } elseif ($this->display == 'view') {
-            // Some controllers use the view action without an object
-            if ($this->className) {
-                $this->loadObject(true);
-            }
-            $this->content .= $this->renderView();
-        } else {
+        }
+        else {
             $this->content = $this->renderList();
         }
-
 
         $this->context->smarty->assign(
             array(
                 'content'   => $this->content,
+                'tab'       => 'Levels',
                 'show_page_header_toolbar'  => $this->show_page_header_toolbar,
                 'page_header_toolbar_title' => $this->page_header_toolbar_title,
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
             )
         );
-    }
 
+        $content = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
+
+        $this->context->smarty->assign(array(
+            'content' => $content,
+        ));
+
+    }
 
     public function renderForm() {
 
@@ -363,7 +354,6 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
             'submit' => array(
                 'title' => $this->l('Save Level'),
                 'class' => 'btn btn-default pull-right',
-                //'href' => self::$currentIndex.'&token='.Tools::getValue('token'),
             )
         );
 
@@ -388,13 +378,9 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
             'id_language' => $this->context->language->id,
         );
 
-        $this->default_form_language = 3;
+        $this->default_form_language = $id_lang;
 
-        $this->context->smarty->assign(array(
-            "content" => parent::renderForm(),
-        ));
-
-        return $this->module->display(_PS_MODULE_DIR_.'genzo_krona', 'views/templates/admin/main.tpl');
+        return parent::renderForm();
 
 
     }
@@ -507,6 +493,33 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         return parent::postProcess();
     }
 
+    public function ajaxProcessUpdatePositions() {
+
+        $way = (int) (Tools::getValue('way'));
+        $id_level = (int) (Tools::getValue('id'));
+        $positions = Tools::getValue('level');
+
+        foreach ($positions as $position => $value) {
+            $pos = explode('_', $value);
+
+            if (isset($pos[2]) && (int) $pos[2] === $id_level) {
+                if ($level = new Level((int) $pos[2])) {
+                    if (isset($position) && $level->updatePosition($way, $position)) {
+                        echo 'ok position';
+                    } else {
+                        echo '{"hasError" : true, "errors" : "Can not update position"}';
+                    }
+                } else {
+                    echo '{"hasError" : true, "errors" : "This Level cant be loaded"}';
+                }
+
+                break;
+            }
+        }
+
+        Level::cleanPositions();
+    }
+
     public function setMedia() {
 
         parent::setMedia();
@@ -523,33 +536,5 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         ));
 
     }
-
-    public function ajaxProcessUpdatePositions()
-    {
-        $way = (int) (Tools::getValue('way'));
-        $id_level = (int) (Tools::getValue('id'));
-        $positions = Tools::getValue('level');
-
-        foreach ($positions as $position => $value) {
-            $pos = explode('_', $value);
-
-            if (isset($pos[2]) && (int) $pos[2] === $id_level) {
-                if ($level = new Level((int) $pos[2])) {
-                    if (isset($position) && $level->updatePosition($way, $position)) {
-                        echo 'ok position '.(int) $position.' for carrier '.(int) $pos[1].'\r\n';
-                    } else {
-                        echo '{"hasError" : true, "errors" : "Can not update carrier '.(int) $id_level.' to position '.(int) $position.' "}';
-                    }
-                } else {
-                    echo '{"hasError" : true, "errors" : "This carrier ('.(int) $id_level.') can t be loaded"}';
-                }
-
-                break;
-            }
-        }
-
-        Level::cleanPositions();
-    }
-
 
 }

@@ -47,7 +47,7 @@ class ActionOrder extends \ObjectModel {
 
     }
 
-    public static function getAllActionOrder($filters = null, $pagination = null, $order = null) {
+    public static function getAllActionOrder($filters = null) {
 
         $query = new \DbQuery();
         $query->select('o.*, c.name');
@@ -60,40 +60,7 @@ class ActionOrder extends \ObjectModel {
             }
         }
 
-        if ($pagination) {
-            $limit = (int) $pagination['limit'];
-            $offset = (int)$pagination['offset'];
-            $query->limit($limit, $offset);
-        }
-
-        if ($order) {
-            (!empty($order['alias'])) ? $alias = $order['alias'].'.' : $alias = '';
-            $query->orderBy("{$alias}`{$order['order_by']}` {$order['order_way']}");
-        }
-        else {
-            $query->orderBy('id_currency ASC');
-        }
-
         return \Db::getInstance()->ExecuteS($query);
-
-    }
-
-    public static function getTotalActionOrder($filters = null) {
-
-        $query = new \DbQuery();
-        $query->select('o.id_action_order');
-        $query->from(self::$definition['table'], 'o');
-        $query->innerJoin('currency', 'c', 'o.id_currency = c.id_currency');
-
-        if (!empty($filters)) {
-            foreach ($filters as $filter) {
-                $query->where($filter);
-            }
-        }
-
-        $actionOrders = \Db::getInstance()->ExecuteS($query);
-
-        return count($actionOrders);
 
     }
 
@@ -106,6 +73,50 @@ class ActionOrder extends \ObjectModel {
     }
 
 
+    // Helpers
+    public static function checkCurrencies() {
 
+        // This functions checks basically, if all currencies are in the action_order table
+        $query = new \DbQuery();
+        $query->select('id_currency');
+        $query->from(self::$definition['table']);
+        $actionOrders =  \Db::getInstance()->executeS($query);
+
+        $query = new \DbQuery();
+        $query->select('id_currency');
+        $query->from('currency');
+        $query->where('deleted=0');
+        $currencies = \Db::getInstance()->executeS($query);
+
+        // Flaten the multidimensional arrays, so we can use array_dif
+        $actionOrders = array_map('current', $actionOrders);
+        $currencies = array_map('current', $currencies);
+
+        $missing = array_diff($currencies, $actionOrders); // Which currencies are missing in the module
+        $redundant = array_diff($actionOrders, $currencies); // Which currencies are redundant in the module
+
+        if (!empty($missing)) {
+            foreach ($missing as $currency) {
+                $actionOrder = new ActionOrder();
+                $actionOrder->id_currency = $currency;
+                $actionOrder->coins_change = 1;
+                $actionOrder->minimum_amount = 0;
+                $actionOrder->active = 0;
+                $actionOrder->add();
+            }
+        }
+
+        if (!empty($redundant)) {
+            foreach ($redundant as $currency) {
+                $id_currency = $currency;
+                $id_action_order = ActionOrder::getIdActionOrderByCurrency($id_currency);
+
+                $actionOrder = new ActionOrder($id_action_order);
+                $actionOrder->delete();
+
+                \Db::getInstance()->delete(self::$definition['table'].'_shop', "`id_action_order`={$id_action_order}");
+            }
+        }
+    }
 
 }

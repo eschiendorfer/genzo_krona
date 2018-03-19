@@ -11,4 +11,5 @@ DROP TABLE IF EXISTS `PREFIX_genzo_krona_action`;
 DROP TABLE IF EXISTS `PREFIX_genzo_krona_action_order`;
 DROP TABLE IF EXISTS `PREFIX_genzo_krona_action_lang`;
 DROP TABLE IF EXISTS `PREFIX_genzo_krona_action_shop`;
+DROP TABLE IF EXISTS `PREFIX_genzo_krona_action_order_shop`;
 DROP TABLE IF EXISTS `PREFIX_genzo_krona_settings_group`;

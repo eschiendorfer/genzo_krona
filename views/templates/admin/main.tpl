@@ -17,9 +17,6 @@
 
         {$content}
 
-        {if $tab == 'Settings'}
-            {include file="./customer_groups.tpl"}
-        {/if}
     </div>
 
 </div>
