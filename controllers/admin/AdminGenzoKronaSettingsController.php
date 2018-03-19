@@ -70,6 +70,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             $home_description[$id_lang] = Configuration::get('krona_description', $id_lang, $this->id_shop_group, $this->id_shop);
         }
 
+        (Tools::getValue('tab_fake')) ? $tab_fake = Tools::getValue('tab_fake') : $tab_fake = '#general';
+
         $this->fields_value = [
             'total_name'              => $total_name,
             'loyalty_name'            => $loyalty_name,
@@ -92,6 +94,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'order_amount' => Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop),
             'order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
             'coupon_prefix' => Configuration::get('krona_coupon_prefix', null, $this->id_shop_group, $this->id_shop),
+            'tab_fake' => $tab_fake,
         ];
 
         // Order Status
@@ -351,8 +354,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             );
         }
 
-
-
         // Gamification
         if ($gamifaction) {
             $inputs[] = array(
@@ -437,7 +438,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             );
         }
 
-
         // Coupons
         $inputs[] = array(
             'type'         => 'text',
@@ -446,6 +446,12 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'class'  => 'input fixed-width-sm',
             'desc' => $this->l('Prefix is optional. The Coupon will look like: Prefix-Code'),
             'tab' => 'coupon',
+        );
+
+        // Fake
+        $inputs[] = array(
+            'type'         => 'hidden',
+            'name'         => 'tab_fake',
         );
 
         $this->fields_form = [
@@ -462,6 +468,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             ],
             'buttons'     => [],
         ];
+
 
         return parent::renderForm();
     }
@@ -544,11 +551,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             Configuration::updateValue('krona_order_state', implode(",", $order_state_selected), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_order_state_cancel', implode(",", $order_state_cancel_selected), false, $this->id_shop_group, $this->id_shop);
 
-
-
-
             if (empty($this->errors)) {
-                $this->confirmation = $this->l('Settings were sucessfully saved.');
+                $this->confirmations[] = $this->l('Settings were sucessfully saved.');
             }
         }
 

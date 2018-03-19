@@ -71,6 +71,16 @@ $(document).ready(function() {
 
     }).trigger('change');
 
+    // Settings Tab after Save
+    $('#configuration_form ul.nav-tabs li a').click(function(){
+        var anchor = $(this).attr("href");
+        $('#tab_fake').val(anchor);
+    });
+
+    var href = $('#tab_fake').val();
+    $("#configuration_form ul.nav-tabs li a[href='"+href+"']").click()
+
+
     // Level Form:
     $('#genzo_krona_level_form').on('change', function() {
 
