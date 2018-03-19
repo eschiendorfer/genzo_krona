@@ -33,7 +33,6 @@
         <button name="importCustomers" type="submit" class="btn-default btn">{l s='Import' mod='genzo_krona'}</button>
         <button name="dontImportCustomers" type="submit" style="float: right;" class="btn-default btn">{l s='Don\'t show this tab' mod='genzo_krona'}</button>
     </form>
-
 </div>
 <div class="clearfix"></div>
 

@@ -19,6 +19,10 @@
 
         {$content}
 
+        {if $tab == 'Players'}
+            {include file="./delete_players.tpl"}
+        {/if}
+
     </div>
 
 </div>

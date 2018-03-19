@@ -82,6 +82,20 @@ class Player extends \ObjectModel {
         }
     }
 
+    public function delete() {
+
+        parent::delete();
+
+        $histories = PlayerHistory::getHistoryByPlayer($this->id);
+        foreach ($histories as $history) {
+            $his = new PlayerHistory($history['id_history']);
+            $his->delete();
+        }
+
+        \Db::getInstance()->delete(self::$definition['table'].'_history', 'id_customer='.$this->id);
+        \Db::getInstance()->delete(self::$definition['table'].'_level', 'id_customer='.$this->id);
+    }
+
     public static function getAllPlayers($filters = null, $pagination = null, $order = null) {
 
         // Multistore Handling

@@ -560,6 +560,26 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             Configuration::updateGlobalValue('krona_dont_import_customer', 1);
             $this->confirmations[] = $this->l('You won\'t see this tab again.');
         }
+        elseif (Tools::isSubmit('deleteCustomers')) {
+
+            foreach (Shop::getContextListShopID() as $id_shop) {
+
+                $players = Player::getAllPlayers();
+
+                foreach ($players as $player) {
+                    $player = new Player($player['id_customer']);
+                    $player->delete();
+                }
+
+                $id_shop_group = Shop::getGroupFromShop($id_shop);
+
+                Configuration::updateValue('krona_import_customer', 0, null, $id_shop_group, $id_shop);
+            }
+
+            Configuration::updateGlobalValue('krona_import_customer', 0, '');
+
+            $this->confirmations[] = $this->l('Players deleted');
+        }
         elseif (Tools::isSubmit('toggleBanned'.$this->table)) {
             $krona = new Genzo_Krona();
             $krona->saveToggle($this->table, 'id_customer', 'banned');
