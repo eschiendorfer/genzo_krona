@@ -983,18 +983,6 @@ class Genzo_Krona extends Module
         return $my_routes;
     }
 
-    public function hookActionAdminGenzoKronaPlayersListingResultsModifier($params) {
-
-        if ($this->is_gamification) {
-            foreach ($params['list'] as &$player) {
-
-                if (!\Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop) OR !$player['pseudonym']) {
-                    $player['pseudonym'] = Player::getDisplayName($player['id_customer']);
-                }
-            }
-        }
-    }
-
 
     // Helper for Configuration Values in Object Models
     public static function isLoyaltyActive() {

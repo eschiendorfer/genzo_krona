@@ -31,21 +31,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
     public function __construct() {
 
-        $this->context = Context::getContext();
-
-        // Configuration
-        $id_lang = $this->context->language->id;
-        $this->id_shop_group = $this->context->shop->id_shop_group;
-        $this->id_shop = $this->context->shop->id_shop;
-
-        $this->is_loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
-        $this->is_gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
-        $this->loyalty_total = Configuration::get('krona_loyalty_total', null, $this->id_shop_group, $this->id_shop);
-        $this->gamification_total = Configuration::get('krona_gamification_total', null, $this->id_shop_group, $this->id_shop);
-
-        $this->total_name = Configuration::get('krona_total_name', $id_lang, $this->id_shop_group, $this->id_shop);
-        $this->loyalty_name = Configuration::get('krona_loyalty_name', $id_lang, $this->id_shop_group, $this->id_shop);
-
         $this->module = 'genzo_krona';
         $this->bootstrap = true;
         $this->className = 'KronaModule\Player';
@@ -54,14 +39,91 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->lang = false;
         $this->allow_export = true;
 
+        $this->context = Context::getContext();
+
+        parent::__construct();
+
+    }
+
+    public function init() {
+        parent::init();
+
+        // Configuration
+        $id_lang = $this->context->language->id;
+        $this->id_shop_group = Context::getContext()->shop->id_shop_group;
+        $this->id_shop = Context::getContext()->shop->id_shop;
+
+        $this->is_loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
+        $this->is_gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
+        $this->loyalty_total = Configuration::get('krona_loyalty_total', null, $this->id_shop_group, $this->id_shop);
+        $this->gamification_total = Configuration::get('krona_gamification_total', null, $this->id_shop_group, $this->id_shop);
+
+        $this->total_name = Configuration::get('krona_total_name', $id_lang, $this->id_shop_group, $this->id_shop);
+        $this->loyalty_name = Configuration::get('krona_loyalty_name', $id_lang, $this->id_shop_group, $this->id_shop);
+    }
+
+    public function initContent() {
+
+        // Some Basic Display functions
+        $this->initTabModuleList();
+        $this->initToolbar();
+        $this->initPageHeaderToolbar();
+
+        if ($this->display == 'edit' || Tools::getValue('display') == 'formPlayer') {
+            if (!$this->loadObject(true)) {
+                return;
+            }
+            $this->content = $this->renderForm();
+            $this->content.= $this->generateListPlayerLevels();
+            $this->content.= $this->generateListPlayerHistory();
+        }
+        elseif (Tools::isSubmit('addCustomAction')) {
+            $this->content = $this->generateFormCustomAction();
+        }
+        else {
+            $this->content = $this->renderList();
+        }
+
+        // This are the real smarty variables
+        $this->context->smarty->assign(
+            array(
+                'content'   => $this->content,
+                'tab'       => 'Players',
+                'loyalty_name'  => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
+                'import'  => Configuration::get('krona_import_customer', null, $this->id_shop_group, $this->id_shop),
+                'dont'    => Configuration::get('krona_dont_import_customer', null, $this->id_shop_group, $this->id_shop),
+                'show_page_header_toolbar'  => $this->show_page_header_toolbar,
+                'page_header_toolbar_title' => $this->page_header_toolbar_title,
+                'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
+            )
+        );
+
+        $tpl = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
+
+        $this->context->smarty->assign(array(
+            'content' => $tpl, // This seems to be anything inbuilt. It's just chance that we both use content as an assign variable
+        ));
+
+    }
+
+    public function initToolbar() {
+        parent::initToolbar();
+        unset( $this->toolbar_btn['new'] ); // To remove the add button
+    }
+
+    public function renderList() {
+
+        $this->_select = 'c.`firstname`, c.`lastname` ';
+        $this->_join = 'INNER JOIN '._DB_PREFIX_.'customer AS c ON c.id_customer = a.id_customer';
+
         if ($this->gamification_total == 'points_coins') {
-            $this->_select = '`points`+`coins` as total';
+            $this->_select .= ', `points`+`coins` as total ';
         }
         elseif ($this->gamification_total == 'points') {
-            $this->_select = '`points` as total';
+            $this->_select .= ', `points` as total ';
         }
         elseif ($this->gamification_total == 'coins') {
-            $this->_select = '`coins` as total';
+            $this->_select .= ', `coins` as total ';
         }
 
         $fields_list['id_customer'] = array(
@@ -71,10 +133,25 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             'filter_type' => 'int',
         );
 
-        $fields_list['pseudonym'] = array(
-            'title' => $this->l('Pseudonym'),
+        $fields_list['firstname'] = array(
+            'title' => $this->l('Firstname'),
             'align' => 'left',
+            'filter_type' => 'string',
+            'filter_key' => 'c!firstname'
         );
+
+        $fields_list['lastname'] = array(
+            'title' => $this->l('Lastname'),
+            'align' => 'left',
+            'filter_type' => 'string',
+            'filter_key' => 'c!lastname'
+        );
+        if ($this->is_gamification && Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop)) {
+            $fields_list['pseudonym'] = array(
+                'title' => $this->l('Pseudonym'),
+                'align' => 'left',
+            );
+        }
         if (($this->is_loyalty AND $this->loyalty_total!='coins') OR ($this->is_gamification AND $this->gamification_total!='coins')) {
             $fields_list['points'] = array(
                 'title' => $this->l('Points'),
@@ -128,64 +205,9 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->_orderWay = 'DESC';
         $this->bulk_actions = [];
 
-        parent::__construct();
-
-    }
-
-    public function initContent() {
-
-        // Some Basic Display functions
-        $this->initTabModuleList();
-        $this->initToolbar();
-        $this->initPageHeaderToolbar();
-
-        if ($this->display == 'edit' || Tools::getValue('display') == 'formPlayer') {
-            if (!$this->loadObject(true)) {
-                return;
-            }
-            $this->content = $this->renderForm();
-            $this->content.= $this->generateListPlayerLevels();
-            $this->content.= $this->generateListPlayerHistory();
-        }
-        elseif (Tools::isSubmit('addCustomAction')) {
-            $this->content = $this->generateFormCustomAction();
-        }
-        else {
-            $this->content = $this->renderList();
-        }
-
-        // This are the real smarty variables
-        $this->context->smarty->assign(
-            array(
-                'content'   => $this->content,
-                'tab'       => 'Players',
-                'loyalty_name'  => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
-                'import'  => Configuration::get('krona_import_customer', null, $this->id_shop_group, $this->id_shop),
-                'dont'    => Configuration::get('krona_dont_import_customer', null, $this->id_shop_group, $this->id_shop),
-                'show_page_header_toolbar'  => $this->show_page_header_toolbar,
-                'page_header_toolbar_title' => $this->page_header_toolbar_title,
-                'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
-            )
-        );
-
-        $tpl = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
-
-        $this->context->smarty->assign(array(
-            'content' => $tpl, // This seems to be anything inbuilt. It's just chance that we both use content as an assign variable
-        ));
-
-    }
-
-    public function initToolbar() {
-        parent::initToolbar();
-        unset( $this->toolbar_btn['new'] ); // To remove the add button
-    }
-
-    public function renderList() {
         if (Shop::isFeatureActive()) {
-            $this->_join = 'INNER JOIN '._DB_PREFIX_.'customer c ON (c.id_customer = a.id_customer) ';
             $ids_shop = Shop::getContextListShopID();
-            $this->_filter = ('AND c.`id_shop` IN (' . implode(',', array_map('intval', $ids_shop)) . ')');
+            $this->_filter .= (' AND c.`id_shop` IN (' . implode(',', array_map('intval', $ids_shop)) . ') ');
         }
 
         return parent::renderList();
@@ -448,12 +470,12 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             foreach ($customers as $customer) {
                 Player::importPlayer($customer['id_customer']);
             }
-            // No multistore handling
+            // Multistore handling
             foreach (Shop::getContextListShopID() as $id_shop) {
                 Configuration::updateValue('krona_import_customer', 1, false, $this->id_shop_group, $id_shop);
             }
 
-            $this->confirmation = $this->l('Player were sucessfully imported.');
+            $this->confirmations[] = $this->l('Player were sucessfully imported.');
         }
         elseif (Tools::isSubmit('dontImportCustomers')) {
 
@@ -462,7 +484,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 Configuration::updateValue('krona_dont_import_customer', 1, false, $shop['id_shop_group'], $shop['id_shop']);
             }
             Configuration::updateGlobalValue('krona_dont_import_customer', 1);
-            $this->confirmation = $this->l('You won\'t see this tab again.');
+            $this->confirmations[] = $this->l('You won\'t see this tab again.');
         }
         elseif (Tools::isSubmit('toggleBanned'.$this->table)) {
             $krona = new Genzo_Krona();

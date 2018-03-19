@@ -44,7 +44,7 @@ class Player extends \ObjectModel {
         )
     );
 
-    public function __construct($id_customer = null) {
+    public function __construct($id_customer = null, $import = false) {
 
         parent::__construct($id_customer);
 
@@ -64,12 +64,14 @@ class Player extends \ObjectModel {
                 $id_shop_group = \Context::getContext()->shop->id_shop_group;
                 $id_shop = \Context::getContext()->shop->id_shop;
 
-                if (!\Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop) OR !$this->pseudonym) {
-                    $this->pseudonym = self::getDisplayName($this->id_customer);
-                }
+                if (!$import) {
+                    if (!\Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop) OR !$this->pseudonym) {
+                        $this->pseudonym = self::getDisplayName($this->id_customer);
+                    }
 
-                if (\Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
-                    $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
+                    if (\Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
+                        $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
+                    }
                 }
 
             } else {
@@ -195,7 +197,7 @@ class Player extends \ObjectModel {
         return  \Db::getInstance()->getValue($query);
     }
 
-    public static function createPlayer($id_customer) {
+    public static function createPlayer($id_customer, $import = false) {
 
         $id_customer = (int)$id_customer;
 
@@ -209,7 +211,7 @@ class Player extends \ObjectModel {
         else {
             $customer = new \Customer($id_customer);
 
-            $player = new Player();
+            $player = new Player($id_customer, $import);
             $player->id_customer = $id_customer;
             $player->points = 0;
             $player->coins = 0;
@@ -235,7 +237,7 @@ class Player extends \ObjectModel {
 
         $id_customer = (int)$id_customer;
 
-        Player::createPlayer($id_customer);
+        Player::createPlayer($id_customer, true);
 
         $import_points = (int)\Tools::getValue('import_points');
         $import_orders = (bool)\Tools::getValue('import_orders');
