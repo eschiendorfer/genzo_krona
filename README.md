@@ -76,4 +76,4 @@ You need to check yourself, if the array is filled. Unfortunately thirty bees do
 The following thirty bees module are already using Krona:
 
 - birthdaygift by SLiCK_303: https://github.com/SLiCK-303/birthdaygift
-- revws by Datakick: https://github.com/getdatakick/revws/releases
+- revws by Datakick: https://github.com/getdatakick/revws
