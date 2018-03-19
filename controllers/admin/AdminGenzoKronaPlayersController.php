@@ -38,8 +38,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->identifier = 'id_customer';
         $this->lang = false;
 
-        $this->context = Context::getContext();
-
         parent::__construct();
 
     }

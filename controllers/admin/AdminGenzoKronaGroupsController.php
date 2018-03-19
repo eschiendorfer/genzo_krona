@@ -22,6 +22,14 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
         $this->identifier = 'id_group';
         $this->lang = false;
 
+        parent::__construct();
+
+    }
+
+    public function renderList() {
+
+        $this->checkGroups();
+
         $this->_join.= 'INNER JOIN '._DB_PREFIX_.'group_lang gl ON (gl.id_group = a.id_group) ';
 
         $this->_join.= 'LEFT JOIN '._DB_PREFIX_.'genzo_krona_level k ON (k.`id_reward` = a.`id_group` AND k.`reward_type`=\'group\')';
@@ -66,15 +74,6 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
         $this->_orderBy = 'position';
         $this->_orderWay = 'ASC';
         $this->bulk_actions = [];
-
-        parent::__construct();
-
-    }
-
-    public function renderList() {
-
-        $this->checkGroups();
-
         $this->list_simple_header = true;
 
         return parent::renderList();
@@ -156,8 +155,6 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
         $priority =  Db::getInstance()->getValue($query);
 
         if ($group != $priority) {
-            $this->errors[] = $this->l('You should check and save the group priorities. Go to: "Settings"');
-
 
             // This functions checks basically, if all currencies are in the action_order table
             $query = new DbQuery();

@@ -22,8 +22,8 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
 
     public $total_name;
 
-    public function __construct()
-    {
+    public function __construct() {
+
         $this->module = 'genzo_krona';
         $this->bootstrap = true;
         $this->context = Context::getContext();
@@ -33,6 +33,59 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         $this->lang = true;
 
         Shop::addTableAssociation($this->table, array('type' => 'shop'));
+
+        parent::__construct();
+
+    }
+
+    public function init() {
+
+        parent::init();
+
+        // Configuration
+        $id_lang = $this->context->language->id;
+        $id_shop_group = $this->context->shop->id_shop_group;
+        $id_shop = $this->context->shop->id_shop;
+
+        $this->total_name = Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop);
+    }
+
+    public function initContent() {
+
+        // Some Basic Display functions
+        $this->initTabModuleList();
+        $this->initToolbar();
+        $this->initPageHeaderToolbar();
+
+        if ($this->display == 'edit' || $this->display == 'add') {
+            if (!$this->loadObject(true)) {
+                return;
+            }
+            $this->content = $this->renderForm();
+        }
+        else {
+            $this->content = $this->renderList();
+        }
+
+        $this->context->smarty->assign(
+            array(
+                'content'   => $this->content,
+                'tab'       => 'Levels',
+                'show_page_header_toolbar'  => $this->show_page_header_toolbar,
+                'page_header_toolbar_title' => $this->page_header_toolbar_title,
+                'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
+            )
+        );
+
+        $content = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
+
+        $this->context->smarty->assign(array(
+            'content' => $content,
+        ));
+
+    }
+
+    public function renderlist() {
 
         $fields_list = array(
             'id_level' => array(
@@ -117,50 +170,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         $this->_orderWay = 'ASC';
         $this->bulk_actions = [];
 
-        // Configuration
-        $id_lang = $this->context->language->id;
-        $id_shop_group = $this->context->shop->id_shop_group;
-        $id_shop = $this->context->shop->id_shop;
-
-        $this->total_name = Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop);
-
-        parent::__construct();
-
-    }
-
-    public function initContent() {
-
-        // Some Basic Display functions
-        $this->initTabModuleList();
-        $this->initToolbar();
-        $this->initPageHeaderToolbar();
-
-        if ($this->display == 'edit' || $this->display == 'add') {
-            if (!$this->loadObject(true)) {
-                return;
-            }
-            $this->content = $this->renderForm();
-        }
-        else {
-            $this->content = $this->renderList();
-        }
-
-        $this->context->smarty->assign(
-            array(
-                'content'   => $this->content,
-                'tab'       => 'Levels',
-                'show_page_header_toolbar'  => $this->show_page_header_toolbar,
-                'page_header_toolbar_title' => $this->page_header_toolbar_title,
-                'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
-            )
-        );
-
-        $content = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
-
-        $this->context->smarty->assign(array(
-            'content' => $content,
-        ));
-
+        return parent::renderList();
     }
 
     public function renderForm() {
