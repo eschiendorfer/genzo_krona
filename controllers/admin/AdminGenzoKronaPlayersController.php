@@ -866,7 +866,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             'type'  => 'text',
             'name'  => 'points_change',
             'label' => $this->l('Change'),
-            'desc'  => $this->l('If you wanna give a penalty you can set -10 for example.'),
+            'desc'  => $this->l('If you want to give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
             'suffix' => $this->l('Points'),
         );
@@ -874,7 +874,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             'type'  => 'text',
             'name'  => 'coins_change',
             'label' => $this->l('Change'),
-            'desc'  => $this->l('If you wanna give a penalty you can set -10 for example.'),
+            'desc'  => $this->l('If you want to give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
             'suffix' => $this->l('Coins'),
         );

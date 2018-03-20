@@ -1,6 +1,6 @@
 <div class="panel col-lg-12">
     <div class="panel-heading">{l s='Import existing Users:' mod='genzo_krona'}</div>
-    <p>{l s='Do you wanna reward existing user with the account creation reward? Don\'t forget to save the display name settings first.' mod='genzo_krona'}</p>
+    <p>{l s='Do you want to reward existing user with the account creation reward?' mod='genzo_krona'}</p>
 
     <form method="post">
         <div class="form-group">

@@ -26,7 +26,7 @@
             <div class="panel-heading">{l s='Do you like this module?' mod='genzo_krona'}</div>
             <div style="margin-right: 3%;" class="support-box">
                 <p><b>{l s='Option 1: I like pizza and beer ;)' mod='genzo_krona'}</b></p>
-                <p>{l s='If you wanna make a donation to me for this module. Here is my paypal Account:' mod='genzo_krona'}</p>
+                <p>{l s='If you want to make a donation to me for this module. Here is my paypal Account:' mod='genzo_krona'}</p>
                 <a href="https://www.paypal.me/ESchiendorfer" target="_blank">paypal.me/ESchiendorfer</a>
             </div>
             <div style="margin-right: 3%;" class="support-box">

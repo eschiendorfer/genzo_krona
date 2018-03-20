@@ -56,7 +56,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
         $ids_lang = Language::getIDs();
         $id_lang = $this->context->language->id;
         $loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
-        $gamifaction = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
+        $gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
 
         // Values
         foreach ($ids_lang as $id_lang) {
@@ -139,7 +139,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Gamification Activation'),
-            'desc' => $this->l('Do you want to use gamifacation with leaderboard, avatar, pseudonym etc.'),
+            'desc' => $this->l('Do you want to use gamification with leaderboard, avatar, pseudonym etc.'),
             'name' => 'gamification_active',
             'values' => array(
                 array(
@@ -355,7 +355,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
         }
 
         // Gamification
-        if ($gamifaction) {
+        if ($gamification) {
             $inputs[] = array(
                 'type' => 'select',
                 'label' => $this->l('Gamification Total Value'),
