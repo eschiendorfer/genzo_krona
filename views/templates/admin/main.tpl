@@ -19,7 +19,7 @@
 
         {$content}
 
-        {if $deletePlayers}
+        {if $tab == 'Players' AND $deletePlayers}
             {include file="./delete_players.tpl"}
         {/if}
 

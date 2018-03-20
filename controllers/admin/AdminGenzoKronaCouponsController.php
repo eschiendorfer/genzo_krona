@@ -62,6 +62,9 @@ class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore
         $this->token = Tools::getAdminTokenLite('AdminCartRules');
         $this->list_simple_header = true;
         AdminController::$currentIndex = $this->context->link->getAdminLink('AdminCartRules', false);
+
+        unset($this->fields_list['active']);
+
         return parent::renderList();
     }
 
