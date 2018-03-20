@@ -237,7 +237,7 @@ class PlayerLevel extends \ObjectModel {
         $query->where('l.`active` = 1');
         $query->where("`condition_type` LIKE '{$condition_type}' OR `condition_type`='total' OR `id_action`={$id_action}");
         $query->where('`id_shop`=' . (int)$id_shop);
-        $query->orderBy('l`position` ASC');
+        $query->orderBy('l.`position` ASC');
         return \Db::getInstance()->ExecuteS($query);
     }
 
