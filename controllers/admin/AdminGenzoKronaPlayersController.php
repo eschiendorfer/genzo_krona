@@ -152,12 +152,15 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             $this->content = $this->renderForm();
             $this->content.= $this->generateListPlayerLevels();
             $this->content.= $this->generateListPlayerHistory();
+            $deletePlayers = false;
         }
         elseif (Tools::isSubmit('addCustomAction')) {
             $this->content = $this->generateFormCustomAction();
+            $deletePlayers = false;
         }
         else {
             $this->content = $this->renderList();
+            $deletePlayers = true;
         }
 
         // This are the real smarty variables
@@ -168,6 +171,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 'loyalty_name'  => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
                 'import'  => Configuration::get('krona_import_customer', null, $this->id_shop_group, $this->id_shop),
                 'dont'    => Configuration::get('krona_dont_import_customer', null, $this->id_shop_group, $this->id_shop),
+                'deletePlayers' => $deletePlayers,
                 'show_page_header_toolbar'  => $this->show_page_header_toolbar,
                 'page_header_toolbar_title' => $this->page_header_toolbar_title,
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
