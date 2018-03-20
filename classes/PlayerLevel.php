@@ -11,6 +11,7 @@
 namespace KronaModule;
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Level.php';
+require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Coupon.php';
 require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/PlayerHistory.php';
 
 class PlayerLevel extends \ObjectModel {
