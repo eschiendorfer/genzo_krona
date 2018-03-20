@@ -29,14 +29,15 @@ $(document).ready(function() {
             price = price / tax_rate;
         }
 
-        var points = parseInt(price * coins_change, 10);
-        var total_points = coins_in_cart + points;
+        var points = price * coins_change;
 
         if (rounding === 'up') {
-            total_points = Math.ceil(total_points)
+            total_points = Math.ceil(coins_in_cart + points);
+            points = Math.ceil(price * coins_change);
         }
         else {
-            total_points = Math.floor(total_points);
+            total_points = Math.floor(coins_in_cart + points);
+            points = Math.floor(price * coins_change);
         }
 
         // var voucher = total_points * coins_conversion;
