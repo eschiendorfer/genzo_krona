@@ -1,4 +1,7 @@
-{capture name=path}<a href="{$link->getModuleLink('genzo_krona', 'home')}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Leaderboard' mod='genzo_krona'}{/capture}
+{capture name=path}
+    <a href="{$link->getPageLink('my-account')}">{l s='Account' mod='genzo_krona'}</a><span class="navigation-pipe"></span>
+    <a href="{$link->getModuleLink('genzo_krona', 'home')}">{$game_name}</a><span class="navigation-pipe"></span>{l s='Leaderboard' mod='genzo_krona'}
+{/capture}
 
 {include file="./nav.tpl"}
 
