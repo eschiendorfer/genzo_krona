@@ -133,21 +133,36 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
             $customer->getGroups();
 
             // Add Coupon
-            $coupon = new CartRule();
-            $coupon->id_customer = $player->id_customer;
+            $id_cart_rule = CartRule::getIdByCode('KRONA');
+            $coupon = new CartRule($id_cart_rule);
+
+            // Clone the cart rule and override some values
+            $coupon->id_customer = $player->id;
             $coupon->reduction_amount = ($loyalty * $actionOrder->coins_conversion);
+
+            // Merchant can set date in cart rule, we need the difference between the dates
+            if ($coupon->date_from && $coupon->date_to) {
+                $validity = strtotime($coupon->date_to) - strtotime($coupon->date_from);
+                $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+{$validity} seconds"));
+            }
+            else {
+                $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+1 year")); // Default
+            }
             $coupon->date_from = date("Y-m-d H:i:s");
-            $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+1 year"));
+
             foreach ($ids_lang as $id_lang) {
-                $game_name = Configuration::get('krona_game_name', $id_lang, $player, $this->context->shop->id);
+                $game_name = Configuration::get('krona_game_name', $id_lang, $this->context->shop->id_shop_group, $this->context->shop->id);
                 $coupon->name[$id_lang] = $game_name . ' - ' . $loyalty . ' ' . $points_name[$id_lang];
             }
-            $prefix = \Configuration::get('krona_coupon_prefix', null, $this->context->shop->id_shop_group, $this->context->shop->id);
-            $code = strtoupper(\Tools::passwdGen(6));
+
+            $prefix = Configuration::get('krona_coupon_prefix', null, $customer->id_shop_group, $customer->id_shop);
+            $code = strtoupper(Tools::passwdGen(6));
 
             $coupon->code = ($prefix) ? $prefix.'-'.$code : $code;
-            $coupon->highlight = 1;
+            $coupon->active = true;
             $coupon->add();
+
+            CartRule::copyConditions($id_cart_rule, $coupon->id);
 
             $this->confirmation = $this->module->l('Your Coupon was sucessfully created.');
 

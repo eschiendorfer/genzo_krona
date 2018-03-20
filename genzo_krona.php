@@ -278,6 +278,23 @@ class Genzo_Krona extends Module
         Configuration::updateGlobalValue('krona_import_customer', 0);
         Configuration::updateGlobalValue('krona_dont_import_customer', 0);
 
+        // Coupon Template
+        $id_cart_rule = CartRule::getIdByCode('KRONA');
+        if (!$id_cart_rule) {
+            $coupon = new CartRule();
+            $coupon->code = 'KRONA';
+            $coupon->highlight = 1;
+            $coupon->reduction_amount = 0;
+            $coupon->date_from = date("Y-m-d H:i:s");
+            $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+1 year"));
+            $coupon->active = 0;
+            foreach ($ids_lang as $id_lang) {
+                $coupon->name[$id_lang] = 'KronaTemplate: Orders';
+            }
+
+            $coupon->add();
+        }
+
         return true;
     }
 
@@ -682,6 +699,7 @@ class Genzo_Krona extends Module
                 'krona_coins_in_cart' => $total,
                 'minimum' => $minimum,
                 'minimum_amount' => $actionOrder->minimum_amount.' '.$actionOrder->currency_iso,
+                'conversion' => round($total * $actionOrder->coins_conversion, 2).' '.$actionOrder->currency_iso,
             ));
 
             return $this->display(__FILE__, 'views/templates/hook/shoppingCartFooter.tpl');
