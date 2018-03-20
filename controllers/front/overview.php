@@ -53,16 +53,6 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
             'offset' => 0,
         );
 
-        $level_pagination = array(
-            'limit' => 1,
-            'offset' => 0,
-        );
-
-        $level_order = array(
-            'order_by' => 'achieved_last',
-            'order_way' => 'DESC',
-        );
-
         $this->context->smarty->assign(array(
             'meta_title' => $game_name . ': ' . $this->module->l('Overview'),
             'game_name' => $game_name,
@@ -74,7 +64,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
             'player' => $player,
             'rank' => Player::getRank($id_customer),
             'history' => PlayerHistory::getHistoryByPlayer($id_customer, null, $history_pagination),
-            'level' => PlayerLevel::getAllPlayerLevels($id_customer, null, $level_pagination, $level_order),
+            'level' => PlayerLevel::getLastPlayerLevel($id_customer),
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
         ));

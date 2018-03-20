@@ -34,7 +34,7 @@
                 </li>
                 <li>
                     <b>{l s='Last Level' mod='genzo_krona'}</b><br>
-                    {if !empty($level)}{$level[0].name}{else}-{/if}
+                    {if $level}{$level->name}{else}-{/if}
                 </li>
                 <li class="avatar">
                     <img src="{$player.avatar_full}" style="float: right;">

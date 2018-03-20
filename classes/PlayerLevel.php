@@ -73,7 +73,7 @@ class PlayerLevel extends \ObjectModel {
             $query->orderBy("{$alias}`{$order['order_by']}` {$order['order_way']}");
         }
         else {
-            $query->orderBy('l.`condition_type` ASC, ll.`name` ASC');
+            $query->orderBy('l.`position` ASC');
         }
 
         return \Db::getInstance()->ExecuteS($query);
@@ -102,6 +102,23 @@ class PlayerLevel extends \ObjectModel {
         $player_levels =  \Db::getInstance()->ExecuteS($query);
 
         return count($player_levels);
+    }
+
+    public static function getLastPlayerLevel($id_customer) {
+
+        $id_lang = \Context::getContext()->language->id;
+
+        $query = new \DbQuery();
+        $query->select('id_level');
+        $query->from(self::$definition['table']);
+        $query->where('`id_customer`='.(int)$id_customer);
+        $query->orderby('id DESC');
+        $id_level = \Db::getInstance()->getValue($query);
+
+        $level = ($id_level) ? new Level($id_level, $id_lang) : false;
+
+        return $level;
+
     }
 
     public static function getId($id_customer, $id_level, $only_active = false) {
@@ -220,6 +237,7 @@ class PlayerLevel extends \ObjectModel {
         $query->where('l.`active` = 1');
         $query->where("`condition_type` LIKE '{$condition_type}' OR `condition_type`='total' OR `id_action`={$id_action}");
         $query->where('`id_shop`=' . (int)$id_shop);
+        $query->orderBy('l`position` ASC');
         return \Db::getInstance()->ExecuteS($query);
     }
 
