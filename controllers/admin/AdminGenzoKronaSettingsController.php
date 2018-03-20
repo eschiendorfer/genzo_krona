@@ -7,6 +7,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
      * @var SettingsGroup object
      */
     protected $object;
+    private $id_shop_group;
+    private $id_shop;
 
     public function __construct() {
 
@@ -90,6 +92,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'display_name' => Configuration::get('krona_display_name', null, $this->id_shop_group, $this->id_shop),
             'pseudonym' => Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop),
             'loyalty_product_page' => Configuration::get('krona_loyalty_product_page', null, $this->id_shop_group, $this->id_shop),
+            'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page', null, $this->id_shop_group, $this->id_shop),
             'avatar' => Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop),
             'order_amount' => Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop),
             'order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
@@ -352,6 +355,25 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 ),
                 'tab' => 'loyalty',
             );
+            $inputs[] = array(
+                'type' => 'switch',
+                'label' => $this->l('Loyalty on cart page'),
+                'desc' => $this->l('Show how many coins a customers receives, if he places the order.'),
+                'name' => 'loyalty_cart_page',
+                'values' => array(
+                    array(
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes')
+                    ),
+                    array(
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('No')
+                    )
+                ),
+                'tab' => 'loyalty',
+            );
         }
 
         // Gamification
@@ -518,6 +540,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             if ($loyalty) {
                 Configuration::updateValue('krona_loyalty_total', pSQL(Tools::getValue('loyalty_total')), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_loyalty_product_page', pSQL(Tools::getValue('loyalty_product_page')), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_cart_page', pSQL(Tools::getValue('loyalty_cart_page')), false, $this->id_shop_group, $this->id_shop);
             }
             if ($gamification) {
                 Configuration::updateValue('krona_gamification_total', pSQL(Tools::getValue('gamification_total')), false, $this->id_shop_group, $this->id_shop);
@@ -579,7 +602,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
 
         $secureKey = md5(_COOKIE_KEY_ . Configuration::get('PS_SHOP_NAME'));
 
-        $url =  _PS_BASE_URL_._MODULE_DIR_.$this->name."genzo_krona_cron.php?secure_key=".$secureKey;
+        $url =  _PS_BASE_URL_._MODULE_DIR_."genzo_krona/genzo_krona_cron.php?secure_key=".$secureKey;
 
         if (Configuration::get('PS_SSL_ENABLED')==1) {
             $url = str_replace('http://', 'https://', $url);
