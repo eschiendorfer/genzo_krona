@@ -841,11 +841,11 @@ class Genzo_Krona extends Module
                                 $message[$id_lang] = Configuration::get('krona_order_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
 
                                 // Replace message variables
-                                $search = array('{points}', '{reference}', '{amount}');
+                                $search = array('{points}', '{coins}', '{reference}', '{amount}');
 
                                 $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
 
-                                $replace = array($coins_change, $order->reference, $total_currency);
+                                $replace = array($coins_change, $coins_change, $order->reference, $total_currency);
                                 $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
                                 $history->message[$id_lang] = pSQL($message[$id_lang]);
