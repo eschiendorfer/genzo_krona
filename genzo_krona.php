@@ -699,7 +699,7 @@ class Genzo_Krona extends Module
                 'krona_coins_in_cart' => $total,
                 'minimum' => $minimum,
                 'minimum_amount' => $actionOrder->minimum_amount.' '.$actionOrder->currency_iso,
-                'conversion' => round($total * $actionOrder->coins_conversion, 2).' '.$actionOrder->currency_iso,
+                'conversion' => number_format(round($total * $actionOrder->coins_conversion, 2),2).' '.$actionOrder->currency_iso,
             ));
 
             return $this->display(__FILE__, 'views/templates/hook/shoppingCartFooter.tpl');
