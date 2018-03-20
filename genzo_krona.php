@@ -631,7 +631,12 @@ class Genzo_Krona extends Module
                 $tax = true;
             }
 
-            ($tax) ? $tax_rate = 1 : $tax_rate = 1 + ($params['product']->tax_rate / 100);
+            if ($tax OR !$params['product']->tax_rate) {
+                $tax_rate = 1;
+            }
+            else {
+                $tax_rate = 1 + ($params['product']->tax_rate / 100);
+            }
 
             Media::addJsDef(array(
                 'krona_coins_change' => $actionOrder->coins_change,
