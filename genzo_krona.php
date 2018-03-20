@@ -131,19 +131,6 @@ class Genzo_Krona extends Module
 
 	private function registerInbuiltActions() {
 
-	    // Order Actions
-	    /*$currencies = Currency::getCurrencies(false, false, true);
-
-	    foreach ($currencies as $currency) {
-            $actionOrder = new ActionOrder();
-            $actionOrder->id_currency = $currency['id_currency'];
-            $actionOrder->coins_change = 1;
-            $actionOrder->minimum_amount = 0;
-            $actionOrder->active = 1;
-            $actionOrder->add();
-        }*/
-
-
         // Inbuilt Actions
         $actions = array(
             'account_creation' => array(
@@ -645,6 +632,10 @@ class Genzo_Krona extends Module
 
             return $this->display(__FILE__, 'views/templates/hook/rightColumnProduct.tpl');
         }
+    }
+
+    public function hookDisplayProductButtons($params) {
+	    return $this->hookDisplayRightColumnProduct($params);
     }
 
     public function hookActionExecuteKronaAction($params) {
