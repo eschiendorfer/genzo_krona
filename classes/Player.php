@@ -10,6 +10,7 @@
 
 namespace KronaModule;
 
+require_once _PS_MODULE_DIR_ . 'genzo_krona/genzo_krona.php';
 
 class Player extends \ObjectModel {
 
