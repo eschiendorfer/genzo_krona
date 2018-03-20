@@ -15,9 +15,6 @@ $(document).ready(function() {
         if (typeof window.priceWithDiscountsDisplay !== 'undefined') {
             price = window.priceWithDiscountsDisplay;
         }
-        else if (typeof window.productPriceWithoutReduction !== 'undefined') {
-            price = window.productPriceWithoutReduction;
-        }
         else if (typeof window.productPrice !== 'undefined') {
             price = window.productPrice;
         }
