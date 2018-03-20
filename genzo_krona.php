@@ -631,11 +631,13 @@ class Genzo_Krona extends Module
                 $tax = true;
             }
 
-            if ($tax OR !$params['product']->tax_rate) {
+            $id_product = (int)(Tools::getValue('id_product'));
+
+            if ($tax) {
                 $tax_rate = 1;
             }
             else {
-                $tax_rate = 1 + ($params['product']->tax_rate / 100);
+                $tax_rate = 1 + (Tax::getProductTaxRate($id_product) / 100);
             }
 
             Media::addJsDef(array(
