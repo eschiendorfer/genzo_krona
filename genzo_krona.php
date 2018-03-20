@@ -661,6 +661,14 @@ class Genzo_Krona extends Module
                 $coins_in_cart = 0;
             }
 
+            if ($actionOrder->minimum_amount > $coins_in_cart) {
+                $coins_in_cart = 0;
+                $minimum = true;
+            }
+            else {
+                $minimum = false;
+            }
+
             if (Configuration::get('krona_order_rounding', null, $this->context->shop->id_shop_group, $this->context->shop->id) == 'up') {
                 $total = ceil($coins_in_cart * $actionOrder->coins_change);
             }
@@ -672,6 +680,8 @@ class Genzo_Krona extends Module
                 'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
                 'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
                 'krona_coins_in_cart' => $total,
+                'minimum' => $minimum,
+                'minimum_amount' => $actionOrder->minimum_amount.' '.$actionOrder->currency_iso,
             ));
 
             return $this->display(__FILE__, 'views/templates/hook/shoppingCartFooter.tpl');
