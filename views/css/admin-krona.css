@@ -32,3 +32,34 @@ table#sortable input {
 .bootstrap form .form-group .form-group {
     margin-bottom: 0;
 }
+
+
+/* Documentation */
+#content.bootstrap #krona-docs {
+    font-size: 13px;
+    line-height: 22px;
+}
+
+#content.bootstrap #krona-docs p {
+    margin: 15px 0;
+}
+
+#content.bootstrap #krona-docs h2 {
+    margin: 30px 0 5px 0;
+}
+
+#content.bootstrap #krona-docs h3 {
+    border: none;
+    margin: 20px 0 5px 0;
+    padding: 0;
+    font-size: 20px;
+    text-transform: none;
+}
+
+#content.bootstrap #krona-docs img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+}
+
+

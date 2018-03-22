@@ -11,7 +11,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
      * @var ActionOrder object
      */
     protected $object;
-    public $total_name;
+    public $loyalty_name;
 
     public function __construct() {
 
@@ -78,7 +78,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
         $id_shop_group = $this->context->shop->id_shop_group;
         $id_shop = $this->context->shop->id_shop;
 
-        $this->total_name = Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop);
+        $this->loyalty_name = Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop);
     }
 
     public function renderList() {
@@ -176,10 +176,10 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
         $inputs[] = array(
             'type'  => 'text',
             'name'  => 'coins_conversion',
-            'label' => $this->l('Coins conversion'),
-            'desc'  => sprintf($this->l('Example: For every coin a customer collected, he can generate a voucher with the value of X %s.'),$this->object->currency),
+            'label' => $this->l('Loyalty conversion'),
+            'desc'  => sprintf($this->l('Example: For every loyalty point a customer has collected, he can generate a voucher with the value of X %s.'),$this->object->currency),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->object->currency_iso.'/'.$this->l('Coins'),
+            'suffix' => $this->object->currency_iso.'/'.$this->loyalty_name,
         );
 
         if (Shop::isFeatureActive()) {

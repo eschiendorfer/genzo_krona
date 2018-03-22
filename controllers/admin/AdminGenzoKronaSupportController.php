@@ -26,12 +26,12 @@ class AdminGenzoKronaSupportController extends ModuleAdminController
         $this->initToolbar();
         $this->initPageHeaderToolbar();
 
-        $this->informations[] = $this->l('Dont worry: I will soon publish an official Documentation!');
+        $this->informations[] = $this->l('Please read the documentation carefully!');
 
         // This are the real smarty variables
         $this->context->smarty->assign(
             array(
-                //'content'   => $this->content,
+                'img_docs'   => _MODULE_DIR_.'genzo_krona/views/img/docs/',
                 'tab'       => 'Support',
                 'show_page_header_toolbar'  => $this->show_page_header_toolbar,
                 'page_header_toolbar_title' => $this->page_header_toolbar_title,

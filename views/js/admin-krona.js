@@ -1,6 +1,7 @@
 $(document).ready(function() {
-    // Load Chosen
+    // Load Chosen & Fancybox
     $(".chosen").chosen();
+    $(".fancybox").fancybox();
 
 
     // Action Form: hide execution_max field if execution_type is unlimited
