@@ -1,0 +1,25 @@
+module_name: Genzo Krona
+compatible_versions: 1.0.0+
+author: Emanuel Schiendorfer
+category: front office
+tags:
+  - loyalty
+  - gamification
+  - points
+  - coupon
+  - voucher
+description_short: With Krona you get a powerful loyalty / gamification module. It’s very flexible and can be expanded with other modules.
+description: description.md
+images:
+  - image-1.png
+  - image-2.png
+  - image-3.png
+  - image-4.png
+  - image-5.png
+  - image-6.png
+  - image-7.png
+license: AFL
+php_version:
+  - 5.6
+  - 7.0
+  - 7.1
