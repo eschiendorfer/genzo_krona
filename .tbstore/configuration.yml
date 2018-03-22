@@ -19,3 +19,7 @@ images:
   - image-6.png
   - image-7.png
 license: AFL
+php_version:
+  - 5.6
+  - 7.0
+  - 7.1
