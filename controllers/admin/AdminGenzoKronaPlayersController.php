@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Copyright (C) 2018 Emanuel Schiendorfer
+ *
+ * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
+ * @copyright 2018 Emanuel Schiendorfer
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
 require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Player.php';
 require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/PlayerHistory.php';
 require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/PlayerLevel.php';

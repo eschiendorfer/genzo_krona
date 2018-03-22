@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Copyright (C) 2018 Emanuel Schiendorfer
+ *
+ * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
+ * @copyright 2018 Emanuel Schiendorfer
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
 class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore
 {
     public function __construct() {
