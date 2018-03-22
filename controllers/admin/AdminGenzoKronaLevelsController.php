@@ -113,8 +113,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         $this->fields_list = $fields_list;
         $this->actions = array('edit', 'delete');
         $this->position_identifier = 'position';
-        $this->_orderBy = 'position';
-        $this->_orderWay = 'ASC';
+        $this->_defaultOrderBy = 'position';
         $this->bulk_actions = [];
 
         parent::__construct();
