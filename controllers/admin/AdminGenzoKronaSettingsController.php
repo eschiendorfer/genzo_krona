@@ -137,13 +137,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
-                )
+                    'label' => $this->l('No'),
+                ),
             ),
             'tab' => 'general',
         );
@@ -156,13 +156,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
-                )
+                    'label' => $this->l('No'),
+                ),
             ),
             'tab' => 'general',
         );
@@ -190,13 +190,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
-                )
+                    'label' => $this->l('No'),
+                ),
             ),
             'tab' => 'general',
         );
@@ -353,13 +353,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                     array(
                         'id' => 'active_on',
                         'value' => 1,
-                        'label' => $this->l('Yes')
+                        'label' => $this->l('Yes'),
                     ),
                     array(
                         'id' => 'active_off',
                         'value' => 0,
-                        'label' => $this->l('No')
-                    )
+                        'label' => $this->l('No'),
+                    ),
                 ),
                 'tab' => 'loyalty',
             );
@@ -372,13 +372,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                     array(
                         'id' => 'active_on',
                         'value' => 1,
-                        'label' => $this->l('Yes')
+                        'label' => $this->l('Yes'),
                     ),
                     array(
                         'id' => 'active_off',
                         'value' => 0,
-                        'label' => $this->l('No')
-                    )
+                        'label' => $this->l('No'),
+                    ),
                 ),
                 'tab' => 'loyalty',
             );
@@ -437,13 +437,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                     array(
                         'id' => 'active_on',
                         'value' => 1,
-                        'label' => $this->l('Yes')
+                        'label' => $this->l('Yes'),
                     ),
                     array(
                         'id' => 'active_off',
                         'value' => 0,
-                        'label' => $this->l('No')
-                    )
+                        'label' => $this->l('No'),
+                    ),
                 ),
                 'tab' => 'gamification',
             );
@@ -456,13 +456,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                     array(
                         'id' => 'active_on',
                         'value' => 1,
-                        'label' => $this->l('Yes')
+                        'label' => $this->l('Yes'),
                     ),
                     array(
                         'id' => 'active_off',
                         'value' => 0,
-                        'label' => $this->l('No')
-                    )
+                        'label' => $this->l('No'),
+                    ),
                 ),
                 'tab' => 'gamification',
             );
