@@ -42,11 +42,11 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
                 'filter_type' => 'int',
             ),
             'module' => array(
-                'title' => 'Module',
+                'title' => $this->l('Module'),
                 'align' => 'left',
             ),
             'key' => array(
-                'title' => 'Key',
+                'title' => $this->l('Key'),
                 'align' => 'left',
             ),
             'title' => array(
@@ -76,7 +76,7 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
                 'align' => 'center',
                 'type'  => 'bool',
                 'filter_type' => 'int',
-            )
+            ),
         );
 
         $this->fields_list = $fields_list;
@@ -154,7 +154,7 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
 
         $inputs[] = array(
             'type' => 'hidden',
-            'name' => 'id_action'
+            'name' => 'id_action',
         );
         $inputs[] = array(
             'type' => 'switch',
@@ -164,13 +164,13 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
-                )
+                    'label' => $this->l('No'),
+                ),
             ),
         );
         $inputs[] = array(
@@ -246,13 +246,13 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
         $fields_form = array(
             'legend' => array(
                 'title' => $this->l('Edit Action'),
-                'icon' => 'icon-cogs'
+                'icon' => 'icon-cogs',
             ),
             'input' => $inputs,
             'submit' => array(
-                'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
+                'title' => $this->l('Save Action'),
+                'class' => 'btn btn-default pull-right',
+            ),
         );
 
         // Fix of values since we dont use always same names

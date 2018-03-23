@@ -64,7 +64,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
                 'align' => 'center',
                 'type'  => 'bool',
                 'filter_type' => 'int',
-            )
+            ),
         );
 
         $this->fields_list = $fields_list;
@@ -141,7 +141,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
 
         $inputs[] = array(
             'type' => 'hidden',
-            'name' => 'id_action_order'
+            'name' => 'id_action_order',
         );
         $inputs[] = array(
             'type'         => 'html',
@@ -156,12 +156,12 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
+                    'label' => $this->l('No'),
                 )
             ),
         );
@@ -206,8 +206,8 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
             'input' => $inputs,
             'submit' => array(
                 'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
+                'class' => 'btn btn-default pull-right',
+            ),
         );
 
 

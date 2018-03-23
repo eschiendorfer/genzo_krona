@@ -45,9 +45,9 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         $fields_list = array(
             'id_level' => array(
                 'title' => 'ID',
-                'alias' => 'l',
                 'align' => 'center',
                 'class' => 'fixed-width-xs',
+                'alias' => 'l',
                 'filter_type' => 'int',
             ),
             'name' => array(
@@ -107,7 +107,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
                 'active' => 'status',
                 'align' => 'center',
                 'type'  => 'bool',
-                'filter_type' => 'bool',
+                'filter_type' => 'int',
             ),
             'position' => array(
                 'title' => $this->l('Position'),
@@ -121,7 +121,8 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         $this->fields_list = $fields_list;
         $this->actions = array('edit', 'delete');
         $this->position_identifier = 'position';
-        $this->_defaultOrderBy = 'position';
+        $this->_orderBy = 'id_level';
+        $this->_orderWay = 'ASC';
         $this->bulk_actions = [];
 
         parent::__construct();
@@ -182,7 +183,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
 
         $inputs[] = array(
             'type' => 'hidden',
-            'name' => 'id_level'
+            'name' => 'id_level',
         );
         $inputs[] = array(
             'type' => 'switch',
@@ -192,11 +193,13 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                )
+                    'label' => $this->l('No'),
+                ),
             ),
         );
         $inputs[] = array(
@@ -290,7 +293,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                )
+                ),
             ),
         );
         $inputs[] =array(
@@ -349,6 +352,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
             'label' => 'Icon',
             'name'  => 'icon',
         );
+
         if (Shop::isFeatureActive()) {
             $inputs[] = array(
                 'type' => 'shop',
@@ -360,13 +364,13 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
         $fields_form = array(
             'legend' => array(
                 'title' => $this->l('Edit Level') ,
-                'icon' => 'icon-cogs'
+                'icon' => 'icon-cogs',
             ),
             'input' => $inputs,
             'submit' => array(
                 'title' => $this->l('Save Level'),
                 'class' => 'btn btn-default pull-right',
-            )
+            ),
         );
 
         $this->submit_action = 'saveLevel';

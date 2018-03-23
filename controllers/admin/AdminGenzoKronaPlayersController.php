@@ -50,78 +50,72 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->_select = 'c.`firstname`, c.`lastname` ';
         $this->_join = 'INNER JOIN '._DB_PREFIX_.'customer AS c ON c.id_customer = a.id_customer';
 
-
-        $fields_list['id_customer'] = array(
-            'title' => 'ID',
-            'align' => 'center',
-            'class' => 'fixed-width-xs',
-            'filter_type' => 'int',
-        );
-
-        $fields_list['firstname'] = array(
-            'title' => $this->l('Firstname'),
-            'align' => 'left',
-            'filter_type' => 'string',
-            'filter_key' => 'c!firstname'
-        );
-
-        $fields_list['lastname'] = array(
-            'title' => $this->l('Lastname'),
-            'align' => 'left',
-            'filter_type' => 'string',
-            'filter_key' => 'c!lastname'
-        );
-
-            $fields_list['pseudonym'] = array(
+        $fields_list = array(
+            'id_customer' => array(
+                'title' => 'ID',
+                'align' => 'center',
+                'class' => 'fixed-width-xs',
+                'alias' => 'c',
+                'filter_type' => 'int',
+            ),
+            'firstname' => array(
+                'title' => $this->l('Firstname'),
+                'align' => 'left',
+                'filter_type' => 'string',
+                'filter_key' => 'c!firstname',
+            ),
+            'lastname' => array(
+                'title' => $this->l('Lastname'),
+                'align' => 'left',
+                'filter_type' => 'string',
+                'filter_key' => 'c!lastname',
+            ),
+            'pseudonym' => array(
                 'title' => $this->l('Pseudonym'),
                 'align' => 'left',
-            );
-
-        $fields_list['points'] = array(
-            'title' => $this->l('Points'),
-            'class' => 'fixed-width-xs',
-            'align' => 'left',
-        );
-
-        $fields_list['coins'] = array(
-            'title' => $this->l('Coins'),
-            'class' => 'fixed-width-xs',
-            'align' => 'left',
-        );
-
-        $fields_list['total'] = array(
-            'title' => $this->total_name,
-            'class' => 'fixed-width-xs',
-            'align' => 'left',
-        );
-
-        $fields_list['loyalty'] = array(
-            'title' => $this->loyalty_name,
-            'class' => 'fixed-width-xs',
-            'align' => 'left',
-        );
-
-        $fields_list['active'] = array(
-            'title' => $this->l('Active'),
-            'active' => 'status',
-            'class' => 'fixed-width-xs',
-            'align' => 'center',
-            'type'  => 'bool',
-            'filter_type' => 'int',
-        );
-        $fields_list['banned'] = array(
-            'title' => $this->l('Banned'),
-            'active' => 'toggleBanned',
-            'class' => 'fixed-width-xs',
-            'align' => 'center',
-            'type'  => 'bool',
-            'filter_type' => 'int',
+            ),
+            'points' => array(
+                'title' => $this->l('Points'),
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            ),
+            'coins' => array(
+                'title' => $this->l('Coins'),
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            ),
+            'total' => array(
+                'title' => $this->total_name,
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            ),
+            'loyalty' => array(
+                'title' => $this->loyalty_name,
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            ),
+            'active' => array(
+                'title' => $this->l('Active'),
+                'active' => 'status',
+                'class' => 'fixed-width-xs',
+                'align' => 'center',
+                'type'  => 'bool',
+                'filter_type' => 'int',
+            ),
+            'banned' => array(
+                'title' => $this->l('Banned'),
+                'active' => 'toggleBanned',
+                'class' => 'fixed-width-xs',
+                'align' => 'center',
+                'type'  => 'bool',
+                'filter_type' => 'int',
+            ),
         );
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
-        $this->_orderBy = 'total';
-        $this->_orderWay = 'DESC';
+        $this->_orderBy = 'id_customer';
+        $this->_orderWay = 'ASC';
         $this->bulk_actions = [];
 
         parent::__construct();
@@ -215,6 +209,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             'title' => 'ID',
             'align' => 'center',
             'class' => 'fixed-width-xs',
+            'alias' => 'c',
             'filter_type' => 'int',
         );
 
@@ -287,8 +282,8 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
-        $this->_orderBy = 'total';
-        $this->_orderWay = 'DESC';
+        $this->_orderBy = 'id_customer';
+        $this->_orderWay = 'ASC';
         $this->bulk_actions = [];
 
         if (Shop::isFeatureActive()) {
@@ -313,13 +308,13 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
-                )
+                    'label' => $this->l('No'),
+                ),
             ),
         );
         $inputs[] = array(
@@ -330,13 +325,13 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 array(
                     'id' => 'active_on',
                     'value' => 1,
-                    'label' => $this->l('Yes')
+                    'label' => $this->l('Yes'),
                 ),
                 array(
                     'id' => 'active_off',
                     'value' => 0,
-                    'label' => $this->l('No')
-                )
+                    'label' => $this->l('No'),
+                ),
             ),
         );
 
