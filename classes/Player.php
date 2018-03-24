@@ -310,6 +310,16 @@ class Player extends \ObjectModel {
                             $total = $order['total_paid']; // Standard if nothing is set
                         }
 
+                        // Check if coupons should be substracted (in total they are already substracted)
+                        if (\Configuration::get('krona_order_coupon', null, $customer->id_shop_group, $customer->id_shop)) {
+                            if ($order_amount == 'total_products_wt') {
+                                $total = $total - $order['total_discounts_tax_incl'];
+                            }
+                            elseif ($order_amount == 'total_products') {
+                                $total = $total - $order['total_discounts_tax_excl'];
+                            }
+                        }
+
                         // Check the rounding method -> up is standard
                         $order_rounding = \Configuration::get('krona_order_rounding', null, $customer->id_shop_group, $customer->id_shop);
 
