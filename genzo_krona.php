@@ -698,11 +698,16 @@ class Genzo_Krona extends Module
                 $minimum = false;
             }
 
-            if (Configuration::get('krona_order_rounding', null, $this->context->shop->id_shop_group, $this->context->shop->id) == 'up') {
+            // Check the rounding method -> nearest is standard
+            $order_rounding = Configuration::get('krona_order_rounding', null, $this->context->shop->id_shop_group, $this->context->shop->id);
+            if ($order_rounding == 'down') {
+                $total = floor($coins_in_cart * $actionOrder->coins_change);
+            }
+            elseif ($order_rounding == 'up') {
                 $total = ceil($coins_in_cart * $actionOrder->coins_change);
             }
             else {
-                $total = floor($coins_in_cart * $actionOrder->coins_change);
+                $total = round($coins_in_cart * $actionOrder->coins_change);
             }
 
             $this->context->smarty->assign(array(
@@ -891,14 +896,18 @@ class Genzo_Krona extends Module
                     return false;
                 }
                 else {
-                    // Check the rounding method -> up is standard
+                    // Check the rounding method -> nearest is standard
                     $order_rounding = Configuration::get('krona_order_rounding', null, $this->context->shop->id_shop_group, $this->context->shop->id);
-
                     if ($order_rounding == 'down') {
                         $coins_change = floor($total * $actionOrder->coins_change);
-                    } else {
+                    }
+                    elseif ($order_rounding == 'up') {
                         $coins_change = ceil($total * $actionOrder->coins_change);
                     }
+                    else {
+                        $coins_change = round($total * $actionOrder->coins_change);
+                    }
+
                     foreach ($order_states as $id_state_ok) {
 
                         if ($id_state_new == $id_state_ok) {

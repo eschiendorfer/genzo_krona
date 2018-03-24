@@ -257,6 +257,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 'query' => array(
                     array('value' => 'up', 'name' => $this->l('Up')),
                     array('value' => 'down', 'name' => $this->l('Down')),
+                    array('value' => 'nearest', 'name' => $this->l('Nearest')),
                 ),
                 'id' => 'value',
                 'name' => 'name',
