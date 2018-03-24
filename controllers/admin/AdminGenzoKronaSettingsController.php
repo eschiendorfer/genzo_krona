@@ -103,6 +103,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page', null, $this->id_shop_group, $this->id_shop),
             'avatar' => Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop),
             'order_amount' => Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop),
+            'order_coupon' => Configuration::get('krona_order_coupon', null, $this->id_shop_group, $this->id_shop),
             'order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
             'coupon_prefix' => Configuration::get('krona_coupon_prefix', null, $this->id_shop_group, $this->id_shop),
             'tab_fake' => $tab_fake,
@@ -225,6 +226,25 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 ),
                 'id' => 'value',
                 'name' => 'name',
+            ),
+            'tab' => 'order',
+        );
+        $inputs[] = array(
+            'type' => 'switch',
+            'label' => $this->l('Substract Coupon'),
+            'desc' => $this->l('Reduce the total value, with the value of the used coupon.'),
+            'name' => 'order_coupon',
+            'values' => array(
+                array(
+                    'id' => 'active_on',
+                    'value' => 1,
+                    'label' => $this->l('Yes')
+                ),
+                array(
+                    'id' => 'active_off',
+                    'value' => 0,
+                    'label' => $this->l('No')
+                )
             ),
             'tab' => 'order',
         );
@@ -559,6 +579,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             Configuration::updateValue('krona_url', pSQL(Tools::getValue('url')), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_order_amount', pSQL(Tools::getValue('order_amount')), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_order_coupon', pSQL(Tools::getValue('order_coupon')), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_order_rounding', pSQL(Tools::getValue('order_rounding')), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_coupon_prefix', pSQL(Tools::getValue('coupon_prefix')), false, $this->id_shop_group, $this->id_shop);
 

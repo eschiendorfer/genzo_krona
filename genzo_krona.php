@@ -862,6 +862,16 @@ class Genzo_Krona extends Module
                     $total = $order->total_paid; // Standard if nothing is set
                 }
 
+                // Check if coupons should be substracted
+                if (Configuration::get('krona_order_coupon', $this->context->shop->id_shop_group, $this->context->shop->id)) {
+                    if ($order_amount == 'total_wt' || 'total_products_wt') {
+                        $total = $total - $order->total_discounts_tax_incl;
+                    }
+                    else {
+                        $total = $total - $order->total_discounts_tax_excl;
+                    }
+                }
+
                 // Check if total is high enough
                 if ($total < $actionOrder->minimum_amount) {
                     return false;
