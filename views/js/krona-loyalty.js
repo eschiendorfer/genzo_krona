@@ -32,9 +32,12 @@ $(document).ready(function() {
             total_points = Math.ceil(coins_in_cart + points);
             points = Math.ceil(price * coins_change);
         }
-        else {
+        else if (rounding === 'down') {
             total_points = Math.floor(coins_in_cart + points);
             points = Math.floor(price * coins_change);
+        else {
+            total_points = Math.round(coins_in_cart + points);
+            points = Math.round(price * coins_change);
         }
 
         // var voucher = total_points * coins_conversion;
