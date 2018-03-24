@@ -393,7 +393,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $fields_form = array(
             'legend' => array(
-                'title' => $this->l('Edit Player'),
+                'title' => $this->l('Edit Player:') . ' ' . $this->object->display_name,
                 'icon' => 'icon-cogs',
             ),
             'input' => $inputs,
