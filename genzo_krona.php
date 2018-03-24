@@ -685,6 +685,11 @@ class Genzo_Krona extends Module
                 $coins_in_cart = 0;
             }
 
+            // Check if coupons should be substracted
+            if (Configuration::get('krona_order_coupon', null, $this->context->shop->id_shop_group, $this->context->shop->id) && ($order_amount == 'total_products_wt' OR $order_amount == 'total_products')) {
+                $coins_in_cart = $coins_in_cart - $this->context->cart->getSummaryDetails()['total_discounts'];
+            }
+
             if ($actionOrder->minimum_amount > $coins_in_cart) {
                 $coins_in_cart = 0;
                 $minimum = true;
@@ -862,12 +867,12 @@ class Genzo_Krona extends Module
                     $total = $order->total_paid; // Standard if nothing is set
                 }
 
-                // Check if coupons should be substracted
+                // Check if coupons should be substracted (in total they are already substracted)
                 if (Configuration::get('krona_order_coupon', $this->context->shop->id_shop_group, $this->context->shop->id)) {
-                    if ($order_amount == 'total_wt' || 'total_products_wt') {
+                    if ($order_amount == 'total_products_wt') {
                         $total = $total - $order->total_discounts_tax_incl;
                     }
-                    else {
+                    elseif ($order_amount == 'total_products') {
                         $total = $total - $order->total_discounts_tax_excl;
                     }
                 }
