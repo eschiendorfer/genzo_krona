@@ -320,13 +320,16 @@ class Player extends \ObjectModel {
                             }
                         }
 
-                        // Check the rounding method -> up is standard
+                        // Check the rounding method -> near is standard
                         $order_rounding = \Configuration::get('krona_order_rounding', null, $customer->id_shop_group, $customer->id_shop);
-
                         if ($order_rounding == 'down') {
                             $coins_change = floor($total * $actionOrder->coins_change);
-                        } else {
+                        }
+                        elseif ($order_rounding == 'up') {
                             $coins_change = ceil($total * $actionOrder->coins_change);
+                        }
+                        else {
+                            $coins_change = round($total * $actionOrder->coins_change);
                         }
 
                         Player::updateCoins($id_customer, $coins_change);
