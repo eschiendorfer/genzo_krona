@@ -120,7 +120,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
-        $this->_orderBy = 'total';
+        $this->_defaultOrderBy = 'total';
         $this->_orderWay = 'DESC';
         $this->bulk_actions = [];
 
@@ -287,7 +287,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
-        $this->_orderBy = 'total';
+        $this->_defaultOrderBy = 'total';
         $this->_orderWay = 'DESC';
         $this->bulk_actions = [];
 
