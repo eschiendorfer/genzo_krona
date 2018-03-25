@@ -102,6 +102,10 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
 	        $this->errors[] = $this->module->l('You haven\'t enough loyalty points.');
 	        return;
         }
+        elseif (empty($loyalty)) {
+	        $this->errors[] = $this->module->l('Must select more than 0 loyalty points.');
+	        return;
+        }
         else {
 	        // Remove Loyalty Points
 	        $player->loyalty = $player->loyalty - $loyalty;
