@@ -184,8 +184,6 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
             }
         }
 
-
-
     return true;
     }
 
