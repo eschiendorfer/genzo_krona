@@ -151,54 +151,42 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
 
     // Helpers
     private function checkGroups() {
-        // This functions checks basically, if all groups have Priority
-        $query = new DbQuery();
-        $query->select('Count(*)');
-        $query->from('group');
-        $group =  Db::getInstance()->getValue($query);
 
+        // This functions checks basically, if all currencies are in the action_order table
         $query = new DbQuery();
-        $query->select('Count(*)');
+        $query->select('id_group');
         $query->from($this->table);
-        $priority =  Db::getInstance()->getValue($query);
+        $settings =  Db::getInstance()->executeS($query);
 
-        if ($group != $priority) {
+        $query = new DbQuery();
+        $query->select('id_group');
+        $query->from('group');
+        $groups = Db::getInstance()->executeS($query);
 
-            // This functions checks basically, if all currencies are in the action_order table
-            $query = new DbQuery();
-            $query->select('id_group');
-            $query->from($this->table);
-            $settings =  Db::getInstance()->executeS($query);
+        // Flaten the multidimensional arrays, so we can use array_dif
+        $settings = array_map('current', $settings);
+        $groups = array_map('current', $groups);
 
-            $query = new DbQuery();
-            $query->select('id_group');
-            $query->from('group');
-            $groups = Db::getInstance()->executeS($query);
+        $missing = array_diff($groups, $settings); // Which currencies are missing in the module
+        $redundant = array_diff($settings, $groups); // Which currencies are redundant in the module
 
-            // Flaten the multidimensional arrays, so we can use array_dif
-            $settings = array_map('current', $settings);
-            $groups = array_map('current', $groups);
-
-            $missing = array_diff($groups, $settings); // Which currencies are missing in the module
-            $redundant = array_diff($settings, $groups); // Which currencies are redundant in the module
-
-            if (!empty($missing)) {
-                foreach ($missing as $id_group) {
-                    $insert['id_group'] = $id_group;
-                    $insert['position'] = Group::getHighestPosition()+1;
-                    Db::getInstance()->insert($this->table, $insert);
-                }
+        if (!empty($missing)) {
+            foreach ($missing as $id_group) {
+                $insert['id_group'] = $id_group;
+                $insert['position'] = Group::getHighestPosition()+1;
+                Db::getInstance()->insert($this->table, $insert);
             }
-
-            if (!empty($redundant)) {
-                foreach ($redundant as $id_group) {
-                    Db::getInstance()->delete($this->table, "`id_group`={$id_group}");
-                }
-            }
-
         }
 
-        return true;
+        if (!empty($redundant)) {
+            foreach ($redundant as $id_group) {
+                Db::getInstance()->delete($this->table, "`id_group`={$id_group}");
+            }
+        }
+
+
+
+    return true;
     }
 
     public function ajaxProcessUpdatePositions() {
