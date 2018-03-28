@@ -80,15 +80,15 @@ There is a fourth hook, which returns you the points an action brings to a custo
         'action_name' => 'ask_question',
         'id_customer' => $this->context->customer->id,
     );
-    $Action = Hook::exec('displayKronaActionPoints', $params, null, true, false);
+    $action = Hook::exec('displayKronaActionPoints', $params, null, true, false);
 
 It will return you a multidimensional array with the following structure:
 
-    $Action['genzo_krona']['error']; // If there is any error, the other values won't be accessible
-    $Action['genzo_krona']['points']; // How many points will the customer get
-    $Action['genzo_krona']['executions']; // How often has he executed the action (based on execution_type)
-    $Action['genzo_krona']['execution_type']; // unlimited, per_lifetime, per_year, per_month or per_day
-    $Action['genzo_krona']['execution_max']; // How often can this action be executed max (based on execution_type)
+    $action['genzo_krona']['error']; // If there is any error, the other values won't be accessible
+    $action['genzo_krona']['points']; // How many points will the customer get
+    $action['genzo_krona']['executions']; // How often has he executed the action (based on execution_type)
+    $action['genzo_krona']['execution_type']; // unlimited, per_lifetime, per_year, per_month or per_day
+    $action['genzo_krona']['execution_max']; // How often can this action be executed max (based on execution_type)
     
 Just to make the concept clear. The points value will be 0, if a customer has reached the max (executions=execution_max).
 The other values are just returned, so you can inform the customer correctly. Like: "You have already collected three times points for asking
