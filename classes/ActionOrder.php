@@ -25,6 +25,7 @@ class ActionOrder extends \ObjectModel {
         'table'     => "genzo_krona_action_order",
         'primary'   => 'id_action_order',
         'multilang' => false,
+        'multishop' => true,
         'fields' => array(
             'id_currency'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
             'coins_change'  => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
@@ -38,6 +39,8 @@ class ActionOrder extends \ObjectModel {
     public function __construct($id_order_action = null, $id_lang = null, $id_shop = null)
     {
         parent::__construct($id_order_action, $id_lang, $id_shop);
+
+        \Shop::addTableAssociation(self::$definition['table'], array('type' => 'shop'));
 
         if ($id_order_action) {
             $currency = \Currency::getCurrency($this->id_currency);
@@ -114,7 +117,7 @@ class ActionOrder extends \ObjectModel {
                 $actionOrder = new ActionOrder($id_action_order);
                 $actionOrder->delete();
 
-                \Db::getInstance()->delete(self::$definition['table'].'_shop', "`id_action_order`={$id_action_order}");
+                // \Db::getInstance()->delete(self::$definition['table'].'_shop', "`id_action_order`={$id_action_order}");
             }
         }
     }

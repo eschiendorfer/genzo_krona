@@ -152,7 +152,7 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
     // Helpers
     private function checkGroups() {
 
-        // This functions checks basically, if all currencies are in the action_order table
+        // This functions checks basically, if all groups are in the action_order table
         $query = new DbQuery();
         $query->select('id_group');
         $query->from($this->table);
@@ -167,8 +167,8 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
         $settings = array_map('current', $settings);
         $groups = array_map('current', $groups);
 
-        $missing = array_diff($groups, $settings); // Which currencies are missing in the module
-        $redundant = array_diff($settings, $groups); // Which currencies are redundant in the module
+        $missing = array_diff($groups, $settings); // Which groups are missing in the module
+        $redundant = array_diff($settings, $groups); // Which groups are redundant in the module
 
         if (!empty($missing)) {
             foreach ($missing as $id_group) {

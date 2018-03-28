@@ -93,6 +93,10 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
 
     public function init() {
 
+        // Check Actions
+        $krona = new Genzo_Krona();
+        $krona->registerExternalActions();
+
         parent::init();
 
         // Configuration

@@ -322,23 +322,12 @@ class Genzo_Krona extends Module
             }
 
             $action->add();
-
-            // Handle Multistore
-            $ids_shop = Shop::getCompleteListOfShopsID(); // This works for multistore and singlestore
-
-            $insert['id_action'] = Action::getIdAction($module_name, $action_name);
-
-            foreach ($ids_shop as $id_shop) {
-                $insert['id_shop'] = $id_shop;
-                DB::getInstance()->insert($this->table_name . '_action_shop', $insert);
-            }
-
         }
 
         return true;
     }
 
-    private function registerExternalActions() {
+    public function registerExternalActions() {
         $modules = Hook::exec('actionRegisterKronaAction', [], null, true, false);
         if(!empty($modules)) {
             foreach ($modules as $module_name => $actions) {

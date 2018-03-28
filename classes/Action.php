@@ -29,6 +29,7 @@ class Action extends \ObjectModel {
         'table'     => "genzo_krona_action",
         'primary'   => 'id_action',
         'multilang' => true,
+        'multishop' => true,
         'fields' => array(
             'module'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'key'            => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
@@ -40,6 +41,15 @@ class Action extends \ObjectModel {
             'message'        => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
         )
     );
+
+    public function __construct($id_action = null, $id_lang = null, $id_shop = null) {
+
+        parent::__construct($id_action, $id_lang, $id_shop);
+
+        \Shop::addTableAssociation(self::$definition['table'], array('type' => 'shop'));
+
+    }
+
 
     // Queries
     public static function getIdAction($module, $action) {
