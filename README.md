@@ -64,14 +64,37 @@ There is a third hook, which should be used by you, if you offer FrontOffice fea
 
 Afterwards you can use:
     
-    $kronaCustomer['pseudonym']; // Gives the display_name
-    $kronaCustomer['avatar']; // Gives the full path of avatar
-    $kronaCustomer['total']; // Shows the points
+    $kronaCustomer['genzo_krona']['pseudonym']; // Gives the display_name
+    $kronaCustomer['genzo_krona']['avatar']; // Gives the full path of avatar
+    $kronaCustomer['genzo_krona']['total']; // Shows the points
     
 You need to check yourself, if the array is filled. Unfortunately thirty bees doesn't allow me to return false.
 
 **Please note:** If you don't integrate this hook. The merchants will won't have a nice situation. Cause his customers are (maybe) chosing an pseudonym, while your module is just displaying any different name.
 
+### hookDisplayKronaActionPoints
+There is a fourth hook, which returns you the points an action brings to a customer. It expects three values:
+
+    $params = array(
+        'module_name' => 'super_question',
+        'action_name' => 'ask_question',
+        'id_customer' => $this->context->customer->id,
+    );
+    $kronaAction = Hook::exec('displayKronaActionPoints', $params, null, true, false);
+
+It will return you a multidimensional array with the following structure:
+
+    $kronaCustomer['genzo_krona']['error']; // If there is any error, the other values won't be accessable
+    $kronaCustomer['genzo_krona']['points']; // How many points will the customer get
+    $kronaCustomer['genzo_krona']['executions']; // How often has he executed the action (based on execution_type)
+    $kronaCustomer['genzo_krona']['execution_type']; // unlimited, per_lifetime, per_year, per_month or per_day
+    $kronaCustomer['genzo_krona']['execution_max']; // How often can this action be executed max (based on execution_type)
+    
+Just to make the concept clear. The points value will be 0, if a customer has reached the max (executions=execution_max).
+The other values are just returned, so you can inform the customer correctly. Like: "You have already collected three times points for asking
+a question. You can still ask questions, but you won't get points till next month." This example would be for
+execution_type=per_month and execution_max=3.
+    
 ## Support
 The following thirty bees module are already using Krona:
 
