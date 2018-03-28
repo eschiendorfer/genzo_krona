@@ -28,18 +28,6 @@ use KronaModule\Zebra_Image;
 
 class Genzo_Krona extends Module
 {
-    public $errors;
-    public $confirmation;
-    public $table_name;
-	public $is_multishop;
-	public $id_shop_group;
-	public $id_shop;
-	public $is_loyalty;
-	public $is_gamification;
-	public $loyalty_total;
-	public $gamification_total;
-    public $total_name;
-    public $loyalty_name;
 
 	function __construct() {
 		$this->name = 'genzo_krona';
@@ -57,9 +45,6 @@ class Genzo_Krona extends Module
 		$this->displayName = $this->l('Krona Loyalty Points');
 		$this->description = $this->l('Build up a community with a points system');
 		$this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
-
-		// Get Variables
-		$this->table_name = $this->name;
 
 	}
 
@@ -363,7 +348,6 @@ class Genzo_Krona extends Module
     }
 
 	// Backoffice
-
     public function getContent() {
 	    $url = $this->context->link->getAdminLink('AdminGenzoKronaSettings', true);
 	    Tools::redirectAdmin($url);
@@ -646,6 +630,7 @@ class Genzo_Krona extends Module
 
             return $this->display(__FILE__, 'views/templates/hook/rightColumnProduct.tpl');
         }
+        return null;
     }
 
     public function hookDisplayProductButtons($params) {
@@ -710,6 +695,7 @@ class Genzo_Krona extends Module
 
             return $this->display(__FILE__, 'views/templates/hook/shoppingCartFooter.tpl');
         }
+        return null;
     }
 
     public function hookActionExecuteKronaAction($params) {
@@ -1061,44 +1047,5 @@ class Genzo_Krona extends Module
 
         return $my_routes;
     }
-
-
-    // Helper for Configuration Values in Object Models
-    public static function isLoyaltyActive() {
-
-        $id_shop_group = Context::getContext()->shop->id_shop_group;
-        $id_shop = Context::getContext()->shop->id_shop;
-
-        return Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop);
-
-    }
-
-    public static function isGamificationActive() {
-
-        $id_shop_group = Context::getContext()->shop->id_shop_group;
-        $id_shop = Context::getContext()->shop->id_shop;
-
-        return Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop);
-
-    }
-
-    public static function getLoyaltyTotalMethod() {
-
-        $id_shop_group = Context::getContext()->shop->id_shop_group;
-        $id_shop = Context::getContext()->shop->id_shop;
-
-        return Configuration::get('krona_loyalty_total', null, $id_shop_group, $id_shop);
-
-    }
-
-    public static function getGamificationTotalMethod() {
-
-        $id_shop_group = Context::getContext()->shop->id_shop_group;
-        $id_shop = Context::getContext()->shop->id_shop;
-
-       return Configuration::get('krona_gamification_total', null, $id_shop_group, $id_shop);
-
-    }
-
 
 }

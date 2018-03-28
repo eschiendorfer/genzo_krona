@@ -51,9 +51,12 @@ class Player extends \ObjectModel {
         parent::__construct($id_customer);
 
         if ($id_customer) {
-            if (\Genzo_Krona::isGamificationActive()) {
 
-                $total = \Genzo_Krona::getGamificationTotalMethod();
+            $context = \Context::getContext();
+
+            if (\Configuration::get('krona_gamification_active', null, $context->shop->id_shop_group, $context->shop->id)) {
+
+                $total = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id);
 
                 if ($total == 'points_coins') {
                     $this->total = $this->points + $this->coins;
@@ -99,11 +102,18 @@ class Player extends \ObjectModel {
 
     public static function getAllPlayers($filters = null, $pagination = null, $order = null) {
 
+        $context = \Context::getContext();
+
         // Multistore Handling
         (\Shop::isFeatureActive()) ? $ids_shop = \Shop::getContextListShopID() : $ids_shop = null;
 
         // Gamification Total
-        (\Genzo_Krona::isGamificationActive()) ? $total = \Genzo_Krona::getGamificationTotalMethod() : $total = null;
+        if (\Configuration::get('krona_gamification_active', null, $context->shop->id_shop_group, $context->shop->id)) {
+            $total = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id);
+        }
+        else {
+            $total = null;
+        }
 
         $query = new \DbQuery();
         $query->select('p.*');
@@ -395,8 +405,11 @@ class Player extends \ObjectModel {
         $player = new Player($id_customer);
         $player->points = $player->points + $points_change;
 
-        if (\Genzo_Krona::isLoyaltyActive()) {
-            $total = \Genzo_Krona::getLoyaltyTotalMethod();
+        $context = \Context::getContext();
+
+        if (\Configuration::get('krona_loyalty_active', null, $context->shop->id_shop_group, $context->shop->id)) {
+
+            $total = Configuration::get('krona_loyalty_total', null, $context->shop->id_shop_group, $context->shop->id);
 
             if ($total == 'points_coins' OR $total == 'points') {
                 $player->loyalty = $player->loyalty + $points_change;
@@ -415,8 +428,11 @@ class Player extends \ObjectModel {
         $player = new Player($id_customer);
         $player->coins = $player->coins + $coins_change;
 
-        if (\Genzo_Krona::isLoyaltyActive()) {
-            $total = \Genzo_Krona::getLoyaltyTotalMethod();
+        $context = \Context::getContext();
+
+        if (\Configuration::get('krona_loyalty_active', null, $context->shop->id_shop_group, $context->shop->id)) {
+
+            $total = \Configuration::get('krona_loyalty_total', null, $context->shop->id_shop_group, $context->shop->id);
 
             if ($total == 'points_coins' OR $total == 'coins') {
                 $player->loyalty = $player->loyalty + $coins_change;
@@ -432,9 +448,11 @@ class Player extends \ObjectModel {
 
         $id_customer = (int)$id_customer;
 
-        (\Shop::isFeatureActive()) ? $id_shop = \Context::getContext()->shop->id_shop :$id_shop = null;
+        $context = \Context::getContext();
 
-        $method = \Genzo_Krona::getGamificationTotalMethod();
+        (\Shop::isFeatureActive()) ? $id_shop = $context->shop->id_shop :$id_shop = null;
+
+        $method = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id);;
 
         $query = new \DbQuery();
 
