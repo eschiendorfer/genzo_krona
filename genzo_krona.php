@@ -57,6 +57,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayRightColumnProduct') OR
             !$this->registerHook('displayShoppingCartFooter') OR
             !$this->registerHook('displayKronaCustomer') OR
+            !$this->registerHook('displayKronaActionPoints') OR
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
@@ -550,6 +551,44 @@ class Genzo_Krona extends Module
 
     }
 
+    public function hookDisplayKronaActionPoints ($params) {
+
+	    $module_name = pSQL($params['module_name']);
+	    $action_name = pSQL($params['action_name']);
+	    $id_customer = (int)$params['id_customer'];
+
+        if (!Player::checkIfPlayerIsActive($id_customer)) {
+            $info['error'][] = 'This player is not active';
+        }
+        if (Player::checkIfPlayerIsBanned($id_customer)) {
+            $info['error'][] = 'This player is banned';
+        }
+        if (!Action::checkIfActionIsActive($module_name, $action_name)) {
+            $info['error'][] = 'This action is not active';
+        }
+
+        if (empty($info['error'])) {
+            $id_action = Action::getIdAction($module_name, $action_name);
+            $action = new Action($id_action);
+
+            $execution_times = Action::getPlayerExecutionTimes($action, $id_customer);
+
+            if (($action->execution_type == 'unlimited') OR (Action::getPlayerExecutionTimes($action, $id_customer) < $action->execution_max)) {
+                $info['points'] = $action->points_change;
+            }
+            else {
+                $info['points'] = 0;
+            }
+
+            $info['executions'] = $execution_times;
+            $info['execution_type'] = $action->execution_type;
+            $info['execution_max'] = $action->execution_max;
+        }
+
+        return $info;
+
+    }
+
     public function hookDisplayHeader () {
 	    // CSS
         $this->context->controller->addCSS($this->_path.'/views/css/krona.css');
@@ -735,33 +774,8 @@ class Genzo_Krona extends Module
 
             $action = new Action($id_action);
 
-            $execution_times = 0;
-
-            // How many times was the action already executed for the defined time span?
-            if ($action->execution_type != 'unlimited') {
-
-                $endDate = date('Y-m-d 23:59:59');
-
-                if ($action->execution_type == 'per_day') {
-                    $startDate = date('Y-m-d 00:00:00');
-                }
-                elseif ($action->execution_type == 'per_month') {
-                    $startDate = date('Y-m-01 00:00:00');
-                }
-                elseif ($action->execution_type == 'per_year') {
-                    $startDate = date('Y-01-01 00:00:00');
-                }
-                else {
-                    $startDate = null;
-                    $endDate = null; // This is max_per_lifetime
-                }
-
-                $execution_times = PlayerHistory::countActionByPlayer($customer->id, $id_action, $startDate, $endDate);
-
-            }
-
             // Check if the User is still allowed to execute this action
-            if (($execution_times < $action->execution_max) OR ($action->execution_type == 'unlimited')) {
+            if (($action->execution_type == 'unlimited') OR (Action::getPlayerExecutionTimes($action, $customer->id) < $action->execution_max)) {
 
                 Player::updatePoints($customer->id, $action->points_change);
 
@@ -796,8 +810,6 @@ class Genzo_Krona extends Module
 
                     $history->title[$id_lang] = pSQL($action->title[$id_lang]);
                 }
-
-
 
                 $history->add();
 

@@ -11,6 +11,7 @@
 namespace KronaModule;
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Player.php';
+require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/PlayerHistory.php';
 
 class Action extends \ObjectModel {
 
@@ -108,6 +109,38 @@ class Action extends \ObjectModel {
         $query->where("`module` = '{$module_name}'");
         $query->where("`key` = '{$action_name}'");
         return \Db::getInstance()->getValue($query);
+    }
+
+    /**
+     * @var Action $action
+     * @param $id_customer
+     */
+    public static function getPlayerExecutionTimes($action, $id_customer) {
+
+        $execution_times = 0;
+
+        // How many times was the action already executed for the defined time span?
+
+        $endDate = date('Y-m-d 23:59:59');
+
+        if ($action->execution_type == 'per_day') {
+            $startDate = date('Y-m-d 00:00:00');
+        }
+        elseif ($action->execution_type == 'per_month') {
+            $startDate = date('Y-m-01 00:00:00');
+        }
+        elseif ($action->execution_type == 'per_year') {
+            $startDate = date('Y-01-01 00:00:00');
+        }
+        else {
+            $startDate = null;
+            $endDate = null; // This is max_per_lifetime or unlimited
+        }
+
+        $execution_times = PlayerHistory::countActionByPlayer($id_customer, $action->id, $startDate, $endDate);
+
+        return $execution_times;
+
     }
 
     // Ajax

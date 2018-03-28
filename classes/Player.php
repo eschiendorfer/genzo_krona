@@ -409,7 +409,7 @@ class Player extends \ObjectModel {
 
         if (\Configuration::get('krona_loyalty_active', null, $context->shop->id_shop_group, $context->shop->id)) {
 
-            $total = Configuration::get('krona_loyalty_total', null, $context->shop->id_shop_group, $context->shop->id);
+            $total = \Configuration::get('krona_loyalty_total', null, $context->shop->id_shop_group, $context->shop->id);
 
             if ($total == 'points_coins' OR $total == 'points') {
                 $player->loyalty = $player->loyalty + $points_change;
