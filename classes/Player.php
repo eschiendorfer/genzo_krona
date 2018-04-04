@@ -265,7 +265,7 @@ class Player extends \ObjectModel {
 
         $id_customer = (int)$id_customer;
 
-        Player::createPlayer($id_customer, true);
+        Player::createPlayer($id_customer);
 
         $import_points = (int)\Tools::getValue('import_points');
         $import_orders = (bool)\Tools::getValue('import_orders');
@@ -274,8 +274,8 @@ class Player extends \ObjectModel {
         if ($import_points > 0) {
             if (\Module::isInstalled('loyalty')) {
 
-                require_once _PS_MODULE_DIR_ . 'loyalty/classes/LoyaltyModule.php';
-                require_once _PS_MODULE_DIR_ . 'loyalty/classes/LoyaltyStateModule.php';
+                include_once _PS_MODULE_DIR_ . 'loyalty/classes/LoyaltyModule.php';
+                include_once _PS_MODULE_DIR_ . 'loyalty/classes/LoyaltyStateModule.php';
 
                 $points = \LoyaltyModule\LoyaltyModule::getPointsByCustomer($id_customer);
                 $coins_change = ceil($points * $import_points);
