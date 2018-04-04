@@ -523,7 +523,6 @@ class Genzo_Krona extends Module
             // JS
             $this->context->controller->addJquery(); // otherwise admin-krona.js is not working
             $this->context->controller->addJS($this->_path . '/views/js/admin-krona.js');
-            $this->context->controller->addJqueryUI('ui.sortable');
         }
     }
 
