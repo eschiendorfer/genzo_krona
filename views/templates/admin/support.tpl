@@ -1,5 +1,3 @@
-{include file="./error.tpl"}
-
 <div class="clearfix">
     {include file="./sidebar.tpl"}
 
