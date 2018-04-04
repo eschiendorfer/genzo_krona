@@ -102,6 +102,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'loyalty_product_page' => Configuration::get('krona_loyalty_product_page', null, $this->id_shop_group, $this->id_shop),
             'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page', null, $this->id_shop_group, $this->id_shop),
             'avatar' => Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop),
+            'leaderboard' => Configuration::get('krona_leaderboard', null, $this->id_shop_group, $this->id_shop),
+            'leaderboard_page' => Configuration::get('krona_leaderboard_page', null, $this->id_shop_group, $this->id_shop),
             'order_amount' => Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop),
             'order_coupon' => Configuration::get('krona_order_coupon', null, $this->id_shop_group, $this->id_shop),
             'order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
@@ -487,6 +489,24 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 ),
                 'tab' => 'gamification',
             );
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'leaderboard',
+                'label' => $this->l('Players on Leaderboard'),
+                'desc' => $this->l('How many players should be displayed on the leaderboard? Set it to 0 if you want display all.'),
+                'suffix' => $this->l('Players'),
+                'class' => 'input fixed-width-sm',
+                'tab' => 'gamification',
+            );
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'leaderboard_page',
+                'label' => $this->l('Players per Page'),
+                'desc' => $this->l('How many players should be displayed on the leaderboard per page?'),
+                'suffix' => $this->l('Players'),
+                'class' => 'input fixed-width-sm',
+                'tab' => 'gamification',
+            );
         }
 
         // Coupons
@@ -576,6 +596,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_pseudonym', (bool)Tools::getValue('pseudonym'), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_avatar', (bool)Tools::getValue('avatar'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_leaderboard', (int)Tools::getValue('leaderboard'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_leaderboard_page', (int)Tools::getValue('leaderboard_page'), false, $this->id_shop_group, $this->id_shop);
             }
             Configuration::updateValue('krona_url', pSQL(Tools::getValue('url')), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'), false, $this->id_shop_group, $this->id_shop);

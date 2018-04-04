@@ -5,8 +5,10 @@
 
 {include file="./nav.tpl"}
 
+{include file="./error.tpl"}
+
 <div class="krona-box">
-    <h1>{l s='Leaderboard' mod='genzo_krona'}</h1>
+    <h1>{l s='Leaderboard' mod='genzo_krona'}{if $title} - {$title}{/if}</h1>
     <div id="leaderboard">
         {foreach from=$players item=player}
             <div class="player">

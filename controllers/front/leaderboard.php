@@ -24,7 +24,6 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
         $id_lang = $this->context->language->id;
         $id_shop_group = $this->context->shop->id_shop_group;
         $id_shop = $this->context->shop->id_shop;
-        $id_customer = $this->context->customer->id;
 
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
 
@@ -34,8 +33,24 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
         );
 
         // Pagination
-        $items = 50;
+        $total_players = Player::getTotalPlayers($filters);
+        $limit_players = (int)Configuration::get('krona_leaderboard', null, $id_shop_group, $id_shop);
+
+        if (!$limit_players OR $total_players < $limit_players) {
+            $limit_players = $total_players;
+        }
+
+        $per_page = (int)Configuration::get('krona_leaderboard_page', null, $id_shop_group, $id_shop);
+        $items = ($per_page) ? $per_page : 50;
+        $pages = ceil($limit_players/$items);
+
         (Tools::getValue('page')) ? $page = Tools::getValue('page') : $page = 1;
+
+        // Check if page is valid
+        if ($page > $pages) {
+            $this->errors[] = $this->module->l('This page is not available');
+            $page = 1;
+        }
 
         $player_pagination = array(
             'limit' => $items,
@@ -43,11 +58,9 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
         );
 
         $order = array(
-            'order_by' => 'total` DESC, `pseudonym', // a bit ugly... consider to go for a multidimensional array
+            'order_by' => 'total` DESC, `id_customer',
             'order_way' => 'ASC',
         );
-
-        $pages = ceil(Player::getTotalPlayers()/$items);
 
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '.$this->module->l('Leaderboard'),
@@ -59,6 +72,7 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
             'pages' => $pages,
             'page' => $page,
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
+            'title' => ($limit_players!=0) ? "Top {$limit_players}" : false,
 		));
 
 		$this->setTemplate('leaderboard.tpl');
