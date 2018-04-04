@@ -19,7 +19,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
 	{	
 		// Disable left and right column
 		$this->display_column_left = false;
-		$this->display_column_right = true;
+		$this->display_column_right = false;
 
         parent::initContent();
 
