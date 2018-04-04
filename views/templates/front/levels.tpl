@@ -15,7 +15,7 @@
             <div style="clear:both;"></div>
             <div class="level-row">
                 <div class="headline">
-                    {if $level.condition_type=='points_coins'}
+                    {if $level.condition_type=='total'}
                         {$total_name}
                     {elseif $level.condition_type=='coins'}
                         {$total_name} {l s='by orders' mod='genzo_krona'}

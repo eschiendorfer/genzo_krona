@@ -50,7 +50,7 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
-            'total_name' => Configuration::get('krona_points_name', $id_lang, $id_shop_group, $id_shop),
+            'total_name' => Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop),
             'loyalty_name' => Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop),
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
