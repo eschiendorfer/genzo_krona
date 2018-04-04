@@ -537,7 +537,7 @@ class Genzo_Krona extends Module
             $name = Configuration::get('krona_total_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
 
             $player = array(
-                'pseudonym' => $player->pseudonym,
+                'pseudonym' => $player->display_name,
                 'avatar' => $player->avatar_full,
                 'total' => $player->total . ' ' . $name,
             );
