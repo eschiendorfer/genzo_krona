@@ -146,34 +146,4 @@ $(document).ready(function() {
         $('#'+form+' #'+id).closest('.form-wrapper > .form-group').show();
     }
 
-
-
-    // Sortable for Group Priority in Settings Tab
-
-    /*var fixHelper = function(e, ui) { ui.children().each(function() { $(this).width($(this).width()); }); return ui; };
-
-    var sortOrder = [];
-    var $sortableTable  = $("#sortable tbody");
-
-    $sortableTable.sortable({
-        start: function(event, element){
-            $.map($('tr [name^=position]', $sortableTable), function(element){
-                sortOrder.push(element.value);
-            });
-        },
-        stop: function(event, element) {
-            $.each($('tr [name^=position]', $sortableTable), function(index, element){
-                element.value = sortOrder[index];
-            });
-        }
-    });
-
-    $sortableTable.disableSelection();
-
-    $('tr [name^=position]', $sortableTable).on('keydown', function(){
-        $(this).closest('tr').data()
-    });*/
-
-
-
 });
