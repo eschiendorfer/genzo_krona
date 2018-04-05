@@ -615,7 +615,10 @@ class Genzo_Krona extends Module
 
     public function hookDisplayRightColumnProduct ($params) {
 
-	    if (Configuration::get('krona_loyalty_product_page')) {
+	    $id_shop_group = $this->context->shop->id_shop_group;
+	    $id_shop = $this->context->shop->id_shop;
+
+	    if (Configuration::get('krona_loyalty_product_page', null, $id_shop_group, $id_shop) AND Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop)) {
 
             $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
 
@@ -623,7 +626,11 @@ class Genzo_Krona extends Module
             $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
             $actionOrder = new ActionOrder($id_ActionOrder);
 
-            $order_amount = Configuration::get('krona_order_amount', null, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
+            if ($actionOrder->active == 0) {
+                return null;
+            }
+
+            $order_amount = Configuration::get('krona_order_amount', null, $id_shop_group, $id_shop);
 
             if ($order_amount == 'total_wt') {
                 $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price'];
@@ -655,14 +662,14 @@ class Genzo_Krona extends Module
                 'krona_coins_change' => $actionOrder->coins_change,
                 'krona_coins_conversion' => $actionOrder->coins_conversion,
                 'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
-                'krona_order_rounding' => Configuration::get('krona_order_rounding', null, $this->context->shop->id_shop_group, $this->context->shop->id),
+                'krona_order_rounding' => Configuration::get('krona_order_rounding', null, $id_shop_group, $id_shop),
                 'krona_tax' => $tax,
                 'krona_tax_rate' => $tax_rate,
             ));
 
             $this->context->smarty->assign(array(
-                'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
-                'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
+                'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $id_shop_group, $id_shop),
+                'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $id_shop_group, $id_shop),
                 'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
             ));
 
@@ -677,13 +684,16 @@ class Genzo_Krona extends Module
 
     public function hookDisplayShoppingCartFooter ($params) {
 
-        if (Configuration::get('krona_loyalty_cart_page')) {
+        $id_shop_group = $this->context->shop->id_shop_group;
+        $id_shop = $this->context->shop->id_shop;
+
+        if (Configuration::get('krona_loyalty_cart_page', null, $id_shop_group, $id_shop) AND Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop)) {
 
             $id_currency = $this->context->currency->id;
             $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
             $actionOrder = new ActionOrder($id_ActionOrder);
 
-            $order_amount = Configuration::get('krona_order_amount', null, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
+            $order_amount = Configuration::get('krona_order_amount', null, $id_shop_group, $id_shop);
 
             if ($order_amount == 'total_wt') {
                 $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price'];
@@ -698,7 +708,7 @@ class Genzo_Krona extends Module
             }
 
             // Check if coupons should be substracted
-            if (Configuration::get('krona_order_coupon', null, $this->context->shop->id_shop_group, $this->context->shop->id) && ($order_amount == 'total_products_wt' OR $order_amount == 'total_products')) {
+            if (Configuration::get('krona_order_coupon', null, $id_shop_group, $id_shop) && ($order_amount == 'total_products_wt' OR $order_amount == 'total_products')) {
                 $coins_in_cart = $coins_in_cart - $this->context->cart->getSummaryDetails()['total_discounts'];
             }
 
@@ -711,7 +721,7 @@ class Genzo_Krona extends Module
             }
 
             // Check the rounding method -> nearest is standard
-            $order_rounding = Configuration::get('krona_order_rounding', null, $this->context->shop->id_shop_group, $this->context->shop->id);
+            $order_rounding = Configuration::get('krona_order_rounding', null, $id_shop_group, $id_shop);
             if ($order_rounding == 'down') {
                 $total = floor($coins_in_cart * $actionOrder->coins_change);
             }
@@ -723,8 +733,8 @@ class Genzo_Krona extends Module
             }
 
             $this->context->smarty->assign(array(
-                'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
-                'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
+                'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $id_shop_group, $id_shop),
+                'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $id_shop_group, $id_shop),
                 'krona_coins_in_cart' => $total,
                 'minimum' => $minimum,
                 'minimum_amount' => $actionOrder->minimum_amount.' '.$actionOrder->currency_iso,
