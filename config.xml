@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
-	<name>revws</name>
+	<name>genzo_krona</name>
 	<displayName><![CDATA[Krona Loyalty Points]]></displayName>
 	<version><![CDATA[1.0.3]]></version>
 	<description><![CDATA[Build up a community with a points system]]></description>
