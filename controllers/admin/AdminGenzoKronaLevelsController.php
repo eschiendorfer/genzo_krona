@@ -341,7 +341,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
             $inputs[] = array(
                 'type' => 'html',
                 'name' => 'html_icon',
-                'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$this->object->icon}' width='50' height='50' />",
+                'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$this->object->icon}_middle.png' width='50' height='50' />",
             );
         }
         $inputs[] = array(
@@ -455,7 +455,9 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
                 $level->icon = ($icon) ? $icon : 'no-icon.png';
 
                 if (isset($icon_old) && $icon_old != 'no-icon.png' && $icon_old != $level->icon) {
-                    unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old);
+                    unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_small.png');
+                    unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_middle.png');
+                    unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_big.png');
                 }
             }
 

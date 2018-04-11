@@ -9,38 +9,13 @@
 
 <div id="levels">
     {foreach from=$levels item=level}
-        <div class="level krona-box">
-            <div class="icon"><img src="{$modules_dir}genzo_krona/views/img/icon/{$level.icon}"></div>
-            <h3>{$level.name}</h3>
-            <div style="clear:both;"></div>
-            <div class="level-row">
-                <div class="headline">
-                    {if $level.condition_type=='total'}
-                        {$total_name}
-                    {elseif $level.condition_type=='coins'}
-                        {$total_name} {l s='by orders' mod='genzo_krona'}
-                    {elseif $level.condition_type=='points'}
-                        {$total_name} {l s='by actions' mod='genzo_krona'}
-                    {elseif $level.condition_type=='order'}
-                        {$total_name} {l s='by orders' mod='genzo_krona'}
-                    {else}
-                        {l s='Action executed' mod='genzo_krona'}
-                    {/if}
-                </div>
-                <div>
-                     {$level.condition} {if $level.condition_type=='action'}{l s='Times' mod='genzo_krona'}{/if}
-                </div>
-            </div>
-            <div class="level-row">
-                <div class="headline">{l s='Achieved at' mod='genzo_krona'}</div>
-                <div>{$level.achieved_last|date_format:"%e. %B %Y"}</div>
-            </div>
-            <div class="level-row">
-                <div class="headline">{l s='Active until' mod='genzo_krona'}</div>
-                <div>{if $level.active_until > 1}{$level.active_until|date_format:"%e. %B %Y"}{else}{l s='Unlimited' mod='genzo_krona'}{/if}</div>
-            </div>
-        </div>
+        {include file="./level.tpl" next=false}
     {/foreach}
+    {if $next_level}
+        <div class="clear clearfix"></div>
+        <h3 style="margin-bottom: 10px;">{l s='Next level' mod='genzo_krona'}:</h3>
+        {include file="./level.tpl" level=$next_level next=true}
+    {/if}
 </div>
 
 {include file="./footer.tpl"}

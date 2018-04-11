@@ -91,6 +91,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'order_canceled_title'    => $order_canceled_title,
             'order_canceled_message'  => $order_canceled_message,
             'home_description'        => $home_description,
+            'levels_grid' => Configuration::get('krona_levels_grid', null, $this->id_shop_group, $this->id_shop),
             'loyalty_active' => Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop),
             'loyalty_total' => Configuration::get('krona_loyalty_total', null, $this->id_shop_group, $this->id_shop),
             'gamification_active' => Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop),
@@ -210,6 +211,25 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'desc' => $this->l('Describe your loyality game here.'),
             'lang'  => true,
             'autoload_rte' => true,
+            'tab' => 'general',
+        );
+        $inputs[] = array(
+            'type' => 'switch',
+            'label' => $this->l('Levels Display Grid'),
+            'desc' => $this->l('Should the levels in FrontOffice be displayed as grid (yes) or list (no)'),
+            'name' => 'levels_grid',
+            'values' => array(
+                array(
+                    'id' => 'active_on',
+                    'value' => 1,
+                    'label' => $this->l('Yes')
+                ),
+                array(
+                    'id' => 'active_off',
+                    'value' => 0,
+                    'label' => $this->l('No')
+                )
+            ),
             'tab' => 'general',
         );
 
@@ -581,6 +601,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             Configuration::updateValue('krona_order_canceled_title', $order_canceled_titles, false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_order_canceled_message', $order_canceled_messages, false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_description', $home_descriptions, true, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_levels_grid', (bool)Tools::getValue('levels_grid'), false, $this->id_shop_group, $this->id_shop);
 
             // Basic Fields
             Configuration::updateValue('krona_loyalty_active', pSQL(Tools::getValue('loyalty_active')), false, $this->id_shop_group, $this->id_shop);

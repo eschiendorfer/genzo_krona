@@ -28,6 +28,7 @@ use KronaModule\Zebra_Image;
 
 class Genzo_Krona extends Module
 {
+    public $errors;
 
 	function __construct() {
 		$this->name = 'genzo_krona';
@@ -449,6 +450,7 @@ class Genzo_Krona extends Module
     public function uploadIcon() {
 
         $file_name = pathinfo($_FILES['icon']['name'], PATHINFO_FILENAME); // Filename without extension
+        $file_extension = pathinfo($_FILES['icon']['name'], PATHINFO_EXTENSION); // Original extension
 
         $ugly = array('ä', 'ö', 'ü');
         $nice = array('ae', 'oe', 'ue');
@@ -460,8 +462,6 @@ class Genzo_Krona extends Module
         $file_name = preg_replace("([\.]{2,})", '', $file_name);
         // Remove spaces and lower the letters
         $file_name = strtolower(str_replace(' ','-',$file_name));
-        // Add Extension
-        $file_name .= '.png';
 
         if(!$file_name OR $file_name=='') {
             $this->errors[] = $this->l('Invalid Filename');
@@ -484,13 +484,27 @@ class Genzo_Krona extends Module
             if ($image) {
                 $file_path = _PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $file_name; // We need absolute path
 
-                move_uploaded_file($file_tmp, $file_path);
+                move_uploaded_file($file_tmp, $file_path.$file_extension);
 
-                $avatar = new Zebra_Image();
-                $avatar->source_path = $file_path;
-                $avatar->target_path = $file_path;
-                $avatar->png_compression = 1;
-                $avatar->resize(100, 100, ZEBRA_IMAGE_CROP_CENTER, -1);
+                $avatar_small = new Zebra_Image();
+                $avatar_small->source_path = $file_path.$file_extension;
+                $avatar_small->target_path = $file_path.'_small.png';
+                $avatar_small->png_compression = 1;
+                $avatar_small->resize(30, 30, ZEBRA_IMAGE_CROP_CENTER, -1);
+
+                $avatar_middle = new Zebra_Image();
+                $avatar_middle->source_path = $file_path.$file_extension;
+                $avatar_middle->target_path = $file_path.'_middle.png';
+                $avatar_middle->png_compression = 1;
+                $avatar_middle->resize(80, 80, ZEBRA_IMAGE_CROP_CENTER, -1);
+
+                $avatar_big = new Zebra_Image();
+                $avatar_big->source_path = $file_path.$file_extension;
+                $avatar_big->target_path = $file_path.'_big.png';
+                $avatar_big->png_compression = 1;
+                $avatar_big->resize(120, 120, ZEBRA_IMAGE_CROP_CENTER, -1);
+
+                unlink($file_path.$file_extension);
             }
             else {
                 $this->errors[] = $this->l('Image Upload failed');

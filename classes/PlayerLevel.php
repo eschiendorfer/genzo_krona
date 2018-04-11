@@ -121,6 +121,28 @@ class PlayerLevel extends \ObjectModel {
 
     }
 
+
+    public static function getNextPlayerLevel($id_customer) {
+
+        $id_lang = \Context::getContext()->language->id;
+        $id_shop = \Context::getContext()->shop->id;
+
+        $last_level = self::getLastPlayerLevel($id_customer);
+
+        $query = new \DbQuery();
+        $query->select('l.id_level');
+        $query->from('genzo_krona_level', 'l');
+        $query->innerJoin('genzo_krona_level_shop', 's', 'l.id_level=s.id_level');
+        $query->where('id_shop='.$id_shop);
+        $query->where('position = ' . ($last_level->position+1));
+        $query->where('active = 1');
+        $id_next_level = \Db::getInstance()->getValue($query);
+
+        $level = ($id_next_level) ? new Level($id_next_level, $id_lang) : false;
+
+        return $level;
+    }
+
     public static function getId($id_customer, $id_level, $only_active = false) {
         $query = new \DbQuery();
         $query->select('id');
@@ -240,6 +262,7 @@ class PlayerLevel extends \ObjectModel {
         $query->orderBy('l.`position` ASC');
         return \Db::getInstance()->ExecuteS($query);
     }
+
 
 
     /**

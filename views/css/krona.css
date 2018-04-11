@@ -261,17 +261,23 @@ i.icon-krona::before {
 
 /* Levels */
 [id^="module-genzo_krona"] #levels .level {
+    box-sizing: border-box;
+}
+
+[id^="module-genzo_krona"] #levels .level.grid {
     width: calc(33.33% - 12px);
     float: left;
-    box-sizing: border-box;
     margin-right: 18px;
 }
-[id^="module-genzo_krona"] #levels .level:nth-of-type(3n) {
+
+
+
+[id^="module-genzo_krona"] #levels .level.grid:nth-of-type(3n) {
     margin-right: 0;
 }
 
     @media (max-width: 900px) {
-        [id^="module-genzo_krona"] #levels .level {
+        [id^="module-genzo_krona"] #levels .level.grid {
             width: 100%;
             float: none;
             box-sizing: border-box;
@@ -279,23 +285,54 @@ i.icon-krona::before {
         }
     }
 
+[id^="module-genzo_krona"] #levels .level.list.krona-box {
+    padding: 10px;
+}
+
 [id^="module-genzo_krona"] #levels .level .icon img {
+    float: left;
+}
+
+[id^="module-genzo_krona"] #levels .level.grid .icon img {
     width: 30px;
     height: 30px;
-    float: left;
     margin: 0 10px 8px 0;
 }
-[id^="module-genzo_krona"] #levels .level h3 {
+
+[id^="module-genzo_krona"] #levels .level.list .icon img {
+    width: 120px;
+    height: 120px;
+    margin: 0 25px 0 0;
+}
+
+[id^="module-genzo_krona"] #levels .level.grid h3 {
     margin: 3px 0 0 0;
     font-size: 13px;
     font-weight: bold;
-    color: #009B4E
+}
+[id^="module-genzo_krona"] #levels .level.list h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 15px 0 0 0;
 }
 
-[id^="module-genzo_krona"] #levels .level .level-row {
+[id^="module-genzo_krona"] #levels .level.grid .level-row {
     margin: 8px 0;
     font-size: 12px;
 }
+
+[id^="module-genzo_krona"] #levels .level.list .level-row {
+    display: inline-block;
+    margin: 0 35px 0 0;
+    text-align: center;
+}
+
+[id^="module-genzo_krona"] #levels .level::after {
+    clear: both;
+    display: block;
+    content: '';
+}
+
 [id^="module-genzo_krona"] #levels .level .level-row:last-of-type {
     margin: 8px 0 0 0;
 }
@@ -304,6 +341,9 @@ i.icon-krona::before {
     font-weight: bold;
     font-size: 11px;
     margin-bottom: -3px;
+}
+[id^="module-genzo_krona"] #levels .level.list .level-row .headline {
+    font-size: 12px;
 }
 
 [id^="module-genzo_krona"] #leaderboard .player {

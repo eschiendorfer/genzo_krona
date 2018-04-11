@@ -48,6 +48,7 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
 
 		$this->context->smarty->assign(array(
+		    'grid' => Configuration::get('krona_levels_grid', null, $id_shop_group, $id_shop),
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
             'total_name' => Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop),
@@ -56,6 +57,7 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController
             'errors' => $this->errors,
             'active' => 'Levels',
             'levels' => PlayerLevel::getAllPlayerLevels($id_customer, array('l.`active`=1 AND (pl.`active`=1 OR l.`hide`=0)')),
+            'next_level' => json_decode(json_encode(PlayerLevel::getNextPlayerLevel($id_customer)), true),
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
 		));
