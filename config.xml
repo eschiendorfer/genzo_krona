@@ -2,7 +2,7 @@
 <module>
 	<name>genzo_krona</name>
 	<displayName><![CDATA[Krona Loyalty Points]]></displayName>
-	<version><![CDATA[1.0.3]]></version>
+	<version><![CDATA[1.0.4]]></version>
 	<description><![CDATA[Build up a community with a points system]]></description>
 	<author><![CDATA[Emanuel Schiendorfer]]></author>
 	<tab><![CDATA[front_office_features]]></tab>

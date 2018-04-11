@@ -33,7 +33,7 @@ class Genzo_Krona extends Module
 	function __construct() {
 		$this->name = 'genzo_krona';
 		$this->tab = 'front_office_features';
-		$this->version = '1.0.3';
+		$this->version = '1.0.4';
 		$this->author = 'Emanuel Schiendorfer';
 		$this->need_instance = 0;
 
