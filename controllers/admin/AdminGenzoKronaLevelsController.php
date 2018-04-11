@@ -452,9 +452,9 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
                 $icon_old = $level->icon; // We need to delete the old image, since we don't override it
                 $krona = new Genzo_Krona();
                 $icon = $krona->uploadIcon();
-                $level->icon = ($icon) ? $icon : 'no-icon.png';
+                $level->icon = ($icon) ? $icon : 'no-icon';
 
-                if (isset($icon_old) && $icon_old != 'no-icon.png' && $icon_old != $level->icon) {
+                if (isset($icon_old) && $icon_old != 'no-icon' && $icon_old != $level->icon) {
                     unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_small.png');
                     unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_middle.png');
                     unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_big.png');
@@ -462,7 +462,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController
             }
 
             if (!$level->icon) {
-                $level->icon = 'no-icon.png'; // For new levels without an upload
+                $level->icon = 'no-icon'; // For new levels without an upload
             }
 
             $level->hide = ($level->duration) ? (bool)Tools::getValue('hide') : 0;
