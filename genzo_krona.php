@@ -490,19 +490,19 @@ class Genzo_Krona extends Module
                 $avatar_small->source_path = $file_path.$file_extension;
                 $avatar_small->target_path = $file_path.'_small.png';
                 $avatar_small->png_compression = 1;
-                $avatar_small->resize(30, 30, ZEBRA_IMAGE_CROP_CENTER, -1);
+                $avatar_small->resize(30, 30, ZEBRA_IMAGE_BOXED, -1);
 
                 $avatar_middle = new Zebra_Image();
                 $avatar_middle->source_path = $file_path.$file_extension;
                 $avatar_middle->target_path = $file_path.'_middle.png';
                 $avatar_middle->png_compression = 1;
-                $avatar_middle->resize(80, 80, ZEBRA_IMAGE_CROP_CENTER, -1);
+                $avatar_middle->resize(80, 80, ZEBRA_IMAGE_BOXED, -1);
 
                 $avatar_big = new Zebra_Image();
                 $avatar_big->source_path = $file_path.$file_extension;
                 $avatar_big->target_path = $file_path.'_big.png';
                 $avatar_big->png_compression = 1;
-                $avatar_big->resize(120, 120, ZEBRA_IMAGE_CROP_CENTER, -1);
+                $avatar_big->resize(120, 120, ZEBRA_IMAGE_BOXED, -1);
 
                 unlink($file_path.$file_extension);
             }

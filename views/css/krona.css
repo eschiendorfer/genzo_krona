@@ -285,9 +285,6 @@ i.icon-krona::before {
         }
     }
 
-[id^="module-genzo_krona"] #levels .level.list.krona-box {
-    padding: 10px;
-}
 
 [id^="module-genzo_krona"] #levels .level .icon img {
     float: left;
@@ -302,7 +299,7 @@ i.icon-krona::before {
 [id^="module-genzo_krona"] #levels .level.list .icon img {
     width: 120px;
     height: 120px;
-    margin: 0 25px 0 0;
+    margin: 0 35px 0 10px;
 }
 
 [id^="module-genzo_krona"] #levels .level.grid h3 {
