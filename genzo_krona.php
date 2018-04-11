@@ -62,7 +62,6 @@ class Genzo_Krona extends Module
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
 			!$this->registerHook('ModuleRoutes') OR
-			!$this->registerHook('actionAdminGenzoKronaPlayersListingResultsModifier') OR
             !$this->registerInbuiltActions() OR
             !$this->registerExternalActions() OR
             !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaActions', 'Krona', 1) OR
@@ -591,6 +590,7 @@ class Genzo_Krona extends Module
     public function hookDisplayHeader () {
 	    // CSS
         $this->context->controller->addCSS($this->_path.'/views/css/krona.css');
+        $this->context->controller->addCSS($this->_path.'/views/css/krona_custom.css');
 
         // JS
         $this->context->controller->addJquery();
