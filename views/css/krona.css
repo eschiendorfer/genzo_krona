@@ -3,12 +3,9 @@
     line-height: 24px;
 }
 
-i.icon-krona {
-    margin-right: 6px;
-}
-
 i.icon-krona::before {
     content: "\f079";
+    margin-right: 2px;
 }
 
 [id^="module-genzo_krona"] .krona-box {
@@ -56,6 +53,51 @@ i.icon-krona::before {
 [id^="module-genzo_krona"] ul#krona-pagination li:last-of-type {
     border-right: 1px solid #DDD;
     border-radius: 0 4px 4px 0;
+}
+
+/* Coins */
+.krona_coin,
+.krona_coin_mini {
+    background: #f2b10b;
+    border-radius: 30px;
+    display: inline-block;
+}
+
+.krona_coin {
+    width: 22px;
+    height: 22px;
+    border: 3px solid #FBDD03;
+}
+
+.krona_coin_mini {
+     width: 16px;
+     height: 16px;
+     border: 2px solid #FBDD03;
+ }
+
+.krona_coin_inner,
+.krona_coin_inner_mini {
+    margin: 1px;
+    background: #FBDD03;
+    border-radius: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: #c38b07;
+}
+
+.krona_coin_inner {
+    width: 18px;
+    height: 18px;
+    border: 1px dotted #f2b10b;
+    font-size: 11px;
+    line-height: 19px;
+}
+
+.krona_coin_inner_mini {
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    line-height: 15px;
 }
 
 
