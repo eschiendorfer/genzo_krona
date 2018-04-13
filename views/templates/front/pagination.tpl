@@ -5,7 +5,7 @@
                  {if $page>1}<a href="?page={$page-1}">{l s='Previous' mod='genzo_krona'}</a>{else}{l s='Previous' mod='genzo_krona'}{/if}
             </li>
 
-            {if $pages >= 5 AND $page > 3}
+            {if $pages >= 4 AND $page >= 4}
                 <li><a href="?page=1">1</a></li>
                 {if $page > 4}
                     <li>...</li>
@@ -20,7 +20,7 @@
                 {/if}
             {/for}
 
-            {if $pages >= 5 AND $page < $pages-2}
+            {if $pages >= 4 AND $page < $pages-2}
                 {if $page < $pages-3}
                     <li>...</li>
                 {/if}
