@@ -28,6 +28,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
         $id_shop = $this->context->shop->id_shop;
         $id_customer = $this->context->customer->id;
 
+
         $player_obj = new Player($id_customer);
 
         // Check if there needs to be a redirction
@@ -43,6 +44,10 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
             $settings_url = $this->context->link->getModuleLink('genzo_krona', 'customersettings');
             Tools::redirect($settings_url);
         }
+
+        // Handle notification
+        $player_obj->notification = 0;
+        $player_obj->update();
 
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
 

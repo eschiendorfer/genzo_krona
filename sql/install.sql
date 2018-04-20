@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player` (
   `loyalty` INT(12) NOT NULL,
   `active` BOOL DEFAULT 1 NOT NULL,
   `banned` BOOL DEFAULT 0 NOT NULL,
+  `notification` INT(3) DEFAULT 0 NOT NULL,
   `date_add` DATETIME NULL,
   `date_upd` DATETIME NULL,
   PRIMARY KEY ( `id_customer` )

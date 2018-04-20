@@ -25,6 +25,7 @@ class Player extends \ObjectModel {
     public $loyalty;
     public $active;
     public $banned;
+    public $notification;
     public $date_add;
     public $date_upd;
 
@@ -41,6 +42,7 @@ class Player extends \ObjectModel {
             'loyalty'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'active'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'banned'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'notification'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'date_add'    => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
             'date_upd'    => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
         )
@@ -416,6 +418,8 @@ class Player extends \ObjectModel {
             }
         }
 
+        $player->notification = $player->notification + 1;
+
         $player->update();
         return true;
     }
@@ -438,6 +442,8 @@ class Player extends \ObjectModel {
                 $player->loyalty = $player->loyalty + $coins_change;
             }
         }
+
+        $player->notification = $player->notification + 1;
 
         $player->update();
         return true;

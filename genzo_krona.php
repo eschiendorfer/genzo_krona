@@ -33,7 +33,7 @@ class Genzo_Krona extends Module
 	function __construct() {
 		$this->name = 'genzo_krona';
 		$this->tab = 'front_office_features';
-		$this->version = '1.0.4';
+		$this->version = '1.1.0';
 		$this->author = 'Emanuel Schiendorfer';
 		$this->need_instance = 0;
 
@@ -94,7 +94,7 @@ class Genzo_Krona extends Module
 		return true;
 	}
 
-    private function executeSqlScript($script) {
+    public function executeSqlScript($script) {
         $file = dirname(__FILE__) . '/sql/' . $script . '.sql';
         if (! file_exists($file)) {
             return false;
@@ -616,6 +616,14 @@ class Genzo_Krona extends Module
             $this->context->controller->addJS($this->_path . '/views/js/page_visit.js');
         }
 
+        if (
+            Configuration::get('krona_notification', null, $this->context->shop->id_shop_group, $this->context->shop->id) AND
+            $this->context->customer->isLogged() AND
+            Player::checkIfPlayerIsActive($this->context->customer->id)
+        ) {
+            Media::addJsDef(array('id_customer' => $this->context->customer->id));
+            $this->context->controller->addJS($this->_path . '/views/js/notification.js');
+        }
     }
 
     public function hookDisplayCustomerAccount () {

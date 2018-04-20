@@ -12,12 +12,24 @@ include(dirname(__FILE__).'/../../config/config.inc.php');
 include(dirname(__FILE__).'/../../init.php');
 
 include_once(dirname(__FILE__).'/classes/Action.php');
+include_once(dirname(__FILE__).'/classes/Player.php');
 
 use KronaModule\Action;
+use KronaModule\Player;
 
 // Page Visit
 if(Tools::getValue('page_visit')) {
     $id_customer = (int)Tools::getValue('page_visit');
     Action::triggerPageVisit($id_customer);
     echo true;
+}
+
+// Notification
+if(Tools::getValue('notification')) {
+    $id_customer = (int)Tools::getValue('notification');
+    $context = Context::getContext();
+    if ($id_customer == $context->customer->id) {
+        $player = new Player($id_customer);
+        echo json_encode($player->notification);
+    }
 }

@@ -49,6 +49,10 @@ class Genzo_KronaTimelineModuleFrontController extends ModuleFrontController
             Tools::redirect($settings_url);
         }
 
+        // Handle notification
+        $player_obj->notification = 0;
+        $player_obj->update();
+
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
 
         // Pagination

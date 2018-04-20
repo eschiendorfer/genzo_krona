@@ -100,6 +100,20 @@ i.icon-krona::before {
     line-height: 15px;
 }
 
+/* Notification */
+#krona-notification {
+    width: 13px;
+    height: 13px;
+    background: #FF0000;
+    color: #FFF;
+    text-align: center;
+    font-weight: bold;
+    line-height: 14px;
+    border: 1px solid #C10000;
+    border-radius: 50%;
+    font-size: 10px;
+    display: none;
+}
 
 /* Navigation */
 [id^="module-genzo_krona"] ul#krona-nav {
@@ -276,6 +290,9 @@ i.icon-krona::before {
 [id^="module-genzo_krona"] .timeline-item.red::before {
     color: #DF7160;
 }
+[id^="module-genzo_krona"] .timeline-item.grey::before {
+    color: #BBB;
+}
 
 [id^="module-genzo_krona"] .timeline-item::after {
     width: 32px;
@@ -294,6 +311,9 @@ i.icon-krona::before {
 }
 [id^="module-genzo_krona"] .timeline-item.red::after {
     border: 2px solid #DF7160;
+}
+[id^="module-genzo_krona"] .timeline-item.grey::after {
+    border: 2px solid #CCC;
 }
 [id^="module-genzo_krona"] .timeline-item:last-child {
     -o-border-image: linear-gradient(to bottom, #CCCCCC 60%, rgba(0, 0, 0, 0)) 1 100%;
@@ -398,4 +418,9 @@ i.icon-krona::before {
     height: 50px;
     float: left;
     margin-right: 15px;
+}
+
+/* Home */
+#module-genzo_krona-home #krona-home ul li {
+    list-style-type: square;
 }
