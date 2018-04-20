@@ -50,7 +50,7 @@
 
     <div style="padding-left: 20px;">
         {foreach from=$history item=his}
-            <div class="timeline-item {if $his.change > 0}green{else}red{/if}" points-is="{$his.change|replace:"-":""}">
+            <div class="timeline-item {if $his.change > 0}green{elseif $his.change==0}grey{else}red{/if}" points-is="{$his.change|replace:"-":""}">
                 <h3>{$his.title}</h3>
                 <p>{$his.date_add|date_format:"%d. %b"}: {$his.message} {if $his.url}<a href="{$his.url}"><i class="fa fa-link"></i></a>{/if}</p>
             </div>
