@@ -9,7 +9,6 @@ $(document).ready(function() {
         datatype: 'json',
         success: function (response) {
             response = $.parseJSON(response);
-            console.log(response);
         }
     });
 
