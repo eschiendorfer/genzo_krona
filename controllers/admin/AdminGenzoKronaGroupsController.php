@@ -189,8 +189,6 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
 
     public function ajaxProcessUpdatePositions() {
 
-        Configuration::updateValue('genzo_krona_updiii', 'was uppp');
-
         $way = (int) (Tools::getValue('way'));
         $id_group = (int) (Tools::getValue('id'));
         $positions = Tools::getValue('group');
@@ -200,11 +198,7 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
 
             if (isset($pos[2]) && (int) $pos[2] === $id_group) {
                 if ($group = new Group((int) $pos[2])) {
-
-                    Configuration::updateValue('genzo_krona_updiii', 'was uppp');
-
                     if (isset($position) && $group->updatePosition($way, $position)) {
-                        Configuration::updateValue('genzo_krona_updiii', 'I am still here');
                         echo 'ok position';
                     } else {
                         echo '{"hasError" : true, "errors" : "Can not update position"}';
