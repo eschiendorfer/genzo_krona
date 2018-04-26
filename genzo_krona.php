@@ -1091,4 +1091,6 @@ class Genzo_Krona extends Module
         return $my_routes;
     }
 
+    // Todo: Show possible Actions for customers
+
 }
