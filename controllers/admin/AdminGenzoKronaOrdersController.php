@@ -84,7 +84,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
         // Configuration
         $id_lang = $this->context->language->id;
         $id_shop_group = $this->context->shop->id_shop_group;
-        $id_shop = $this->context->shop->id_shop;
+        $id_shop = $this->context->shop->id;
 
         $this->loyalty_name = Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop);
     }

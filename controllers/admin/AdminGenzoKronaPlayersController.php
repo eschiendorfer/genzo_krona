@@ -135,7 +135,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         // Configuration
         $id_lang = $this->context->language->id;
         $this->id_shop_group = Context::getContext()->shop->id_shop_group;
-        $this->id_shop = Context::getContext()->shop->id_shop;
+        $this->id_shop = Context::getContext()->shop->id;
 
         $this->is_loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
         $this->is_gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
