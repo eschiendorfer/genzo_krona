@@ -542,7 +542,6 @@ class Genzo_Krona extends Module
     public function hookDisplayKronaCustomer ($params) {
 
 	    $id_customer = (int)$params['id_customer'];
-
 	    if (Player::checkIfPlayerIsActive($id_customer)) {
 
             $player = new Player($id_customer);
