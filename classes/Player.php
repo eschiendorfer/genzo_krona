@@ -518,7 +518,8 @@ class Player extends \ObjectModel {
 
         $customer = new \Customer($id_customer);
 
-        $display_name = \Configuration::get('krona_display_name', null, $customer->id_shop_group, $customer->id_shop);
+        $display_name =  \Configuration::get('krona_display_name', null, $customer->id_shop_group, $customer->id_shop);
+
 
         if ($display_name == 1) {
             $pseudonym = $customer->firstname . ' ' . $customer->lastname; // John Doe
