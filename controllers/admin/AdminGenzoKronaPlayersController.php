@@ -497,8 +497,8 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     PlayerLevel::updatePlayerLevel(new Customer($id_customer), 'points', $history->id_action);
                 }
 
-                if ($coins_change !== '' ) {
-                    $history->change = $coins_change;
+                if ($coins_change !== '') {
+                    $history->change_loyalty = $coins_change;
                     $history->add();
 
                     Player::updateCoins($id_customer, $coins_change);
