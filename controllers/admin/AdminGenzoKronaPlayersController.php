@@ -737,8 +737,13 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 'class' => 'fixed-width-xs',
                 'filter_type' => 'int'
             ),
+            'date_Add' => array(
+                'title' => $this->l('Date'),
+                'align' => 'left',
+                'type'  => 'date'
+            ),
             'url' => array(
-                'title' => 'Url',
+                'title' => $this->l('Url'),
                 'align' => 'left',
                 'remove_onclick' => true,
             ),
