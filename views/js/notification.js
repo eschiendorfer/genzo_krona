@@ -21,7 +21,6 @@ function getNotification() {
             else {
                 $('#krona-notification').hide();
             }
-            console.log(notification);
         }
     });
 }
