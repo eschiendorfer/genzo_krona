@@ -6,6 +6,7 @@
 i.icon-krona::before {
     content: "\f079";
     margin-right: 2px;
+    font-weight: 900;
 }
 
 [id^="module-genzo_krona"] .krona-box {
