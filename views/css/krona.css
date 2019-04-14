@@ -6,6 +6,7 @@
 i.icon-krona::before {
     content: "\f079";
     margin-right: 2px;
+    font-weight: 900;
 }
 
 [id^="module-genzo_krona"] .krona-box {
@@ -178,11 +179,11 @@ i.icon-krona::before {
 }
 
 [id^="module-genzo_krona"] .krona-button:after {
-    font-family: "FontAwesome", "FontAwesomeAS4";
+    font-family: "Font Awesome 5 Free", "FontAwesome";
     content: "\f105";
     margin-left: 5px;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 900;
 }
 
 [id^="module-genzo_krona"] img#avatar {
