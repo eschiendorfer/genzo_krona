@@ -641,8 +641,6 @@ class Genzo_Krona extends Module
 
 	    if (Configuration::get('krona_loyalty_product_page', null, $id_shop_group, $id_shop) AND Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop)) {
 
-            $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
-
             $id_currency = $this->context->currency->id;
             $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
             $actionOrder = new ActionOrder($id_ActionOrder);
@@ -688,6 +686,8 @@ class Genzo_Krona extends Module
                 'krona_tax_rate' => $tax_rate,
             ));
 
+            $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
+
             $this->context->smarty->assign(array(
                 'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $id_shop_group, $id_shop),
                 'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $id_shop_group, $id_shop),
@@ -696,6 +696,7 @@ class Genzo_Krona extends Module
 
             return $this->display(__FILE__, 'views/templates/hook/rightColumnProduct.tpl');
         }
+
         return null;
     }
 
