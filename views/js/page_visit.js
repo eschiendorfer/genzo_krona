@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(window).on('load', function() {
 
     // Ajax Page Visit
     // id_customer is defined in HookDisplayHeader
