@@ -118,7 +118,6 @@ class PlayerLevel extends \ObjectModel {
         $level = ($id_level) ? new Level($id_level, $id_lang) : false;
 
         return $level;
-
     }
 
 
@@ -127,14 +126,19 @@ class PlayerLevel extends \ObjectModel {
         $id_lang = \Context::getContext()->language->id;
         $id_shop = \Context::getContext()->shop->id;
 
-        $last_level = self::getLastPlayerLevel($id_customer);
+        if ($last_level = self::getLastPlayerLevel($id_customer)) {
+            $position = $last_level->position+1;
+        }
+        else {
+            $position = 0;
+        }
 
         $query = new \DbQuery();
         $query->select('l.id_level');
         $query->from('genzo_krona_level', 'l');
         $query->innerJoin('genzo_krona_level_shop', 's', 'l.id_level=s.id_level');
         $query->where('id_shop='.$id_shop);
-        $query->where('position = ' . ($last_level->position+1));
+        $query->where('position = ' . $position);
         $query->where('active = 1');
         $id_next_level = \Db::getInstance()->getValue($query);
 
