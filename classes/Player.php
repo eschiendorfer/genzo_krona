@@ -23,6 +23,7 @@ class Player extends \ObjectModel {
     public $coins;
     public $total;
     public $loyalty;
+    public $loyalty_expire;
     public $active;
     public $banned;
     public $notification;
@@ -34,17 +35,18 @@ class Player extends \ObjectModel {
         'primary' => 'id_customer',
         'multilang' => false,
         'fields' => array(
-            'id_customer'        => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'pseudonym'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'avatar'        => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'points'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'coins'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'loyalty'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'active'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'banned'        => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'notification'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'date_add'    => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
-            'date_upd'    => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
+            'id_customer'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'pseudonym'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'avatar'            => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'points'            => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins'             => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty'           => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty_expire'    => array('type' => self::TYPE_DATE),
+            'active'            => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'banned'            => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'notification'      => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'date_add'          => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
+            'date_upd'          => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
         )
     );
 
@@ -447,6 +449,54 @@ class Player extends \ObjectModel {
 
         $player->update();
         return true;
+
+    }
+
+    // expire type can be today or last_order
+    public static function updateExpireLoyalty($expire_type, $expire_days) {
+        if ($expire_type == 'today') {
+            $sql = 'UPDATE '._DB_PREFIX_.self::$definition['table'].'
+                    SET loyalty_expire = NOW() + INTERVAL '.$expire_days.' DAY';
+            \Db::getInstance()->execute($sql);
+        }
+        elseif ($expire_type == 'last_order') {
+            $players = self::getAllPlayers();
+
+            foreach ($players as $player) {
+                $playerObj = new Player($player['id_customer']);
+                $playerObj->loyalty_expire = self::getExpireDateByLastOrder($player['id_customer'], $expire_days);
+                $playerObj->update();
+            }
+        }
+    }
+
+    private static function getExpireDateByLastOrder($id_customer, $expire_days) {
+        $query = new \DbQuery();
+        $query->select('MAX(date_add)');
+        $query->from('orders');
+        $query->where('id_customer = ' . $id_customer);
+        $query->where('valid = 1');
+        $last_order = \Db::getInstance()->getValue($query);
+
+        $expire_date = date("Y-m-d H:i:s", strtotime($last_order." + {$expire_days} days"));
+
+        return $expire_date;
+    }
+
+    public static function cronExpireLoyalty() {
+
+        foreach (\Shop::getCompleteListOfShopsID() as $id_shop) {
+            $id_shop_group = \Shop::getGroupFromShop($id_shop);
+            if (\Configuration::get('krona_loyalty_expire', null, $id_shop_group, $id_shop)) {
+                $sql = 'UPDATE '._DB_PREFIX_.self::$definition['table'].' AS p
+                        INNER JOIN '._DB_PREFIX_.'customer AS c ON c.id_customer=p.id_customer
+                        SET p.loyalty = 0
+                        WHERE loyalty_expire < NOW() AND c.id_shop='.$id_shop;
+
+                \Db::getInstance()->execute($sql);
+            }
+        }
+
 
     }
 

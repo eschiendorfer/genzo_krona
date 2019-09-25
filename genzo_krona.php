@@ -33,7 +33,7 @@ class Genzo_Krona extends Module
 	function __construct() {
 		$this->name = 'genzo_krona';
 		$this->tab = 'front_office_features';
-		$this->version = '1.1.0';
+		$this->version = '1.2.0';
 		$this->author = 'Emanuel Schiendorfer';
 		$this->need_instance = 0;
 
@@ -861,7 +861,7 @@ class Genzo_Krona extends Module
 
         // Customer -> We first need to get the shop
         $id_customer = $order->id_customer;
-        $customer = new Customer ($id_customer);
+        $customer = new Customer($id_customer);
 
         $order_states = explode(',', Configuration::get('krona_order_state', null, $customer->id_shop_group, $customer->id_shop));
         $order_states_cancel = explode(',', Configuration::get('krona_order_state_cancel', null, $customer->id_shop_group, $customer->id_shop));
@@ -910,7 +910,7 @@ class Genzo_Krona extends Module
                     Player::createPlayer($id_customer);
                 }
 
-                if ( Player::checkIfPlayerIsActive($id_customer) == 0 OR Player::checkIfPlayerIsBanned($id_customer) == 1 ) {
+                if (Player::checkIfPlayerIsActive($id_customer) == 0 OR Player::checkIfPlayerIsBanned($id_customer) == 1) {
                     return false;
                 }
                 else {
@@ -962,13 +962,17 @@ class Genzo_Krona extends Module
 
                             $history->add();
 
+                            if ($expire_days = Configuration::get('krona_loyalty_expire', null, $customer->id_shop_group, $customer->id_shop)) {
+                                $player = new Player($customer->id);
+                                $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days"));
+                                $player->update();
+                            }
+
                             PlayerLevel::updatePlayerLevel($customer, 'coins', $id_actionOrder);
                         }
                     }
                     foreach ($order_states_cancel as $id_state_cancel) {
                         if ($id_state_new == $id_state_cancel) {
-
-                            Configuration::updateValue('krona_cancel_test', 'ja');
 
                             $history = new PlayerHistory($id_customer);
                             $history->id_customer = $id_customer;

@@ -103,6 +103,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'pseudonym' => Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop),
             'loyalty_product_page' => Configuration::get('krona_loyalty_product_page', null, $this->id_shop_group, $this->id_shop),
             'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page', null, $this->id_shop_group, $this->id_shop),
+            'loyalty_expire' => Configuration::get('krona_loyalty_expire', null, $this->id_shop_group, $this->id_shop),
             'avatar' => Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop),
             'leaderboard' => Configuration::get('krona_leaderboard', null, $this->id_shop_group, $this->id_shop),
             'leaderboard_page' => Configuration::get('krona_leaderboard_page', null, $this->id_shop_group, $this->id_shop),
@@ -446,6 +447,33 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 ),
                 'tab' => 'loyalty',
             );
+
+            $inputs[] = array(
+                'type' => 'text',
+                'label' => $this->l('Expire Loyalty Points'),
+                'name' => 'loyalty_expire',
+                'desc' => $this->l('After how many days should the loyalty points be expired? This option will expire all loyalty points. Note: A new order by the customer will update the expire date.'),
+                'suffix' => $this->l('Days'),
+                'class' => 'input fixed-width-sm',
+                'tab' => 'loyalty',
+            );
+
+            $inputs[] = array(
+                'type' => 'select',
+                'label' => $this->l('Update Loyalty Expire Dates'),
+                'name' => 'loyalty_expire_update',
+                'options' => array(
+                    'query' => array(
+                        array('value' => 'none', 'name' => $this->l('None')),
+                        array('value' => 'today', 'name' => $this->l('From Today')),
+                        array('value' => 'last_order', 'name' => $this->l('From Last Order')),
+                    ),
+                    'id' => 'value',
+                    'name' => 'name',
+                ),
+                'desc' => $this->l('Do you want to update the expire dates of a customer? You should use this option, if you use the expire function the first time. From Today is recommended. Be careful: If you use From Last Order a lot of customer will lose their loyalty points, when your cron is executed.' ),
+                'tab' => 'loyalty',
+            );
         }
 
         // Gamification
@@ -633,6 +661,14 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 Configuration::updateValue('krona_loyalty_total', pSQL(Tools::getValue('loyalty_total')), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_loyalty_product_page', pSQL(Tools::getValue('loyalty_product_page')), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_loyalty_cart_page', pSQL(Tools::getValue('loyalty_cart_page')), false, $this->id_shop_group, $this->id_shop);
+
+                // Expiration
+                $new_loyalty_expiration = (int)Tools::getValue('loyalty_expire');
+                Configuration::updateValue('krona_loyalty_expire', (int)Tools::getValue('loyalty_expire'), false, $this->id_shop_group, $this->id_shop);
+
+                if (Tools::getValue('loyalty_expire_update')!='none') {
+                    \KronaModule\Player::updateExpireLoyalty(Tools::getValue('loyalty_expire_update'), $new_loyalty_expiration);
+                }
             }
             if ($gamification) {
                 Configuration::updateValue('krona_gamification_total', pSQL(Tools::getValue('gamification_total')), false, $this->id_shop_group, $this->id_shop);

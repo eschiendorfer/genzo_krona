@@ -14,9 +14,11 @@ include(dirname(__FILE__).'/../../config/config.inc.php');
 
 include_once(dirname(__FILE__).'/classes/PlayerLevel.php');
 include_once(dirname(__FILE__).'/classes/Action.php');
+include_once(dirname(__FILE__).'/classes/Player.php');
 
 use \KronaModule\PlayerLevel;
 use \KronaModule\Action;
+use \KronaModule\Player;
 
 if (isset($_GET['secure_key'])) {
 
@@ -29,6 +31,7 @@ if (isset($_GET['secure_key'])) {
             // Executions
             PlayerLevel::executeCronSetbackLevels();
             Action::executeNewsletterCron();
+            Player::cronExpireLoyalty();
 
             // Update the date, so that the cron is only executed once a day
             Configuration::updateGlobalValue('krona_newsletter_cron', date('Y-m-d'));
