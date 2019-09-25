@@ -20,9 +20,9 @@
                 <a href="https://www.spielezar.ch" target="_blank">https://www.spielezar.ch</a>
             </div>
             <div class="support-box">
-                <p><b>{l s='Option 3: thirty bees likes Patreons' mod='genzo_krona'}</b></p>
-                <p>{l s='Thirty bees is a wonderful open source project. It will become even more powerful, if you support it as a Patreon!' mod='genzo_krona'}</b></p>
-                <a href="https://www.patreon.com/thirtybees">{l s='Become a Patreon!' mod='genzo_krona'}</a>
+                <p><b>{l s='Option 3: thirty bees likes Supporters' mod='genzo_krona'}</b></p>
+                <p>{l s='Thirty bees is a wonderful open source project. It will become even more powerful, if you support it as a Backer!' mod='genzo_krona'}</b></p>
+                <a href="https://forum.thirtybees.com/support-thirty-bees/">{l s='Become a Supporter!' mod='genzo_krona'}</a>
             </div>
         </div>
         <div id="krona-docs" class="panel col-lg-12">
