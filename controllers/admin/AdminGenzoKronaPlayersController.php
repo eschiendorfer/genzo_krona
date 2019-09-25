@@ -174,8 +174,11 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         // This are the real smarty variables
         $this->context->smarty->assign(
             array(
+                'stats'     => $this->getStats(),
                 'content'   => $this->content,
                 'tab'       => 'Players',
+                'gamification_active'  => Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop),
+                'loyalty_active'  => Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop),
                 'loyalty_name'  => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
                 'import'  => Configuration::get('krona_import_customer', null, $this->id_shop_group, $this->id_shop),
                 'dont'    => Configuration::get('krona_dont_import_customer', null, $this->id_shop_group, $this->id_shop),
@@ -946,6 +949,21 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         return $helper->generateForm(array($fields_form));
 
+    }
+
+    // Stats
+    private function getStats() {
+        $query = new DbQuery();
+        $query->select('SUM(loyalty) as loyalty');
+        $query->from('genzo_krona_player');
+        $values = Db::getInstance()->getRow($query);
+
+        // Calculate value of loyalty points
+        $id_action_order = ActionOrder::getIdActionOrderByCurrency($this->context->currency->id);
+        $actionOrder = new ActionOrder($id_action_order);
+        $values['loyalty'] = Tools::displayPrice($values['loyalty']*$actionOrder->coins_conversion);
+
+        return $values;
     }
 
 }

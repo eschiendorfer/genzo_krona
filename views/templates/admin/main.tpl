@@ -15,6 +15,10 @@
             {include file="./import.tpl"}
         {/if}
 
+        {if $tab == 'Players'}
+            {include file="./players_stats.tpl"}
+        {/if}
+
         {$content}
 
         {if $tab == 'Players' AND $deletePlayers}
