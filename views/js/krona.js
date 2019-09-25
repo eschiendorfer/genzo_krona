@@ -18,6 +18,7 @@ $(document).ready(function() {
 
         if (loyalty > loyalty_max) {
             $(this).val(loyalty_max) ;
+            loyalty = loyalty_max;
         }
 
         var coupon = (loyalty * conversion).toFixed(2);
