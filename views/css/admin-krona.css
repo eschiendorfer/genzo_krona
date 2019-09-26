@@ -33,6 +33,15 @@ table#sortable input {
     margin-bottom: 0;
 }
 
+/* Fix chosen width bug */
+form .chosen-container {
+    min-width: 300px !important;
+}
+
+form .chosen-container-multi {
+    width: 100% !important;
+}
+
 
 /* Documentation */
 #content.bootstrap #krona-docs {

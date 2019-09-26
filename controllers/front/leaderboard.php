@@ -27,10 +27,17 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController
 
         $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
 
+
         $filters = array(
             'p.`active` = 1',
             'p.`banned` = 0',
         );
+
+        // Hide Players in leaderboard
+        $hide_players = Configuration::get('krona_hide_players', null, $id_shop_group, $id_shop);
+        if ($hide_players) {
+            $filters[] = 'p.`id_customer` NOT IN ('.$hide_players.')';
+        }
 
         // Pagination
         $total_players = Player::getTotalPlayers($filters);

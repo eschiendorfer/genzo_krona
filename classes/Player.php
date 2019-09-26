@@ -136,6 +136,7 @@ class Player extends \ObjectModel {
 
         $query->from(self::$definition['table'], 'p');
         if ($ids_shop) {
+            $query->select('CONCAT(c.id_customer, ": ", c.firstname," ", c.lastname) AS option_name');
             $query->innerJoin('customer', 'c', 'p.id_customer = c.id_customer');
             $query->where('c.`id_shop` IN (' . implode(',', array_map('intval', $ids_shop)) . ')');
         }

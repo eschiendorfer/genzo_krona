@@ -8,6 +8,8 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
+require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Player.php';
+
 class AdminGenzoKronaSettingsController extends ModuleAdminController
 {
 
@@ -107,6 +109,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'avatar' => Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop),
             'leaderboard' => Configuration::get('krona_leaderboard', null, $this->id_shop_group, $this->id_shop),
             'leaderboard_page' => Configuration::get('krona_leaderboard_page', null, $this->id_shop_group, $this->id_shop),
+            'hide_players[]' => explode(',', Configuration::get('krona_hide_players', null, $this->id_shop_group, $this->id_shop)),
             'order_amount' => Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop),
             'order_coupon' => Configuration::get('krona_order_coupon', null, $this->id_shop_group, $this->id_shop),
             'order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
@@ -576,6 +579,24 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 'class' => 'input fixed-width-sm',
                 'tab' => 'gamification',
             );
+
+            $players = \KronaModule\Player::getAllPlayers();
+            //print_r($players);
+
+            $inputs[] = array(
+                'type' => 'select',
+                'label' => $this->l('Hide Players in List'),
+                'name' => 'hide_players',
+                'class' => 'chosen',
+                'multiple' => true,
+                'options' => array(
+                    'query' => $players,
+                    'id' => 'id_customer',
+                    'name' => 'option_name',
+                ),
+                'tab' => 'gamification',
+                'desc' => $this->l('This will hide players in FO Leaderboard.')
+            );
         }
 
         // Coupons
@@ -704,6 +725,11 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             }
             Configuration::updateValue('krona_order_state', implode(",", $order_state_selected), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_order_state_cancel', implode(",", $order_state_cancel_selected), false, $this->id_shop_group, $this->id_shop);
+
+            // Handling hide_players
+            $hide_players = Tools::getValue('hide_players');
+            $hide_players = (is_array($hide_players)) ? implode(',', $hide_players) : [];
+            Configuration::updateValue('krona_hide_players', $hide_players, false, $this->id_shop_group, $this->id_shop);
 
             if (empty($this->errors)) {
                 $this->confirmations[] = $this->l('Settings were sucessfully saved.');
