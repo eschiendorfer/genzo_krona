@@ -28,7 +28,6 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
         $id_shop = $this->context->shop->id_shop;
         $id_customer = $this->context->customer->id;
 
-
         $player_obj = new Player($id_customer);
 
         // Check if there needs to be a redirction
@@ -72,6 +71,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
             'level' => PlayerLevel::getLastPlayerLevel($id_customer),
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
+            'actions' => Player::getPossibleActions($id_customer),
         ));
 
         $this->setTemplate('overview.tpl');

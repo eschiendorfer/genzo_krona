@@ -595,4 +595,32 @@ class Player extends \ObjectModel {
 
     }
 
+    public static function getPossibleActions($id_customer) {
+
+        $actions = Action::getAllActions(['a.active=1', 'a.points_change>0']);
+
+        foreach ($actions as $key => $action) {
+            $actionObj = new Action($action['id_action']);
+
+            // Newsletter
+            if ($actionObj->module=='genzo_krona' && $actionObj->key=='newsletter') {
+                $context = \Context::getContext();
+                $actions[$key]['done'] = ($context->customer->newsletter) ? true : false;
+                $actions[$key]['possible'] = ($context->customer->newsletter) ? false : true;
+            }
+            else {
+                $executed = (int)Action::getPlayerExecutionTimes($actionObj, $id_customer);
+                if ($executed) {
+                    $actions[$key]['done'] = true;
+                }
+                if (($actionObj->execution_type == 'unlimited') || ($executed < $actionObj->execution_max)) {
+                    $actions[$key]['possible'] = true;
+                }
+            }
+        }
+
+        return $actions;
+
+    }
+
 }

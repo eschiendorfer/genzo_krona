@@ -257,6 +257,22 @@ i.icon-krona::before {
     margin: 0;
 }
 
+[id^="module-genzo_krona"] table#actions {
+
+}
+
+i.icon-check::before,
+i.icon-check-done::before {
+    content: "\f00c";
+    margin-right: 2px;
+    font-weight: 900;
+    color: #009B4E;
+    display: inline-block;
+}
+
+i.icon-check::before {
+    color: #CCCCCC;
+}
 
 /* Timeline */
 [id^="module-genzo_krona"] .timeline-item {

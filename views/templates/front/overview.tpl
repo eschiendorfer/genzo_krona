@@ -58,4 +58,28 @@
     </div>
 </div>
 
+{if $gamification}
+    <div class="krona-box">
+        <h2>{l s='All possible actions:' mod='genzo_krona'}</h2>
+        <table id="actions">
+
+            {foreach from=$actions item=action}
+            <tr>
+                <td><i class="icon icon-check{if isset($action.done) && $action.done}-done{/if}"></i></td>
+                <td>
+                    {if $action.url && $action.possible}
+                        <a href="{$action.url}"> {$action.title} </a>
+                    {else}
+                        {$action.title}
+                    {/if}
+
+                    {if $action.possible}({$action.points_change} {$total_name}){/if}
+                </td>
+            </tr>
+            {/foreach}
+
+        </table>
+    </div>
+{/if}
+
 {include file="./footer.tpl"}

@@ -28,7 +28,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
         $this->lang = false;
 
         parent::__construct();
-
     }
 
     public function initContent() {

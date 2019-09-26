@@ -198,6 +198,14 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
             'desc' => $message_desc,
             'lang' => true,
         );
+
+        $inputs[] = array(
+            'type' => 'text',
+            'label' => $this->l('Url to action'),
+            'name' => 'url',
+            'desc' => $this->l('This url will be linked in FO at possible actions list. Leave it empty, if there is no clear url. Just use relative path. Example: /reviews/my-reviews'),
+        );
+
         $inputs[] =array(
             'type' => 'select',
             'label' => $this->l('Execution Type'),
