@@ -62,6 +62,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
+            !$this->registerHook('actionRegisterGenzoCrmEmail') OR
 			!$this->registerHook('ModuleRoutes') OR
             !$this->registerInbuiltActions() OR
             !$this->registerExternalActions() OR
@@ -290,9 +291,7 @@ class Genzo_Krona extends Module
         $action_name = pSQL($action_name);
 
         // We prevent that same action is registered multiple times
-        $id_action = Action::getIdAction($module_name, $action_name);
-
-        if (!$id_action) {
+        if (!Action::getIdAction($module_name, $action_name)) {
             $ids_lang = Language::getIDs();
 
             $action = new Action();
@@ -539,12 +538,12 @@ class Genzo_Krona extends Module
         }
     }
 
-    public function hookDisplayKronaCustomer ($params) {
+    public function hookDisplayKronaCustomer($params) {
 
 	    $id_customer = (int)$params['id_customer'];
-	    if (Player::checkIfPlayerIsActive($id_customer)) {
+        $player = new Player($id_customer, false);
 
-            $player = new Player($id_customer);
+	    if ($player->active) {
 
             $name = Configuration::get('krona_total_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
 
@@ -562,36 +561,37 @@ class Genzo_Krona extends Module
 
     }
 
-    public function hookDisplayKronaActionPoints ($params) {
+    public function hookDisplayKronaActionPoints($params) {
 
 	    $module_name = pSQL($params['module_name']);
 	    $action_name = pSQL($params['action_name']);
-	    $id_customer = (int)$params['id_customer'];
+        $id_customer = (int)$params['id_customer'];
 
-        if (!Player::checkIfPlayerIsActive($id_customer)) {
+	    $id_action = Action::getIdAction($module_name, $action_name);
+        $action = new Action($id_action);
+	    $player = new Player($id_customer, false);
+
+        if (!$player->active) {
             $info['error'][] = 'This player is not active';
         }
-        if (Player::checkIfPlayerIsBanned($id_customer)) {
+        if ($player->banned) {
             $info['error'][] = 'This player is banned';
         }
-        if (!Action::checkIfActionIsActive($module_name, $action_name)) {
+
+        if (!$id_action || !$action->active) {
             $info['error'][] = 'This action is not active';
         }
 
         if (empty($info['error'])) {
-            $id_action = Action::getIdAction($module_name, $action_name);
-            $action = new Action($id_action);
 
-            $execution_times = Action::getPlayerExecutionTimes($action, $id_customer);
-
-            if (($action->execution_type == 'unlimited') OR (Action::getPlayerExecutionTimes($action, $id_customer) < $action->execution_max)) {
+            if ($executions_left = $player->checkIfPlayerStilCanExecuteAction($action)) {
                 $info['points'] = $action->points_change;
             }
             else {
                 $info['points'] = 0;
             }
 
-            $info['executions'] = $execution_times;
+            $info['executions_left'] = $executions_left;
             $info['execution_type'] = $action->execution_type;
             $info['execution_max'] = $action->execution_max;
         }
@@ -600,7 +600,7 @@ class Genzo_Krona extends Module
 
     }
 
-    public function hookDisplayHeader () {
+    public function hookDisplayHeader() {
 	    // CSS
         $this->context->controller->addCSS($this->_path.'/views/css/krona.css');
         $this->context->controller->addCSS($this->_path.'/views/css/krona_custom.css');
@@ -617,15 +617,17 @@ class Genzo_Krona extends Module
 
         if (
             Configuration::get('krona_notification', null, $this->context->shop->id_shop_group, $this->context->shop->id) AND
-            $this->context->customer->isLogged() AND
-            Player::checkIfPlayerIsActive($this->context->customer->id)
+            $this->context->customer->isLogged()
         ) {
-            Media::addJsDef(array('id_customer' => $this->context->customer->id));
-            $this->context->controller->addJS($this->_path . '/views/js/notification.js');
+            $player = new Player($this->context->customer->id, false);
+            if ($player->active) {
+                Media::addJsDef(array('id_customer' => $this->context->customer->id));
+                $this->context->controller->addJS($this->_path . '/views/js/notification.js');
+            }
         }
     }
 
-    public function hookDisplayCustomerAccount () {
+    public function hookDisplayCustomerAccount() {
 
         $this->context->smarty->assign(array(
             'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
@@ -634,7 +636,7 @@ class Genzo_Krona extends Module
         return $this->display(__FILE__, 'views/templates/hook/customerAccount.tpl');
     }
 
-    public function hookDisplayRightColumnProduct ($params) {
+    public function hookDisplayRightColumnProduct($params) {
 
 	    $id_shop_group = $this->context->shop->id_shop_group;
 	    $id_shop = $this->context->shop->id_shop;
@@ -704,7 +706,7 @@ class Genzo_Krona extends Module
 	    return $this->hookDisplayRightColumnProduct($params);
     }
 
-    public function hookDisplayShoppingCartFooter ($params) {
+    public function hookDisplayShoppingCartFooter($params) {
 
         $id_shop_group = $this->context->shop->id_shop_group;
         $id_shop = $this->context->shop->id_shop;
@@ -770,55 +772,49 @@ class Genzo_Krona extends Module
 
     public function hookActionExecuteKronaAction($params) {
 
+	    // Hook values: module_name, action_name, id_customer, action_url, action_message
 	    $module_name = pSQL($params['module_name']);
 	    $action_name = pSQL($params['action_name']);
 
-	    // Hook values: module_name, action_name, id_customer, action_url, action_message
-        $customer = new Customer((int)$params['id_customer']);
-        $id_action   = Action::getIdAction($module_name, $action_name);
-
-        if (!$id_action) {
-            return 'Action not found';
+        if (!$id_action = Action::getIdAction($module_name, $action_name)) {
+            return 'Action not found!';
         }
 
-        // We have to check Multistore
-        if (Shop::isFeatureActive()) {
-            $id_shop = $customer->id_shop;
-        }
-        else {
-            $id_shop = null;
+	    if (!$id_customer = (int)$params['id_customer']) {
+	        return 'ID Customer not set!';
         }
 
-        // Check if Player exits
-        if (!Player::checkIfPlayerExits($customer->id)) {
-            Player::createPlayer($customer->id);
+	    if (isset($this->context->customer->id) && $this->context->customer->id == $id_customer) {
+	        $customer = $this->context->customer;
+        }
+	    else {
+            $customer = new Customer($id_customer);
         }
 
-        if (
-            !Player::checkIfPlayerIsActive($customer->id) == 1 OR
-            !Player::checkIfPlayerIsBanned($customer->id) == 0 OR
-            !Action::checkIfActionIsActive($module_name, $action_name, $id_shop) == 1
-        ) {
+        $action = new Action($id_action, $customer->id_lang, $customer->id_shop);
+
+        /* @var $player Player */
+        $player = new Player($id_customer, $customer);
+
+        if (!$player->active || $player->banned || !$action->active) {
             return 'Player or Action not active.';
         }
         else {
 
-            $action = new Action($id_action);
-
             // Check if the User is still allowed to execute this action
-            if (($action->execution_type == 'unlimited') OR (Action::getPlayerExecutionTimes($action, $customer->id) < $action->execution_max)) {
+            if ($player->checkIfPlayerStilCanExecuteAction($action)) {
 
-                Player::updatePoints($customer->id, $action->points_change);
+                $player->update($action->points_change);
 
                 $history = new PlayerHistory();
                 $history->id_customer = $customer->id;
                 $history->id_action = $id_action;
+                $history->change = $action->points_change;
 
-                if (!empty($params['action_url'])) {
+
+                if (isset($params['action_url']) && !empty($params['action_url'])) {
                     $history->url = $params['action_url']; // Action url is not mandatory
                 }
-
-                $history->change = $action->points_change;
 
                 // Preparing the lang array for the history message
                 $ids_lang = Language::getIDs();
@@ -844,7 +840,7 @@ class Genzo_Krona extends Module
 
                 $history->add();
 
-                PlayerLevel::updatePlayerLevel($customer, 'points', $id_action);
+                PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
 
             }
         }
@@ -870,8 +866,8 @@ class Genzo_Krona extends Module
         if (in_array($id_state_new, $order_states) OR in_array($id_state_new, $order_states_cancel)) {
 
             // Check ActionOrder -> This is basically checking the currency
-            $id_actionOrder = ActionOrder::getIdActionOrderByCurrency($order->id_currency);
-            $actionOrder = new ActionOrder($id_actionOrder);
+            $id_action_order = ActionOrder::getIdActionOrderByCurrency($order->id_currency);
+            $actionOrder = new ActionOrder($id_action_order);
 
             if ($actionOrder->active) {
 
@@ -906,11 +902,9 @@ class Genzo_Krona extends Module
                 }
 
                 // Check if Player exits
-                if (!Player::checkIfPlayerExits($id_customer)) {
-                    Player::createPlayer($id_customer);
-                }
+                $player = new Player($id_customer, $customer);
 
-                if (Player::checkIfPlayerIsActive($id_customer) == 0 OR Player::checkIfPlayerIsBanned($id_customer) == 1) {
+                if (!$player->active || $player->banned) {
                     return false;
                 }
                 else {
@@ -926,15 +920,15 @@ class Genzo_Krona extends Module
                         $coins_change = round($total * $actionOrder->coins_change);
                     }
 
+
+                    // Todo: rethink the usage of the status
                     foreach ($order_states as $id_state_ok) {
 
                         if ($id_state_new == $id_state_ok) {
 
-                            Player::updateCoins($id_customer, $coins_change);
-
                             $history = new PlayerHistory();
                             $history->id_customer = $id_customer;
-                            $history->id_action_order = $id_actionOrder;
+                            $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
                             $history->change = $coins_change;
 
@@ -964,11 +958,11 @@ class Genzo_Krona extends Module
 
                             if ($expire_days = Configuration::get('krona_loyalty_expire', null, $customer->id_shop_group, $customer->id_shop)) {
                                 $player = new Player($customer->id);
-                                $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days"));
-                                $player->update();
+                                $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days")); // Todo: Rethink when this is updated
                             }
+                            $player->update(0, $coins_change);
 
-                            PlayerLevel::updatePlayerLevel($customer, 'coins', $id_actionOrder);
+                            PlayerLevel::updatePlayerLevel($player, 'coins', $id_action_order);
                         }
                     }
                     foreach ($order_states_cancel as $id_state_cancel) {
@@ -976,7 +970,7 @@ class Genzo_Krona extends Module
 
                             $history = new PlayerHistory($id_customer);
                             $history->id_customer = $id_customer;
-                            $history->id_action_order = $id_actionOrder;
+                            $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
                             $history->change = $coins_change * (-1);
 
@@ -998,7 +992,7 @@ class Genzo_Krona extends Module
                                 $history->title[$id_lang] = pSQL($title[$id_lang]);
                             }
                             $history->add();
-                            Player::updateCoins($id_customer, $history->change);
+                            $player->update(0, $history->change);
 
                             // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
                         }
@@ -1011,11 +1005,34 @@ class Genzo_Krona extends Module
     }
 
     public function hookActionCustomerAccountAdd($params) {
-	    $id_customer = (int)$params['newCustomer']->id_customer;
-	    Player::createPlayer($id_customer);
+        $customer = $params['newCustomer'];
+
+	    $player = new Player();
+        $player->id_customer = $customer->id;
+        $player->avatar = 'no-avatar.jpg';
+        $player->active = (int)\Configuration::get('krona_customer_active', null, $customer->id_shop_group, $customer->id_shop);
+        $player->add();
     }
 
-    public function hookModuleRoutes () {
+    // Email Hooks
+    public function hookActionRegisterGenzoCrmEmail($params) {
+
+        $actions = array(
+            'new_level_achieved' => array (
+                'title' => 'Level achieved',
+                'subtitle' => 'You have achieved a new Level.',
+                'shortcodes' => array(
+                    'level' => $this->l('This will display the name of the level.'),
+                    'next_level' => $this->l('This will display the name of the level.'),
+                    'reward' => $this->l('This will display a sentence of the reward.'),
+                ),
+            ),
+        );
+
+        return $actions;
+    }
+
+    public function hookModuleRoutes() {
 
 	    $slack = Configuration::get('krona_url', null, $this->context->shop->id_shop_group, $this->context->shop->id);
 
@@ -1095,6 +1112,6 @@ class Genzo_Krona extends Module
         return $my_routes;
     }
 
-    // Todo: Show possible Actions for customers
+    // Todo: Think of product returns (as this would reduce coins & loyalty)
 
 }

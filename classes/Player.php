@@ -30,6 +30,11 @@ class Player extends \ObjectModel {
     public $date_add;
     public $date_upd;
 
+    // Dynamic values
+
+    /* @var $customer \Customer */
+    public $customer;
+
     public static $definition = array(
         'table' => "genzo_krona_player",
         'primary' => 'id_customer',
@@ -50,37 +55,58 @@ class Player extends \ObjectModel {
         )
     );
 
-    public function __construct($id_customer = null) {
+    public function __construct($id_customer = null, $customerObj = false) {
 
         parent::__construct($id_customer);
 
         if ($id_customer) {
 
-            $context = \Context::getContext();
+            // Check if customer row exits
+            if (!$this->id_customer && \Customer::customerIdExistsStatic($id_customer)) {
 
-            if (\Configuration::get('krona_gamification_active', null, $context->shop->id_shop_group, $context->shop->id)) {
+                if (!$customerObj instanceof \Customer) {
+                    $context = \Context::getContext();
+                    $customerObj = ($context->customer instanceof \Customer) ? $context->customer : new \Customer($id_customer);
+                }
 
-                $total = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id);
+                $this->id_customer = $id_customer;
+                $this->avatar = 'no-avatar.jpg';
+                $this->active = (int)\Configuration::get('krona_customer_active', null, $customerObj->id_shop_group, $customerObj->id_shop);
+                $this->add();
+            }
 
-                if ($total == 'points_coins') {
+            // Sometimes we don't want the customerObj at all, then we construct with false, if we have we put it in, if we want to generate it we use true
+            if ($customerObj === true || $customerObj instanceof \Customer) {
+
+                if (!$customerObj instanceof \Customer) {
+                    $customerObj = new \Customer($id_customer);
+                }
+
+                $this->customer = $customerObj;
+            }
+
+            if (\Configuration::get('krona_gamification_active', null, $this->customer->id_shop_group, $this->customer->id_shop)) {
+
+                $total_mode_gamification = \Configuration::get('krona_gamification_total', null, $this->customer->id_shop_group, $this->customer->id_shop);
+
+                if ($total_mode_gamification == 'points_coins') {
                     $this->total = $this->points + $this->coins;
-                } elseif ($total == 'points') {
+                }
+                elseif ($total_mode_gamification == 'points') {
                     $this->total = $this->points;
-                } elseif ($total == 'coins') {
+                }
+                elseif ($total_mode_gamification == 'coins') {
                     $this->total = $this->coins;
                 }
 
-                $id_shop_group = \Context::getContext()->shop->id_shop_group;
-                $id_shop = \Context::getContext()->shop->id_shop;
-
-                if (\Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop) && $this->pseudonym) {
+                if (\Configuration::get('krona_pseudonym', null, $this->customer->id_shop_group, $this->customer->id_shop) && $this->pseudonym) {
                     $this->display_name = $this->pseudonym;
                 }
                 else {
                     $this->display_name = self::getDisplayName($this->id_customer);
                 }
 
-                if (\Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
+                if (\Configuration::get('krona_avatar', null, $this->customer->id_shop_group, $this->customer->id_shop)) {
                     $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
                 }
 
@@ -90,18 +116,39 @@ class Player extends \ObjectModel {
         }
     }
 
+    public function update($points_change = 0, $coins_change = 0, $nullValues = false) {
+
+        $this->points += $points_change;
+        $this->coins += $coins_change;
+
+        // Check if loyalty points are affected
+        if (\Configuration::get('krona_loyalty_active', null, $this->customer->id_shop_group, $this->customer->id_shop)) {
+
+            $total_mode_loyalty = \Configuration::get('krona_loyalty_total', null, $this->customer->id_shop_group, $this->customer->id_shop);
+
+            if ($total_mode_loyalty == 'points_coins' OR $total_mode_loyalty == 'points') {
+                $this->loyalty += $points_change;
+                $this->loyalty += $coins_change;
+            }
+        }
+
+        $this->notification = $this->notification + 1; // Todo: this should be added at history
+
+        return parent::update($nullValues);
+    }
+
     public function delete() {
 
         parent::delete();
 
-        $histories = PlayerHistory::getHistoryByPlayer($this->id);
+        $histories = PlayerHistory::getHistoryByPlayer($this->id_customer);
+
         foreach ($histories as $history) {
-            $his = new PlayerHistory($history['id_history']);
-            $his->delete();
+            $playerHistory = new PlayerHistory($history['id_history']);
+            $playerHistory->delete();
         }
 
-        \Db::getInstance()->delete(self::$definition['table'].'_history', 'id_customer='.$this->id);
-        \Db::getInstance()->delete(self::$definition['table'].'_level', 'id_customer='.$this->id);
+        \Db::getInstance()->delete('genzo_krona_player_level', 'id_customer='.$this->id_customer);
     }
 
     public static function getAllPlayers($filters = null, $pagination = null, $order = null) {
@@ -172,7 +219,8 @@ class Player extends \ObjectModel {
 
     }
 
-    public static function getTotalPlayers($filters = null) {
+    // Trying to get ride of this function. But probably we need to generate list in adminControllers differently.
+    /*public static function getTotalPlayers($filters = null) {
 
         (\Shop::isFeatureActive()) ? $ids_shop = \Shop::getContextListShopID() :$ids_shop = null;
 
@@ -191,86 +239,12 @@ class Player extends \ObjectModel {
         }
 
         return \Db::getInstance()->getValue($query);
-    }
-
-    public static function checkIfPlayerExits($id_customer) {
-
-        $id_customer = (int)$id_customer;
-
-        // Check if customer(!) exits
-        if(!\Customer::customerIdExistsStatic($id_customer)) {
-            return false;
-        }
-        else {
-            $query = new \DbQuery();
-            $query->select('Count(*)');
-            $query->from(self::$definition['table']);
-            $query->where('`id_customer` = ' . $id_customer);
-            return \Db::getInstance()->getValue($query);
-        }
-    }
-
-    public static function checkIfPlayerIsActive($id_customer) {
-        $id_customer = (int)($id_customer);
-
-        $query = new \DbQuery();
-        $query->select('active');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . $id_customer);
-        return  \Db::getInstance()->getValue($query);
-    }
-
-    public static function checkIfPlayerIsBanned($id_customer) {
-        $id_customer = (int)($id_customer);
-
-        $query = new \DbQuery();
-        $query->select('banned');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . $id_customer);
-        return  \Db::getInstance()->getValue($query);
-    }
-
-    public static function createPlayer($id_customer) {
-
-        $id_customer = (int)$id_customer;
-
-        // Check if customer(!) exits
-        if(!\Customer::customerIdExistsStatic($id_customer)) {
-            return 'Customer not found!';
-        }
-        elseif (self::checkIfPlayerExits($id_customer)) {
-            return 'Player already exists!';
-        }
-        else {
-            $customer = new \Customer($id_customer);
-
-            $player = new Player($id_customer);
-            $player->id_customer = $id_customer;
-            $player->points = 0;
-            $player->coins = 0;
-            $player->loyalty = 0;
-            $player->avatar = 'no-avatar.jpg';
-            $customer_active = \Configuration::get('krona_customer_active', null, $customer->id_shop_group, $customer->id_shop);
-            $player->active = ($customer_active) ? 1 : 0;
-            $player->add();
-
-            // Add History
-            $hook = array(
-                'module_name' => 'genzo_krona',
-                'action_name' => 'account_creation',
-                'id_customer' => $id_customer,
-            );
-
-            \Hook::exec('ActionExecuteKronaAction', $hook);
-        }
-        return true;
-    }
+    }*/
 
     public static function importPlayer($id_customer) {
 
-        $id_customer = (int)$id_customer;
-
-        Player::createPlayer($id_customer);
+        $customer = new \Customer((int)$id_customer);
+        $player = new Player($id_customer, $customer);
 
         $import_points = (int)\Tools::getValue('import_points');
         $import_orders = (bool)\Tools::getValue('import_orders');
@@ -285,7 +259,7 @@ class Player extends \ObjectModel {
                 $points = \LoyaltyModule\LoyaltyModule::getPointsByCustomer($id_customer);
                 $coins_change = ceil($points * $import_points);
 
-                Player::updateCoins($id_customer, $coins_change);
+                $player->update(0, $coins_change);
             }
         }
 
@@ -297,8 +271,6 @@ class Player extends \ObjectModel {
 
             if (!empty($orders)) {
 
-                $customer = new \Customer($id_customer);
-
                 foreach ($orders as $order) {
 
                     if (!$order['id_order_state']) { break; }
@@ -307,8 +279,8 @@ class Player extends \ObjectModel {
                     if ($orderState->paid) {
 
                         // Check ActionOrder -> This is basically checking the currency
-                        $id_actionOrder = ActionOrder::getIdActionOrderByCurrency($order['id_currency']);
-                        $actionOrder = new ActionOrder($id_actionOrder);
+                        $id_action_order = ActionOrder::getIdActionOrderByCurrency($order['id_currency']);
+                        $actionOrder = new ActionOrder($id_action_order);
 
                         // Get Total amount of the order
                         $order_amount = \Configuration::get('krona_order_amount', null, $customer->id_shop_group, $customer->id_shop);
@@ -347,12 +319,13 @@ class Player extends \ObjectModel {
                             $coins_change = round($total * $actionOrder->coins_change);
                         }
 
-                        Player::updateCoins($id_customer, $coins_change);
+                        $player->update(0, $coins_change);
 
+                        $link = new \Link();
                         $history = new PlayerHistory();
                         $history->id_customer = $id_customer;
-                        $history->id_action_order = $id_actionOrder;
-                        $history->url = \Context::getContext()->link->getPageLink('history');
+                        $history->id_action_order = $id_action_order;
+                        $history->url = $link->getPageLink('history');
                         $history->change = $coins_change;
                         $history->date_add = $order['date_add'];
 
@@ -382,7 +355,7 @@ class Player extends \ObjectModel {
                     }
 
                 }
-                PlayerLevel::updatePlayerLevel($customer, 'coins', 0);
+                PlayerLevel::updatePlayerLevel($player, 'coins', 0);
             }
         }
 
@@ -402,87 +375,33 @@ class Player extends \ObjectModel {
     }
 
 
-    public static function updatePoints($id_customer, $points_change) {
-
-        $id_customer = (int)$id_customer;
-        $points_change = (int)$points_change;
-
-        $player = new Player($id_customer);
-        $player->points = $player->points + $points_change;
-
-        $context = \Context::getContext();
-
-        if (\Configuration::get('krona_loyalty_active', null, $context->shop->id_shop_group, $context->shop->id)) {
-
-            $total = \Configuration::get('krona_loyalty_total', null, $context->shop->id_shop_group, $context->shop->id);
-
-            if ($total == 'points_coins' OR $total == 'points') {
-                $player->loyalty = $player->loyalty + $points_change;
-            }
-        }
-
-        $player->notification = $player->notification + 1;
-
-        $player->update();
-        return true;
-    }
-
-    public static function updateCoins($id_customer, $coins_change) {
-
-        $id_customer = (int)$id_customer;
-        $coins_change = (int)$coins_change;
-
-        $player = new Player($id_customer);
-        $player->coins = $player->coins + $coins_change;
-
-        $context = \Context::getContext();
-
-        if (\Configuration::get('krona_loyalty_active', null, $context->shop->id_shop_group, $context->shop->id)) {
-
-            $total = \Configuration::get('krona_loyalty_total', null, $context->shop->id_shop_group, $context->shop->id);
-
-            if ($total == 'points_coins' OR $total == 'coins') {
-                $player->loyalty = $player->loyalty + $coins_change;
-            }
-        }
-
-        $player->notification = $player->notification + 1;
-
-        $player->update();
-        return true;
-
-    }
 
     // expire type can be today or last_order
-    public static function updateExpireLoyalty($expire_type, $expire_days) {
+    public function getExpireLoyalty($expire_type = 'last_order') {
+
+        $expire_days = Configuration::get('krona_loyalty_expire', null, $this->customer->id_shop_group, $this->customer->id_shop);
+
         if ($expire_type == 'today') {
-            $sql = 'UPDATE '._DB_PREFIX_.self::$definition['table'].'
-                    SET loyalty_expire = NOW() + INTERVAL '.$expire_days.' DAY';
-            \Db::getInstance()->execute($sql);
+            $expire_date = date("Y-m-d 23:59:59", strtotime(" + {$expire_days} days"));
         }
         elseif ($expire_type == 'last_order') {
-            $players = self::getAllPlayers();
 
-            foreach ($players as $player) {
-                $playerObj = new Player($player['id_customer']);
-                $playerObj->loyalty_expire = self::getExpireDateByLastOrder($player['id_customer'], $expire_days);
-                $playerObj->update();
-            }
+            $query = new \DbQuery();
+            $query->select('MAX(date_add)');
+            $query->from('orders');
+            $query->where('id_customer = ' . $this->id_customer);
+            $query->where('valid = 1');
+            $last_order = \Db::getInstance()->getValue($query);
+
+            $expire_date = date("Y-m-d H:i:s", strtotime($last_order." + {$expire_days} days"));
         }
-    }
-
-    private static function getExpireDateByLastOrder($id_customer, $expire_days) {
-        $query = new \DbQuery();
-        $query->select('MAX(date_add)');
-        $query->from('orders');
-        $query->where('id_customer = ' . $id_customer);
-        $query->where('valid = 1');
-        $last_order = \Db::getInstance()->getValue($query);
-
-        $expire_date = date("Y-m-d H:i:s", strtotime($last_order." + {$expire_days} days"));
+        else {
+            $expire_date = date("2030-01-01 23:59:59", strtotime(" + {$expire_days} days"));
+        }
 
         return $expire_date;
     }
+
 
     public static function cronExpireLoyalty() {
 
@@ -501,49 +420,28 @@ class Player extends \ObjectModel {
 
     }
 
-    public static function getRank($id_customer) {
+    public function getRank() {
 
-        $id_customer = (int)$id_customer;
-
-        $context = \Context::getContext();
-
-        (\Shop::isFeatureActive()) ? $id_shop = $context->shop->id_shop :$id_shop = null;
-
-        $method = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id);;
-
-        $query = new \DbQuery();
-
-        if ($method == 'points_coins') {
-            $query->select('points+coins AS total');
-        } elseif ($method == 'points') {
-            $query->select('points');
-        } elseif ($method == 'coins') {
-            $query->select('coins');
-        }
-
-        $query->select('points');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . (int)$id_customer);
-        $code = \Db::getInstance()->getValue($query);
+        $method = \Configuration::get('krona_gamification_total', null, $this->customer->id_shop_group, $this->id_shop);
 
         $query = new \DbQuery();
         $query->select('COUNT(*)');
         $query->from(self::$definition['table'], 'p');
-        if ($id_shop) {
-            $query->innerJoin('customer', 'c', 'c.id_customer = p.id_customer');
-            $query->where('id_shop='.$id_shop);
-        }
-        if ($method == 'points_coins') {
-            $query->where('points+coins > ' . $code);
-        } elseif ($method == 'points') {
-            $query->where('points > ' . $code);
-        } elseif ($method == 'coins') {
-            $query->where('coins > ' . $code);
-        }
-        return \Db::getInstance()->getValue($query)+1;
+        $query->innerJoin('customer', 'c', 'c.id_customer = p.id_customer');
+        $query->where('id_shop='.$this->customer->id_shop);
 
+        if ($method == 'points_coins') {
+            $query->where('points+coins > ' . $this->total);
+        } elseif ($method == 'points') {
+            $query->where('points > ' . $this->total);
+        } elseif ($method == 'coins') {
+            $query->where('coins > ' . $this->total);
+        }
+
+        return \Db::getInstance()->getValue($query)+1;
     }
 
+    // Todo: check why this is in revws
     public static function getPseudonym($id_customer) {
 
         $pseudonym = '';
@@ -562,7 +460,6 @@ class Player extends \ObjectModel {
             $pseudonym = self::getDisplayName($id_customer);
         }
         return $pseudonym;
-
     }
 
     public static function getDisplayName($id_customer) {
@@ -621,6 +518,40 @@ class Player extends \ObjectModel {
 
         return $actions;
 
+    }
+
+    /* @param Action $action */
+    public function checkIfPlayerStilCanExecuteAction($action) {
+
+        if ($action->execution_type == 'unlimited') {
+            return true;
+        }
+
+        // How many times was the action already executed for the defined time span?
+
+        $endDate = date('Y-m-d 23:59:59');
+
+        if ($action->execution_type == 'per_day') {
+            $startDate = date('Y-m-d 00:00:00');
+        }
+        elseif ($action->execution_type == 'per_month') {
+            $startDate = date('Y-m-01 00:00:00');
+        }
+        elseif ($action->execution_type == 'per_year') {
+            $startDate = date('Y-01-01 00:00:00');
+        }
+        else {
+            $startDate = null;
+            $endDate = null; // This is max_per_lifetime or unlimited
+        }
+
+        $execution_times = (int)PlayerHistory::countActionByPlayer($this->id_customer, $action->id, $startDate, $endDate);
+
+        if ($execution_times < $action->execution_max) {
+            return $action->execution_max-$execution_times; // which is basically the nbr an action can still be executed
+        }
+
+        return false;
     }
 
 }

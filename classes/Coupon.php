@@ -56,4 +56,5 @@ class Coupon {
         $name = str_replace('KronaTemplate', '', $cart_rule_name);
         return ltrim($name, ':');
     }
+
 }

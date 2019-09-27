@@ -683,11 +683,10 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 Configuration::updateValue('krona_loyalty_cart_page', pSQL(Tools::getValue('loyalty_cart_page')), false, $this->id_shop_group, $this->id_shop);
 
                 // Expiration
-                $new_loyalty_expiration = (int)Tools::getValue('loyalty_expire');
                 Configuration::updateValue('krona_loyalty_expire', (int)Tools::getValue('loyalty_expire'), false, $this->id_shop_group, $this->id_shop);
 
                 if (Tools::getValue('loyalty_expire_update')!='none') {
-                    \KronaModule\Player::updateExpireLoyalty(Tools::getValue('loyalty_expire_update'), $new_loyalty_expiration);
+                    self::updateAllExpireLoyalty(Tools::getValue('loyalty_expire_update'));
                 }
             }
             if ($gamification) {
@@ -765,6 +764,16 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
         }
 
         return $url;
+    }
+
+    private  function updateAllExpireLoyalty($expire_type) {
+        $players = Player::getAllPlayers();
+
+        foreach ($players as $player) {
+            $playerObj = new \KronaModule\Player($player['id_customer']);
+            $playerObj->loyalty_expire = $playerObj->getExpireLoyalty($expire_type);
+            $playerObj->update();
+        }
     }
 
 }

@@ -11,6 +11,7 @@
 namespace KronaModule;
 
 class Level extends \ObjectModel {
+
     public $id;
     public $id_level;
     public $condition_type;
@@ -48,25 +49,6 @@ class Level extends \ObjectModel {
             'name'              => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
         )
     );
-
-    public static function checkIfLevelActive ($id_level, $id_shop = null) {
-
-        $id_level = (int)$id_level;
-
-        if (\Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE') AND !$id_shop) {
-            $id_shop = \Context::getContext()->shop->id;
-        }
-
-        $query = new \DbQuery();
-        $query->select('active');
-        $query->from(self::$definition['table'], 'l');
-        if ($id_shop) {
-            $query->innerJoin(self::$definition['table'].'_shop', 's', 's.`id_level` = l.`id_level`');
-            $query->where('s.`id_shop` = ' . (int)$id_shop);
-        }
-        $query->where("l.`id_level` = '{$id_level}'");
-        return \Db::getInstance()->getValue($query);
-    }
 
     public function updatePosition($way, $position) {
 

@@ -41,7 +41,6 @@ class PlayerLevel extends \ObjectModel {
         )
     );
 
-
     public static function getAllPlayerLevels ($id_customer, $filters = null, $pagination = null, $order = null ) {
 
         // Doesn't need to be multistore, since its customer related
@@ -161,106 +160,118 @@ class PlayerLevel extends \ObjectModel {
 
 
     /**
-     * @var \CustomerCore $customer
+     * @param $player Player
      * @param $actionType
      * @param $id_action
      * @return bool
      * @throws \PrestaShopException
      */
-    public static function updatePlayerLevel($customer, $actionType, $id_action) {
-
-        // Multistore check
-        $id_shop = $customer->id_shop;
+    public static function updatePlayerLevel($player, $actionType, $id_action) {
 
         // Handling Levels with Thresholds
+        $levels = self::getLevelsByConditionType($actionType, $player->id_shop, $id_action, true);
 
-        $ids_level = self::getLevelsByConditionType($actionType, $id_shop, $id_action);
+        foreach ($levels as $level) {
 
-        foreach ($ids_level as $id_level) {
+            $id_player_level = self::getId($player->id_customer, $level['id_level']); // The customer could have reached this level in the past
+            $playerLevel = new PlayerLevel($id_player_level);
 
-            $id_level = $id_level['id_level'];
+            // Check if customer still has the right, to achieve this level
+            if (($level['achieve_max'] > $playerLevel->achieved) OR $level['achieve_max'] == 0) {
 
-            if (Level::checkIfLevelActive($id_level, $id_shop)) {
+                // How many points did the customer collect in the time condition
+                $dateStart = null;
+                $dateEnd = null;
 
-                $id = self::getId($customer->id, $id_level); // The customer could have reached this level in the past
+                if ($level['condition_time'] OR $playerLevel->achieved_last) {
 
-                $playerLevel = new PlayerLevel($id);
-                $level = new Level($id_level);
+                    $dateStartCondition = 0;
+                    $dateStartLevel = 0;
 
-                // Check if customer still has the right, to achieve this level
-                if ($level->achieve_max > $playerLevel->achieved OR $level->achieve_max == 0) {
-
-                    // How many points did the customer collect in the time condition
-                    $dateStart = null;
-                    $dateEnd = null;
-
-                    if ($level->condition_time OR $playerLevel->achieved_last) {
-
-                        $dateStartCondition = 0;
-                        $dateStartLevel = 0;
-
-                        if ($level->condition_time) {
-                            $dateStartCondition = date('Y-m-d 00:00:00', strtotime("-{$level->condition_time} days"));
-                        }
-
-                        // If a player has achieved a level, he has to achieve it again from scratch
-                        if ($playerLevel->achieved_last > $dateStart) {
-                            $dateStartLevel = $playerLevel->achieved_last;
-                        }
-
-                        // Take the newer StartDate
-                        ($dateStartCondition > $dateStartLevel) ? $dateStart = $dateStartCondition : $dateStart = $dateStartLevel;
-
-                        $dateEnd = date('Y-m-d 23:59:59');
+                    if ($level['condition_time']) {
+                        $dateStartCondition = date('Y-m-d 00:00:00', strtotime("-{$level['condition_time']} days"));
                     }
 
-                    $condition = 0;
-
-                    if ($level->id_action > 0) {
-
-                        if ($level->condition_type == 'action') {
-                            $condition = PlayerHistory::countActionByPlayer($customer->id, $id_action, $dateStart, $dateEnd);
-                        }
-                        else if ($level->condition_type == 'order') {
-                            $condition = PlayerHistory::countOrderByPlayer($customer->id, $id_action, $dateStart, $dateEnd);
-                        }
-
-                    }
-                    else {
-                        $condition = PlayerHistory::sumActionPointsByPlayer($customer->id, $level->condition_type, $dateStart, $dateEnd);
+                    // If a player has achieved a level, he has to achieve it again from scratch
+                    if ($playerLevel->achieved_last > $dateStart) {
+                        $dateStartLevel = $playerLevel->achieved_last;
                     }
 
-                    // Check if the customer has fulfilled the condition
-                    if ($condition >= $level->condition) {
+                    // Take the newer StartDate
+                    ($dateStartCondition > $dateStartLevel) ? $dateStart = $dateStartCondition : $dateStart = $dateStartLevel;
 
-                        $playerLevel->id_customer = $customer->id;
-                        $playerLevel->id_level = $id_level;
-                        $playerLevel->active = 1;
+                    $dateEnd = date('Y-m-d 23:59:59');
+                }
 
-                        // If duration is not set, it means unlimited
-                        ($level->duration > 0) ? $active_until = date('Y-m-d 23:59:59', strtotime("+{$level->duration} days")) : $active_until = '0000-00-00 00:00:00';
-                        $playerLevel->active_until = $active_until;
+                $condition = 0;
 
-                        $playerLevel->achieved = $playerLevel->achieved + 1;
-                        $playerLevel->achieved_last = date("Y-m-d H:i:s", strtotime("+1 second")); // This is securing that the last done action, wont be taken again
+                if ($level['id_action'] > 0) {
 
-                        $playerLevel->save();
+                    if ($level['condition_type'] == 'action') {
+                        $condition = PlayerHistory::countActionByPlayer($player->id_customer, $id_action, $dateStart, $dateEnd);
+                    }
+                    else if ($level['condition_type'] == 'order') {
+                        $condition = PlayerHistory::countOrderByPlayer($player->id_customer, $id_action, $dateStart, $dateEnd);
+                    }
 
-                        self::giveTheReward($customer, $level);
+                }
+                else {
+                    $condition = PlayerHistory::sumActionPointsByPlayer($player->id_customer, $level['condition_type'], $dateStart, $dateEnd); // Todo: check this logic. Quite a strange way to handle it
+                }
+
+                // Check if the customer has fulfilled the condition
+                if ($condition >= $level['condition']) {
+
+                    $playerLevel->id_customer = $player->id_customer;
+                    $playerLevel->id_level = $level['id_level'];
+                    $playerLevel->active = 1;
+
+                    // If duration is not set, it means unlimited
+                    ($level['duration'] > 0) ? $active_until = date('Y-m-d 23:59:59', strtotime("+{$level['duration']} days")) : $active_until = '0000-00-00 00:00:00';
+                    $playerLevel->active_until = $active_until;
+
+                    $playerLevel->achieved = $playerLevel->achieved + 1;
+                    $playerLevel->achieved_last = date("Y-m-d H:i:s", strtotime("+1 second")); // This is securing that the last done action, wont be taken again
+
+                    $playerLevel->save();
+
+                    self::giveTheReward($player->customer, $level);
+
+
+                    // Send emails
+                    if (\Module::isEnabled('genzo_crm')) {
+                        // $content = $this->context->smarty->fetch(_PS_MODULE_DIR_."genzo_krona/mails/{$iso}/new_answer.tpl");
+
+                        $args = array(
+                            'module' => 'genzo_krona',
+                            'key' => 'new_level_achieved',
+                            'id_customer' => $player->id_customer,
+                            'shortcodes' => array(
+                                'level' => $level->name,
+                                'next_level' => 'Ritter',
+                                'reward' => 'You got something.',
+                            ),
+                        );
+
+                        \Hook::exec('actionSendEmail', $args, null, false, false);
+
                     }
                 }
             }
+
         }
 
         return true;
     }
 
-    public static function getLevelsByConditionType($condition_type, $id_shop, $id_action) {
+    public static function getLevelsByConditionType($condition_type, $id_shop, $id_action, $only_active = false) {
         $query = new \DbQuery();
-        $query->select('l.id_level');
+        $query->select('l.*');
         $query->from('genzo_krona_level', 'l');
         $query->innerJoin('genzo_krona_level_shop', 's', 's.`id_level` = l.`id_level`');
-        $query->where('l.`active` = 1');
+        if ($only_active) {
+            $query->where('l.`active` = 1');
+        }
         $query->where("`condition_type` LIKE '{$condition_type}' OR `condition_type`='total' OR `id_action`={$id_action}");
         $query->where('`id_shop`=' . (int)$id_shop);
         $query->orderBy('l.`position` ASC');
@@ -275,6 +286,11 @@ class PlayerLevel extends \ObjectModel {
      * @throws
      */
     private static function giveTheReward($customer, $level) {
+
+        if (is_array($level)) {
+            $level = (object)$level;
+        }
+
         $ids_lang = \Language::getIDs();
 
         if($level->reward_type == 'coupon') {

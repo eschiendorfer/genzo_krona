@@ -35,9 +35,8 @@ class ActionOrder extends \ObjectModel {
         )
     );
 
+    public function __construct($id_order_action = null, $id_lang = null, $id_shop = null) {
 
-    public function __construct($id_order_action = null, $id_lang = null, $id_shop = null)
-    {
         parent::__construct($id_order_action, $id_lang, $id_shop);
 
         \Shop::addTableAssociation(self::$definition['table'], array('type' => 'shop'));
@@ -47,9 +46,9 @@ class ActionOrder extends \ObjectModel {
             $this->currency = $currency['name'];
             $this->currency_iso = $currency['iso_code'];
         }
-
     }
 
+    // Database
     public static function getAllActionOrder($filters = null) {
 
         $query = new \DbQuery();
@@ -116,8 +115,6 @@ class ActionOrder extends \ObjectModel {
 
                 $actionOrder = new ActionOrder($id_action_order);
                 $actionOrder->delete();
-
-                // \Db::getInstance()->delete(self::$definition['table'].'_shop', "`id_action_order`={$id_action_order}");
             }
         }
     }

@@ -11,6 +11,7 @@
 namespace KronaModule;
 
 class Group extends \ObjectModel {
+
     public $id;
     public $id_group;
     public $position;

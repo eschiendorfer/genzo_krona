@@ -420,7 +420,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
     }
 
     public function postProcess() {
-        if (Tools::isSubmit('submitAdd'.$this->table)) {
+        if (Tools::isSubmit('submitAddgenzo_krona_player')) {
             if (Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop)) {
                 $krona = new Genzo_Krona();
                 $id_customer = (int)Tools::getValue('id_customer');
@@ -448,18 +448,8 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
             if ($type == 'custom') {
                 foreach ($ids_lang as $id_lang) {
-
                     $history->title[$id_lang] = pSQL(Tools::getValue('title_' . $id_lang));
                     $history->message[$id_lang] = pSQL(Tools::getValue('message_' . $id_lang));
-
-                    // Now we check if all titles and messages are empty. We have to do it like that otherwise there will be notice error after getting the $data
-                    if (Tools::getValue('title_' . $id_lang)) {
-                        $title[$id_lang] = 'just for testing if empty';
-                    }
-
-                    if (Tools::getValue('message_' . $id_lang)) {
-                        $message[$id_lang] = 'just for testing if empty';
-                    }
                 }
             }
             elseif ($type == 'action') {
@@ -491,21 +481,24 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
             if (empty($this->errors)) {
 
+                $player = new Player($id_customer);
+
                 // Keep in mind both points and coins could change (no else if)
                 if ($points_change !== '') {
                     $history->change = $points_change;
                     $history->add();
 
-                    Player::updatePoints($id_customer, $points_change);
-                    PlayerLevel::updatePlayerLevel(new Customer($id_customer), 'points', $history->id_action);
+
+                    $player->update($points_change);
+                    PlayerLevel::updatePlayerLevel($player, 'points', $history->id_action);
                 }
 
                 if ($coins_change !== '') {
                     $history->change_loyalty = $coins_change;
                     $history->add();
 
-                    Player::updateCoins($id_customer, $coins_change);
-                    PlayerLevel::updatePlayerLevel(new Customer($id_customer), 'coins', $history->id_action);
+                    $player->update(0, $coins_change);
+                    PlayerLevel::updatePlayerLevel($player, 'coins', $history->id_action);
                 }
 
                 $this->confirmations[] = $this->l('The player action was sucessfully saved.');
@@ -532,7 +525,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
             // This if is needed, in case of a refresh of the same url
             if ($history->id_customer) {
-                Player::updatePoints($history->id_customer, ($history->change * (-1)));
+                $player->update($history->change * (-1));
             }
             $history->delete();
 
