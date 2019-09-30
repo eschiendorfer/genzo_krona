@@ -11,8 +11,7 @@
 include(dirname(__FILE__).'/../../config/config.inc.php');
 include(dirname(__FILE__).'/../../init.php');
 
-include_once(dirname(__FILE__).'/classes/Action.php');
-include_once(dirname(__FILE__).'/classes/Player.php');
+require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use KronaModule\Action;
 use KronaModule\Player;

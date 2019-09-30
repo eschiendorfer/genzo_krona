@@ -12,9 +12,7 @@ if (!defined('_PS_ADMIN_DIR_')) {
 }
 include(dirname(__FILE__).'/../../config/config.inc.php');
 
-include_once(dirname(__FILE__).'/classes/PlayerLevel.php');
-include_once(dirname(__FILE__).'/classes/Action.php');
-include_once(dirname(__FILE__).'/classes/Player.php');
+require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use \KronaModule\PlayerLevel;
 use \KronaModule\Action;

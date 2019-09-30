@@ -10,8 +10,7 @@
 
 namespace KronaModule;
 
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Player.php';
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/PlayerHistory.php';
+require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 class Action extends \ObjectModel {
 

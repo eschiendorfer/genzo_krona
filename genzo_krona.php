@@ -11,13 +11,7 @@
 if (!defined('_PS_VERSION_'))
 	exit;
 
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Action.php';
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/ActionOrder.php';
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Player.php';
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/PlayerHistory.php';
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/PlayerLevel.php';
-
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/helper/Zebra_Image.php';
+require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use KronaModule\Action;
 use KronaModule\ActionOrder;

@@ -10,6 +10,8 @@
 
 namespace KronaModule;
 
+require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
+
 class Level extends \ObjectModel {
 
     public $id;

@@ -10,6 +10,8 @@
 
 namespace KronaModule;
 
+require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
+
 class ActionOrder extends \ObjectModel {
     public $id;
     public $id_action_order;

@@ -8,7 +8,7 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-require_once _PS_MODULE_DIR_ . 'genzo_krona/classes/Action.php';
+require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use KronaModule\Action;
 
