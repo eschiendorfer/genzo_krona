@@ -196,7 +196,7 @@ class PlayerLevel extends \ObjectModel {
                     }
 
                     // Take the newer StartDate
-                    ($dateStartCondition > $dateStartLevel) ? $dateStart = $dateStartCondition : $dateStart = $dateStartLevel;
+                    $dateStart = ($dateStartCondition > $dateStartLevel) ? $dateStartCondition : $dateStartLevel;
 
                     $dateEnd = date('Y-m-d 23:59:59');
                 }

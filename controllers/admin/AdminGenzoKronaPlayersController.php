@@ -149,28 +149,34 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->initToolbar();
         $this->initPageHeaderToolbar();
 
-        if ($this->display == 'edit' || Tools::getValue('display') == 'formPlayer') {
+        // Optional Display
+        $deletePlayers = false;
+        $stats = false;
+
+        if (Tools::isSubmit('updatePlayerHistory')) {
+            $this->content = $this->renderPlayerHistoryForm();
+        }
+        elseif ($this->display == 'edit' || Tools::getValue('display') == 'formPlayer') {
             if (!$this->loadObject(true)) {
                 return;
             }
             $this->content = $this->renderForm();
             $this->content.= $this->generateListPlayerLevels();
             $this->content.= $this->generateListPlayerHistory();
-            $deletePlayers = false;
         }
         elseif (Tools::isSubmit('addCustomAction')) {
             $this->content = $this->generateFormCustomAction();
-            $deletePlayers = false;
         }
         else {
             $this->content = $this->renderList();
+            $stats = $this->getStats();
             $deletePlayers = true;
         }
 
         // This are the real smarty variables
         $this->context->smarty->assign(
             array(
-                'stats'     => $this->getStats(),
+                'stats'     => $stats,
                 'content'   => $this->content,
                 'tab'       => 'Players',
                 'gamification_active'  => Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop),
@@ -178,7 +184,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 'loyalty_name'  => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
                 'import'  => Configuration::get('krona_import_customer', null, $this->id_shop_group, $this->id_shop),
                 'dont'    => Configuration::get('krona_dont_import_customer', null, $this->id_shop_group, $this->id_shop),
-                'deletePlayers' => $deletePlayers,
+                'deletePlayers' => $deletePlayers, // Todo: checkout how bulk updating is working
                 'show_page_header_toolbar'  => $this->show_page_header_toolbar,
                 'page_header_toolbar_title' => $this->page_header_toolbar_title,
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
@@ -415,6 +421,77 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         return parent::renderForm();
     }
 
+    private function renderPlayerHistoryForm() {
+
+        $inputs[] = array(
+            'type' => 'hidden',
+            'name' => 'id_history'
+        );
+
+        // We shouldn't change points this way, since it will not generate any history for the player. This will cause troubles, when checking points in levels.
+        $inputs[] = array(
+            'type'  => 'text',
+            'lang'  => true,
+            'name'  => 'title',
+            'label' => $this->l('Title'),
+        );
+        $inputs[] = array(
+            'type'  => 'textarea',
+            'lang'  => true,
+            'name'  => 'title',
+            'label' => $this->l('Message'),
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'url',
+            'label' => $this->l('Url'),
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'change',
+            'label' => $this->l('Change'),
+            'suffix' => Configuration::get('krona_total_name', $this->context->language->id_lang, $this->id_shop_group, $this->id_shop),
+            'class'  => 'input fixed-width-sm',
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'change_loyalty',
+            'label' => $this->l('Change'),
+            'suffix' => Configuration::get('krona_loyalty_name', $this->context->language->id_lang, $this->id_shop_group, $this->id_shop),
+            'class'  => 'input fixed-width-sm',
+        );
+
+        $fields_form = array(
+            'legend' => array(
+                'title' => $this->l('Edit Action'),
+                'icon' => 'icon-cogs',
+            ),
+            'input' => $inputs,
+            'submit' => array(
+                'name' => 'savePlayerAction',
+                'title' => $this->l('Save Player History'),
+                'class' => 'btn btn-default pull-right',
+            ),
+
+        );
+
+        // Fix of values since we dont use always same names
+        $this->submit_action = 'savePlayerHistory';
+
+        $this->fields_form = $fields_form;
+
+        $this->fields_value = json_decode(json_encode(new PlayerHistory(Tools::getValue('id_history'))), true);
+
+        $this->tpl_form_vars = array(
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id,
+        );
+
+        $this->default_form_language = $this->context->language->id;
+
+        return parent::renderForm();
+    }
+
     public function postProcess() {
         if (Tools::isSubmit('submitAddgenzo_krona_player')) {
             if (Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop)) {
@@ -484,8 +561,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     $history->change = $points_change;
                     $history->add();
 
-
-                    $player->update($points_change, 0, true);
                     PlayerLevel::updatePlayerLevel($player, 'points', $history->id_action);
                 }
 
@@ -493,9 +568,10 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     $history->change_loyalty = $coins_change;
                     $history->add();
 
-                    $player->update(0, $coins_change, true);
                     PlayerLevel::updatePlayerLevel($player, 'coins', $history->id_action);
                 }
+
+                $player->update($points_change, $coins_change, true);
 
                 $this->confirmations[] = $this->l('The player action was sucessfully saved.');
 
@@ -513,15 +589,20 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 return $history;
             }
         }
-        elseif (Tools::isSubmit('deletePlayerHistory')) {
+        elseif (Tools::isSubmit('deletePlayerHistory') || Tools::isSubmit('savePlayerHistory')) {
             // Check inputs
             $id_history = (int)Tools::getValue('id_history');
 
             $history = new PlayerHistory($id_history);
 
+            print_r($history);
+            die();
+
+            // Todo: Finish this process
+
             // This if is needed, in case of a refresh of the same url
             if ($history->id_customer) {
-                $player->update($history->change * (-1));
+                // $player->update($history->change * (-1)); Todo: Add player object cleanly
             }
             $history->delete();
 
@@ -744,7 +825,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $helper = new HelperList();
         $helper->table = 'PlayerHistory';
         $helper->shopLinkType = '';
-        $helper->actions = array('delete');
+        $helper->actions = array('edit', 'delete');
         $helper->identifier = 'id_history';
         $helper->_pagination = [20,50,100];
         $helper->token = Tools::getAdminTokenLite($this->controller_name);

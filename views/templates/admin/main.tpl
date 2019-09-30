@@ -15,7 +15,7 @@
             {include file="./import.tpl"}
         {/if}
 
-        {if $tab == 'Players'}
+        {if $tab == 'Players' && $stats}
             {include file="./players_stats.tpl"}
         {/if}
 

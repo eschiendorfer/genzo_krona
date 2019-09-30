@@ -55,7 +55,7 @@ class Player extends \ObjectModel {
         )
     );
 
-    public function __construct($id_customer = null, $customerObj = false) {
+    public function __construct($id_customer = null, $customerObj = true) {
 
         parent::__construct($id_customer);
 
