@@ -116,7 +116,7 @@ class Player extends \ObjectModel {
         }
     }
 
-    public function update($points_change = 0, $coins_change = 0, $nullValues = false) {
+    public function update($points_change = 0, $coins_change = 0, $notification = false, $nullValues = false) {
 
         $this->points += $points_change;
         $this->coins += $coins_change;
@@ -130,9 +130,11 @@ class Player extends \ObjectModel {
                 $this->loyalty += $points_change;
                 $this->loyalty += $coins_change;
             }
-        }
 
-        $this->notification = $this->notification + 1; // Todo: this should be added at history
+            if ($notification) {
+                $this->notification++;
+            }
+        }
 
         return parent::update($nullValues);
     }
@@ -259,7 +261,7 @@ class Player extends \ObjectModel {
                 $points = \LoyaltyModule\LoyaltyModule::getPointsByCustomer($id_customer);
                 $coins_change = ceil($points * $import_points);
 
-                $player->update(0, $coins_change);
+                $player->update(0, $coins_change, true);
             }
         }
 
@@ -319,7 +321,7 @@ class Player extends \ObjectModel {
                             $coins_change = round($total * $actionOrder->coins_change);
                         }
 
-                        $player->update(0, $coins_change);
+                        $player->update(0, $coins_change, true);
 
                         $link = new \Link();
                         $history = new PlayerHistory();

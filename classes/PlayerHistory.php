@@ -13,6 +13,7 @@ namespace KronaModule;
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 class PlayerHistory extends \ObjectModel {
+
     public $id_history;
     public $id_customer;
     public $id_action;

@@ -485,7 +485,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     $history->add();
 
 
-                    $player->update($points_change);
+                    $player->update($points_change, 0, true);
                     PlayerLevel::updatePlayerLevel($player, 'points', $history->id_action);
                 }
 
@@ -493,7 +493,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     $history->change_loyalty = $coins_change;
                     $history->add();
 
-                    $player->update(0, $coins_change);
+                    $player->update(0, $coins_change, true);
                     PlayerLevel::updatePlayerLevel($player, 'coins', $history->id_action);
                 }
 

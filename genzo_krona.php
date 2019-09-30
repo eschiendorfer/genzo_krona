@@ -798,7 +798,7 @@ class Genzo_Krona extends Module
             // Check if the User is still allowed to execute this action
             if ($player->checkIfPlayerStilCanExecuteAction($action)) {
 
-                $player->update($action->points_change);
+                $player->update($action->points_change, 0, true);
 
                 $history = new PlayerHistory();
                 $history->id_customer = $customer->id;
@@ -832,7 +832,7 @@ class Genzo_Krona extends Module
                     $history->title[$id_lang] = pSQL($action->title[$id_lang]);
                 }
 
-                $history->add();
+                $history->add($player);
 
                 PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
 
@@ -954,7 +954,7 @@ class Genzo_Krona extends Module
                                 $player = new Player($customer->id);
                                 $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days")); // Todo: Rethink when this is updated
                             }
-                            $player->update(0, $coins_change);
+                            $player->update(0, $coins_change, true);
 
                             PlayerLevel::updatePlayerLevel($player, 'coins', $id_action_order);
                         }
@@ -986,7 +986,7 @@ class Genzo_Krona extends Module
                                 $history->title[$id_lang] = pSQL($title[$id_lang]);
                             }
                             $history->add();
-                            $player->update(0, $history->change);
+                            $player->update(0, $history->change, true);
 
                             // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
                         }

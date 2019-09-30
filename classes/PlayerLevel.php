@@ -214,7 +214,8 @@ class PlayerLevel extends \ObjectModel {
 
                 }
                 else {
-                    $condition = PlayerHistory::sumActionPointsByPlayer($player->id_customer, $level['condition_type'], $dateStart, $dateEnd); // Todo: check this logic. Quite a strange way to handle it
+                    // We calculate this with history, since we allow a rule with time span -> we can't just check the absolut $player values.
+                    $condition = PlayerHistory::sumActionPointsByPlayer($player->id_customer, $level['condition_type'], $dateStart, $dateEnd);
                 }
 
                 // Check if the customer has fulfilled the condition
