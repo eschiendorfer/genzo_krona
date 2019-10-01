@@ -18,13 +18,23 @@ class PlayerHistory extends \ObjectModel {
     public $id_customer;
     public $id_action;
     public $id_action_order;
+
+    /* @deprecated $change */
     public $change;
+
+    public $change_points;
+    public $change_coins;
     public $change_loyalty;
     public $message;
     public $title;
     public $url;
     public $date_add;
     public $date_upd;
+
+    // Dynamic vars
+
+    /* @var $player Player */
+    public $player;
 
     public static $definition = array(
         'table' => "genzo_krona_player_history",
@@ -34,15 +44,67 @@ class PlayerHistory extends \ObjectModel {
             'id_customer'      => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action'        => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action_order'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'change'           => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'change_points'    => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'change_coins'    => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'change_loyalty'   => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'title'            => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false, 'lang' => true),
-            'message'          => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false, 'lang' => true),
-            'url'              => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false),
+            'title'            => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
+            'message'          => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
+            'url'              => array('type' => self::TYPE_STRING, 'validate' => 'isString',),
             'date_add'         => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
             'date_upd'         => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
         )
     );
+
+    public function __construct($id_history = null, $playerObj = null, $idLang = null) {
+
+        parent::__construct($id_history, $idLang, null);
+
+        if ($playerObj !== false) {
+
+            if (!$playerObj instanceof Player) {
+                $playerObj = new Player($this->id_customer);
+            }
+
+            $this->player = $playerObj;
+        }
+    }
+
+    public function add($autoDate = true, $nullValues = false) {
+
+        $this->player->notification++;
+
+        return parent::add($autoDate, $nullValues);
+    }
+
+
+    public function update($nullValues = false) {
+
+        // Get old object and check if a player update is needed
+        $oldPlayerHistory = new PlayerHistory($this->id_history, false);
+
+        if (($this->player instanceof Player) && ($this->change_points!=$oldPlayerHistory->change_points || $this->change_coins!=$oldPlayerHistory->change_coins || $this->change_loyalty!=$oldPlayerHistory->change_loyalty)) {
+
+            $this->player->points += $this->change_points-$oldPlayerHistory->change_points;
+            $this->player->coins += $this->change_coins-$oldPlayerHistory->change_coins;
+            $this->player->loyalty += $this->change_loyalty-$oldPlayerHistory->change_loyalty;
+            $this->player->update();
+        }
+
+        return parent::update($nullValues);
+    }
+
+    public function delete() {
+
+        if ($this->player instanceof Player) {
+
+            $this->player->points -= $this->change_points;
+            $this->player->coins -= $this->change_coins;
+            $this->player->loyalty -= $this->change_loyalty;
+            $this->player->update();
+        }
+
+        return parent::delete();
+    }
 
     public static function getHistoryByPlayer($id_customer, $filters = null, $pagination = null, $order = null) {
         $id_lang = \Context::getContext()->language->id;

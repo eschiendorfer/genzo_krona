@@ -164,6 +164,8 @@ class PlayerLevel extends \ObjectModel {
      * @return bool
      * @throws \PrestaShopException
      */
+
+    // Todo: Try to find a cleaner or more flexible way for this method
     public static function updatePlayerLevel($player, $actionType, $id_action) {
 
         // Handling Levels with Thresholds

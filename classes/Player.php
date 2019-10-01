@@ -116,7 +116,9 @@ class Player extends \ObjectModel {
         }
     }
 
-    public function update($points_change = 0, $coins_change = 0, $notification = false, $nullValues = false) {
+
+    // Todo: reconsider the whole update process, maybe a loyalty_change makes sense as well, maybe we can also skip this with a clean db structure
+    public function update($points_change = 0, $coins_change = 0, $nullValues = false) {
 
         $this->points += $points_change;
         $this->coins += $coins_change;
@@ -131,10 +133,12 @@ class Player extends \ObjectModel {
                 $this->loyalty += $coins_change;
             }
 
-            if ($notification) {
-                $this->notification++;
-            }
         }
+
+        // If a penalty or an edit of PlayerHistory happens
+        $this->points = max(0, $this->points);
+        $this->coins = max(0, $this->coins);
+        $this->loyalty = max(0, $this->loyalty);
 
         return parent::update($nullValues);
     }
@@ -146,7 +150,7 @@ class Player extends \ObjectModel {
         $histories = PlayerHistory::getHistoryByPlayer($this->id_customer);
 
         foreach ($histories as $history) {
-            $playerHistory = new PlayerHistory($history['id_history']);
+            $playerHistory = new PlayerHistory($history['id_history'], false);
             $playerHistory->delete();
         }
 
@@ -261,7 +265,7 @@ class Player extends \ObjectModel {
                 $points = \LoyaltyModule\LoyaltyModule::getPointsByCustomer($id_customer);
                 $coins_change = ceil($points * $import_points);
 
-                $player->update(0, $coins_change, true);
+                $player->update(0, $coins_change);
             }
         }
 
@@ -321,14 +325,12 @@ class Player extends \ObjectModel {
                             $coins_change = round($total * $actionOrder->coins_change);
                         }
 
-                        $player->update(0, $coins_change, true);
-
                         $link = new \Link();
-                        $history = new PlayerHistory();
+                        $history = new PlayerHistory(null, $player);
                         $history->id_customer = $id_customer;
                         $history->id_action_order = $id_action_order;
                         $history->url = $link->getPageLink('history');
-                        $history->change = $coins_change;
+                        $history->change_coins = $coins_change;
                         $history->date_add = $order['date_add'];
 
                         // Handling lang fields for Player History
@@ -354,6 +356,7 @@ class Player extends \ObjectModel {
                         }
 
                         $history->add(false);
+                        $player->update(0, $coins_change);
                     }
 
                 }

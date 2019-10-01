@@ -8,7 +8,7 @@
 function upgrade_module_1_2_0($module) {
 
     if (!$module->executeSqlScript('install-1.2.0') OR
-        !$this->registerHook('actionRegisterGenzoCrmEmail')) {
+        !$module->registerHook('actionRegisterGenzoCrmEmail')) {
         return false;
     }
 

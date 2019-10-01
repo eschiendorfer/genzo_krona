@@ -27,7 +27,7 @@ class Genzo_Krona extends Module
 	function __construct() {
 		$this->name = 'genzo_krona';
 		$this->tab = 'front_office_features';
-		$this->version = '1.2.0';
+		$this->version = '2.0.0';
 		$this->author = 'Emanuel Schiendorfer';
 		$this->need_instance = 0;
 
@@ -798,13 +798,10 @@ class Genzo_Krona extends Module
             // Check if the User is still allowed to execute this action
             if ($player->checkIfPlayerStilCanExecuteAction($action)) {
 
-                $player->update($action->points_change, 0, true);
-
-                $history = new PlayerHistory();
+                $history = new PlayerHistory(null, $player);
                 $history->id_customer = $customer->id;
                 $history->id_action = $id_action;
-                $history->change = $action->points_change;
-
+                $history->change_points = $action->points_change;
 
                 if (isset($params['action_url']) && !empty($params['action_url'])) {
                     $history->url = $params['action_url']; // Action url is not mandatory
@@ -826,16 +823,16 @@ class Genzo_Krona extends Module
 
                     // After defining the message array we replace the shortcodes -> shortcodes can be used for external messages too
                     $search = array('{points}', '{coins}');
-                    $replace = array($history->change, $history->change);
+                    $replace = array($history->change_points, $history->change_coins);
                     $history->message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
                     $history->title[$id_lang] = pSQL($action->title[$id_lang]);
                 }
 
-                $history->add($player);
+                $history->add();
+                $player->update($action->points_change, 0);
 
                 PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
-
             }
         }
         return true;
@@ -920,11 +917,11 @@ class Genzo_Krona extends Module
 
                         if ($id_state_new == $id_state_ok) {
 
-                            $history = new PlayerHistory();
+                            $history = new PlayerHistory(null, $player);
                             $history->id_customer = $id_customer;
                             $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
-                            $history->change = $coins_change;
+                            $history->change_coins = $coins_change;
 
                             // Handling lang fields for Player History
                             $ids_lang = Language::getIDs();
@@ -953,19 +950,20 @@ class Genzo_Krona extends Module
                             if ($expire_days = Configuration::get('krona_loyalty_expire', null, $customer->id_shop_group, $customer->id_shop)) {
                                 $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days"));
                             }
-                            $player->update(0, $coins_change, true);
 
+                            $player->update(0, $coins_change);
                             PlayerLevel::updatePlayerLevel($player, 'coins', $id_action_order);
                         }
                     }
                     foreach ($order_states_cancel as $id_state_cancel) {
+
                         if ($id_state_new == $id_state_cancel) {
 
-                            $history = new PlayerHistory($id_customer);
+                            $history = new PlayerHistory(null, $player);
                             $history->id_customer = $id_customer;
                             $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
-                            $history->change = $coins_change * (-1);
+                            $history->change_coins = $coins_change * (-1);
 
                             $ids_lang = Language::getIDs();
 
@@ -985,7 +983,7 @@ class Genzo_Krona extends Module
                                 $history->title[$id_lang] = pSQL($title[$id_lang]);
                             }
                             $history->add();
-                            $player->update(0, $history->change, true);
+                            $player->update(0, $history->change_coins);
 
                             // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
                         }

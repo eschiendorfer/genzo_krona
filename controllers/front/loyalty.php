@@ -109,12 +109,11 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
         else {
 	        // Remove Loyalty Points
 	        $player->loyalty = $player->loyalty - $loyalty;
-	        $player->update(0, 0, true);
 
 	        // Add History
             $ids_lang = Language::getIDs();
 
-            $history = new PlayerHistory();
+            $history = new PlayerHistory(null, $player);
             $history->id_customer = $player->id_customer;
             $history->id_action = 0;
             $history->id_action_order = $actionOrder->id_action_order;
@@ -126,15 +125,10 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
                 $history->title[$id_lang] = $points_name[$id_lang]. ' '. $this->module->l('Conversion');
                 $history->message[$id_lang] = sprintf($this->module->l('You converted %s into a coupon.'),$loyalty.' '.$points_name[$id_lang]);
             }
-            $history->change = 0;
             $history->change_loyalty = -$loyalty;
             $history->add();
 
-
-            $customer = new Customer();
-            $customer->email;
-            $customer->firstname;
-            $customer->getGroups();
+            $player->update();
 
             // Add Coupon
             $id_cart_rule = CartRule::getIdByCode('KRONA');
@@ -159,7 +153,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
                 $coupon->name[$id_lang] = $game_name . ' - ' . $loyalty . ' ' . $points_name[$id_lang];
             }
 
-            $prefix = Configuration::get('krona_coupon_prefix', null, $customer->id_shop_group, $customer->id_shop);
+            $prefix = Configuration::get('krona_coupon_prefix', null, $player->customer->id_shop_group, $player->customer->id_shop);
             $code = strtoupper(Tools::passwdGen(6));
 
             $coupon->code = ($prefix) ? $prefix.'-'.$code : $code;

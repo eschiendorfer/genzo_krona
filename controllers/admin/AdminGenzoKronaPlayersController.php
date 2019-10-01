@@ -153,19 +153,24 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $deletePlayers = false;
         $stats = false;
 
+        print_r($this->display);
+
         if (Tools::isSubmit('updatePlayerHistory')) {
             $this->content = $this->renderPlayerHistoryForm();
         }
-        elseif ($this->display == 'edit' || Tools::getValue('display') == 'formPlayer') {
-            if (!$this->loadObject(true)) {
-                return;
+        elseif (Tools::isSubmit('addCustomAction') || $this->display=='customActionForm') {
+
+            print_r('here');
+
+            $this->content = $this->generateFormCustomAction();
+        }
+        elseif ($this->display=='edit' || Tools::getValue('display') == 'formPlayer') {
+            if (!$this->loadObject()) {
+                return false;
             }
-            $this->content = $this->renderForm();
+            $this->content = $this->renderPlayerForm();
             $this->content.= $this->generateListPlayerLevels();
             $this->content.= $this->generateListPlayerHistory();
-        }
-        elseif (Tools::isSubmit('addCustomAction')) {
-            $this->content = $this->generateFormCustomAction();
         }
         else {
             $this->content = $this->renderList();
@@ -196,6 +201,8 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->context->smarty->assign(array(
             'content' => $tpl, // This seems to be anything inbuilt. It's just chance that we both use content as an assign variable
         ));
+
+        return true;
 
     }
 
@@ -304,7 +311,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         return parent::renderList();
     }
 
-    public function renderForm() {
+    public function renderPlayerForm() {
 
         $inputs[] = array(
             'type' => 'hidden',
@@ -405,10 +412,12 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             'submit' => array(
                 'title' => $this->l('Save Player'),
                 'class' => 'btn btn-default pull-right',
+                'name'  => 'savePlayer',
             )
         );
 
-        // Fix of values since we dont use always same names
+
+        $this->submit_action = 'savePlayer';
         $this->fields_form = $fields_form;
 
         $this->tpl_form_vars = array(
@@ -438,7 +447,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $inputs[] = array(
             'type'  => 'textarea',
             'lang'  => true,
-            'name'  => 'title',
+            'name'  => 'message',
             'label' => $this->l('Message'),
         );
         $inputs[] = array(
@@ -468,7 +477,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             ),
             'input' => $inputs,
             'submit' => array(
-                'name' => 'savePlayerAction',
+                'name' => 'savePlayerHistory',
                 'title' => $this->l('Save Player History'),
                 'class' => 'btn btn-default pull-right',
             ),
@@ -480,7 +489,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $this->fields_form = $fields_form;
 
-        $this->fields_value = json_decode(json_encode(new PlayerHistory(Tools::getValue('id_history'))), true);
+        $this->fields_value = json_decode(json_encode(new PlayerHistory(Tools::getValue('id_history'), false)), true);
 
         $this->tpl_form_vars = array(
             'languages' => $this->context->controller->getLanguages(),
@@ -493,11 +502,15 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
     }
 
     public function postProcess() {
-        if (Tools::isSubmit('submitAddgenzo_krona_player')) {
+
+        if (Tools::isSubmit('savePlayer')) {
             if (Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop)) {
                 $krona = new Genzo_Krona();
                 $id_customer = (int)Tools::getValue('id_customer');
                 $player = new Player($id_customer);
+                $player->active = Tools::getValue('active');
+                $player->banned = Tools::getValue('banned');
+                $player->pseudonym = Tools::getValue('pseudonym');
                 $player->avatar = ($krona->uploadAvatar($player->id_customer)) ? $player->id_customer . '.jpg' : $player->avatar;
                 $player->update();
             }
@@ -507,22 +520,30 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
             // Check inputs
             $id_customer = (int)Tools::getValue('id_customer');
-            $points_change = Tools::getValue('points_change'); // Dont put these on int since we check it later
-            $coins_change = Tools::getValue('coins_change');
             $type = Tools::getValue('action_type');
 
-            $history = new PlayerHistory();
-            $history->id_customer = $id_customer;
-            ($type == 'action') ? $history->id_action = (int)Tools::getValue('id_action') : $history->id_action = 0;
-            ($type == 'order') ? $history->id_action_order = (int)Tools::getValue('id_action_order') : $history->id_action_order = 0;
+            $player = new Player($id_customer);
 
-            $title = array();
-            $message = array();
+            $history = new PlayerHistory(null, $player);
+            $history->id_customer = $id_customer;
+            $history->id_action = ($type == 'action') ? (int)Tools::getValue('id_action') : 0;
+            $history->id_action_order = ($type == 'order') ? (int)Tools::getValue('id_action_order') : 0;
+            $history->change_points = (int)Tools::getValue('change_points');
+            $history->change_coins = (int)Tools::getValue('change_coins');
+            $history->change_loyalty = (int)Tools::getValue('change_loyalty');
 
             if ($type == 'custom') {
                 foreach ($ids_lang as $id_lang) {
-                    $history->title[$id_lang] = pSQL(Tools::getValue('title_' . $id_lang));
-                    $history->message[$id_lang] = pSQL(Tools::getValue('message_' . $id_lang));
+
+                    // We need to check if there is really a title
+                    if (Tools::getValue('title_' . $id_lang)!='') {
+                        $history->title[$id_lang] = pSQL(Tools::getValue('title_' . $id_lang));
+                    }
+
+                    // We need to check if there is really a message
+                    if (Tools::getValue('message_' . $id_lang)!='') {
+                        $history->message[$id_lang] = pSQL(Tools::getValue('message_' . $id_lang));
+                    }
                 }
             }
             elseif ($type == 'action') {
@@ -531,60 +552,57 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 $history->message = $action->message;
 
                 foreach ($history->message as $id_lang => $message) {
-                    $history->message[$id_lang] = str_replace('{points}', $points_change, $message);
+                    $history->message[$id_lang] = str_replace('{points}', $history->change_points, $message);
                 }
             }
             elseif ($type == 'order') {
 
-                foreach (Language::getIDs() as $id_lang) {
+                foreach ($ids_lang as $id_lang) {
                     $history->title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $this->id_shop_group, $this->id_shop);
 
                     $message = Configuration::get('krona_order_message', $id_lang, $this->id_shop_group, $this->id_shop);
-                    $history->message[$id_lang] = str_replace('{coins}', $coins_change, $message);
+                    $history->message[$id_lang] = str_replace('{coins}', $history->change_coins, $message);
                 }
             }
 
-            if ($type == 'custom' AND (empty($title) OR empty($message))) {
-                $this->errors[] = $this->l('Please fill in title and message');
+            if ($type == 'custom' && empty($history->title)) {
+                $this->errors[] = $this->l('Please fill in title');
             }
 
-            if ($points_change === '' AND $coins_change === '') {
-                $this->errors[] = $this->l('Please fill in (at least one) a value for points or coins.');
+            if ($type == 'custom' && empty($history->message)) {
+                $this->errors[] = $this->l('Please fill in message');
+            }
+
+            if (!$history->change_points && !$history->change_coins && !$history->change_loyalty) {
+                $this->errors[] = $this->l('Please fill in (at least one) a value for points, coins or loyalty.');
             }
 
             if (empty($this->errors)) {
 
-                $player = new Player($id_customer);
+                $history->add();
 
-                // Keep in mind both points and coins could change (no else if)
-                if ($points_change !== '') {
-                    $history->change = $points_change;
-                    $history->add();
+                $player->update($history->change, $history->change_loyalty);
 
-                    PlayerLevel::updatePlayerLevel($player, 'points', $history->id_action);
-                }
-
-                if ($coins_change !== '') {
-                    $history->change_loyalty = $coins_change;
-                    $history->add();
-
-                    PlayerLevel::updatePlayerLevel($player, 'coins', $history->id_action);
-                }
-
-                $player->update($points_change, $coins_change, true);
+                PlayerLevel::updatePlayerLevel($player, 'points', $history->id_action);
+                PlayerLevel::updatePlayerLevel($player, 'coins', $history->id_action);
 
                 $this->confirmations[] = $this->l('The player action was sucessfully saved.');
 
                 return true;
             }
             else {
-                $history->action_type = $type;
-                if ($points_change != 0) {
-                    $history->points_change = $points_change;
-                }
-                if ($coins_change != 0) {
-                    $history->coins_change = $coins_change;
-                }
+
+                $this->display = 'customActionForm';
+
+                $this->fields_value = array(
+                    'id_customer' => $id_customer,
+                    'title' => $history->title,
+                    'message' => $history->message,
+                    'action_type' => $type,
+                    'change_points' => $history->change_points,
+                    'change_coins' => $history->change_coins,
+                    'change_loyalty' => $history->change_loyalty,
+                );
 
                 return $history;
             }
@@ -592,22 +610,25 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         elseif (Tools::isSubmit('deletePlayerHistory') || Tools::isSubmit('savePlayerHistory')) {
             // Check inputs
             $id_history = (int)Tools::getValue('id_history');
-
             $history = new PlayerHistory($id_history);
 
-            print_r($history);
-            die();
-
-            // Todo: Finish this process
-
-            // This if is needed, in case of a refresh of the same url
-            if ($history->id_customer) {
-                // $player->update($history->change * (-1)); Todo: Add player object cleanly
+            if (Tools::isSubmit('savePlayerHistory')) {
+                foreach (Language::getIDs() as $id_lang) {
+                    $history->title[$id_lang] = Tools::getValue('title_'.$id_lang);
+                    $history->message[$id_lang] = Tools::getValue('message_'.$id_lang);
+                }
+                $history->url = Tools::getValue('url');
+                $history->change_points = Tools::getValue('change_points');
+                $history->change_coins = Tools::getValue('change_coins');
+                $history->change_loyalty = Tools::getValue('change_loyalty');
+                if ($history->update()) {
+                    $this->confirmations[] = $this->l('The player history was changed!');
+                }
             }
-            $history->delete();
-
-            if (empty($this->errors)) {
-                $this->confirmations[] = $this->l('The Player History was deleted and the points removed.');
+            elseif (Tools::isSubmit('deletePlayerHistory')) {
+                if ($history->delete()) {
+                    $this->confirmations[] = $this->l('The player history was deleted!');
+                }
             }
 
             return true;
@@ -894,12 +915,12 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
     // Helper Forms
     private function generateFormCustomAction($data = null) {
-        $id_customer = (int)Tools::getValue('id_customer');
 
         $inputs[] = array(
             'type' => 'hidden',
             'name' => 'id_customer'
         );
+
         $inputs[] =array(
             'type' => 'select',
             'label' => $this->l('Type'),
@@ -954,11 +975,11 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'points_change',
+            'name'  => 'change',
             'label' => $this->l('Change'),
             'desc'  => $this->l('If you want to give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->l('Points'),
+            'suffix' => $this->total_name,
         );
         $inputs[] = array(
             'type'  => 'text',
@@ -966,7 +987,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             'label' => $this->l('Change'),
             'desc'  => $this->l('If you want to give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->l('Coins'),
+            'suffix' => $this->loyalty_name,
         );
 
         $fields_form = array(
@@ -983,6 +1004,8 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             )
         );
 
+        $id_customer = (int)Tools::getValue('id_customer');
+
         $helper = new HelperForm();
         $helper->submit_action = 'saveCustomAction';
         $helper->default_form_language = $this->context->language->id;
@@ -990,29 +1013,12 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $helper->token = Tools::getAdminTokenLite($this->controller_name);
         $helper->table = 'genzo_krona_custom_action';
 
-        // Get Valuess
-        $vars['id_customer'] = $id_customer;
-
-        if ($data) {
-            $vars = json_decode(json_encode($data), true);
-            if (empty($vars['points_change'])) {$vars['points_change'] = '';}
-            if (empty($vars['coins_change'])) {$vars['coins_change'] = '';}
-        }
-        else {
-            foreach (Language::getIDs() as $id_lang) {
-                $vars['title'][$id_lang] = '';
-                $vars['message'][$id_lang] = '';
-            }
-
-            $vars['action_type'] = 'custom';
-            $vars['id_action'] = 1;
-            $vars['id_action_order'] = 1;
-            $vars['points_change'] = '';
-            $vars['coins_change'] = '';
+        if (!isset($this->fields_value['id_customer']) || !$this->fields_value['id_customer']) {
+            $this->fields_value['id_customer'] = $id_customer;
         }
 
         $helper->tpl_vars = array(
-            'fields_value' => $vars,
+            'fields_value' => $this->fields_value,
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         );
