@@ -948,7 +948,7 @@ class Genzo_Krona extends Module
                             $history->add();
 
                             if ($expire_days = Configuration::get('krona_loyalty_expire', null, $customer->id_shop_group, $customer->id_shop)) {
-                                $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days"));
+                                $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days")); // Todo: Add this to player history
                             }
 
                             $player->update(0, $coins_change);

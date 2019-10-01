@@ -223,6 +223,11 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             $this->_select .= ', `coins` as total ';
         }
 
+        $this->_select .= ', SUM(change_points) AS points_calc, SUM(change_coins) AS coins_calc, SUM(change_loyalty) AS change_loyalty';
+        $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'genzo_krona_player_history AS pl ON pl.id_customer=a.id_customer';
+        $this->_group = ' GROUP BY a.id_customer ';
+
+
         $fields_list['id_customer'] = array(
             'title' => 'ID',
             'align' => 'center',
@@ -255,11 +260,21 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 'class' => 'fixed-width-xs',
                 'align' => 'left',
             );
+            $fields_list['points_calc'] = array(
+                'title' => $this->l('Points_calc'),
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            );
         }
 
         if (($this->is_loyalty AND $this->loyalty_total!='points') OR ($this->is_gamification AND $this->gamification_total!='points')) {
             $fields_list['coins'] = array(
                 'title' => $this->l('Coins'),
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            );
+            $fields_list['coins_calc'] = array(
+                'title' => $this->l('coins_calc'),
                 'class' => 'fixed-width-xs',
                 'align' => 'left',
             );
@@ -276,6 +291,11 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         if ($this->is_loyalty) {
             $fields_list['loyalty'] = array(
                 'title' => $this->loyalty_name,
+                'class' => 'fixed-width-xs',
+                'align' => 'left',
+            );
+            $fields_list['loyalty_calc'] = array(
+                'title' => $this->loyalty_name.'_calc',
                 'class' => 'fixed-width-xs',
                 'align' => 'left',
             );

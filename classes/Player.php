@@ -19,11 +19,6 @@ class Player extends \ObjectModel {
     public $display_name;
     public $avatar;
     public $avatar_full;
-    public $points;
-    public $coins;
-    public $total;
-    public $loyalty;
-    public $loyalty_expire;
     public $active;
     public $banned;
     public $notification;
@@ -31,6 +26,10 @@ class Player extends \ObjectModel {
     public $date_upd;
 
     // Dynamic values
+    public $points;
+    public $coins;
+    public $total;
+    public $loyalty;
 
     /* @var $customer \Customer */
     public $customer;
@@ -85,6 +84,7 @@ class Player extends \ObjectModel {
                 $this->customer = $customerObj;
             }
 
+            // Todo: calculate points, coins, total and loyalty
             if (\Configuration::get('krona_gamification_active', null, $this->customer->id_shop_group, $this->customer->id_shop)) {
 
                 $total_mode_gamification = \Configuration::get('krona_gamification_total', null, $this->customer->id_shop_group, $this->customer->id_shop);
@@ -114,33 +114,6 @@ class Player extends \ObjectModel {
                 $this->total = 0;
             }
         }
-    }
-
-
-    // Todo: reconsider the whole update process, maybe a loyalty_change makes sense as well, maybe we can also skip this with a clean db structure
-    public function update($points_change = 0, $coins_change = 0, $nullValues = false) {
-
-        $this->points += $points_change;
-        $this->coins += $coins_change;
-
-        // Check if loyalty points are affected
-        if (\Configuration::get('krona_loyalty_active', null, $this->customer->id_shop_group, $this->customer->id_shop)) {
-
-            $total_mode_loyalty = \Configuration::get('krona_loyalty_total', null, $this->customer->id_shop_group, $this->customer->id_shop);
-
-            if ($total_mode_loyalty == 'points_coins' OR $total_mode_loyalty == 'points') {
-                $this->loyalty += $points_change;
-                $this->loyalty += $coins_change;
-            }
-
-        }
-
-        // If a penalty or an edit of PlayerHistory happens
-        $this->points = max(0, $this->points);
-        $this->coins = max(0, $this->coins);
-        $this->loyalty = max(0, $this->loyalty);
-
-        return parent::update($nullValues);
     }
 
     public function delete() {

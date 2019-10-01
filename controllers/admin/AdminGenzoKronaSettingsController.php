@@ -767,6 +767,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
     }
 
     private  function updateAllExpireLoyalty($expire_type) {
+        // Todo: make this function compatible with new player history feature
         $players = Player::getAllPlayers();
 
         foreach ($players as $player) {

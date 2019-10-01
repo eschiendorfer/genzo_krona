@@ -108,7 +108,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
         }
         else {
 	        // Remove Loyalty Points
-	        $player->loyalty = $player->loyalty - $loyalty;
+	        // Todo: add this process with player histories
 
 	        // Add History
             $ids_lang = Language::getIDs();

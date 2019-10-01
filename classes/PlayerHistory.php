@@ -24,7 +24,7 @@ class PlayerHistory extends \ObjectModel {
 
     public $change_points;
     public $change_coins;
-    public $change_loyalty;
+    public $change_loyalty; // Todo: adding loyalty_expire
     public $message;
     public $title;
     public $url;
@@ -71,39 +71,9 @@ class PlayerHistory extends \ObjectModel {
 
     public function add($autoDate = true, $nullValues = false) {
 
-        $this->player->notification++;
+        $this->player->notification++; // Todo: again rethink this
 
         return parent::add($autoDate, $nullValues);
-    }
-
-
-    public function update($nullValues = false) {
-
-        // Get old object and check if a player update is needed
-        $oldPlayerHistory = new PlayerHistory($this->id_history, false);
-
-        if (($this->player instanceof Player) && ($this->change_points!=$oldPlayerHistory->change_points || $this->change_coins!=$oldPlayerHistory->change_coins || $this->change_loyalty!=$oldPlayerHistory->change_loyalty)) {
-
-            $this->player->points += $this->change_points-$oldPlayerHistory->change_points;
-            $this->player->coins += $this->change_coins-$oldPlayerHistory->change_coins;
-            $this->player->loyalty += $this->change_loyalty-$oldPlayerHistory->change_loyalty;
-            $this->player->update();
-        }
-
-        return parent::update($nullValues);
-    }
-
-    public function delete() {
-
-        if ($this->player instanceof Player) {
-
-            $this->player->points -= $this->change_points;
-            $this->player->coins -= $this->change_coins;
-            $this->player->loyalty -= $this->change_loyalty;
-            $this->player->update();
-        }
-
-        return parent::delete();
     }
 
     public static function getHistoryByPlayer($id_customer, $filters = null, $pagination = null, $order = null) {
