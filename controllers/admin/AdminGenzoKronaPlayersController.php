@@ -477,9 +477,16 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         );
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'change', // Todo: add all fields coins, points ...
+            'name'  => 'points',
             'label' => $this->l('Change'),
-            'suffix' => Configuration::get('krona_total_name', $this->context->language->id_lang, $this->id_shop_group, $this->id_shop),
+            'suffix' => $this->l('Points'),
+            'class'  => 'input fixed-width-sm',
+        );
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'coins',
+            'label' => $this->l('Change'),
+            'suffix' => $this->l('Coins'),
             'class'  => 'input fixed-width-sm',
         );
         $inputs[] = array(
