@@ -21,18 +21,17 @@ class Player extends \ObjectModel {
     public $avatar_full;
     public $active;
     public $banned;
-    public $notification;
     public $date_add;
     public $date_upd;
+
+    /* @var $customer \Customer */
+    public $customer;
 
     // Dynamic values
     public $points;
     public $coins;
     public $total;
     public $loyalty;
-
-    /* @var $customer \Customer */
-    public $customer;
 
     public static $definition = array(
         'table' => "genzo_krona_player",
@@ -42,13 +41,8 @@ class Player extends \ObjectModel {
             'id_customer'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'pseudonym'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'avatar'            => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'points'            => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'coins'             => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'loyalty'           => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'loyalty_expire'    => array('type' => self::TYPE_DATE),
             'active'            => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'banned'            => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'notification'      => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'date_add'          => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
             'date_upd'          => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
         )
@@ -84,7 +78,9 @@ class Player extends \ObjectModel {
                 $this->customer = $customerObj;
             }
 
-            // Todo: calculate points, coins, total and loyalty
+            // calculate points, coins and loyalty
+            $this->setDynamicValues();
+
             if (\Configuration::get('krona_gamification_active', null, $this->customer->id_shop_group, $this->customer->id_shop)) {
 
                 $total_mode_gamification = \Configuration::get('krona_gamification_total', null, $this->customer->id_shop_group, $this->customer->id_shop);
@@ -114,6 +110,18 @@ class Player extends \ObjectModel {
                 $this->total = 0;
             }
         }
+    }
+
+    private function setDynamicValues() {
+        $query = new \DbQuery();
+        $query->select('SUM(points) as points, SUM(coins) as coins, SUM(loyalty-loyalty_used-loyalty_expired) AS loyalty');
+        $query->from('genzo_krona_player_history');
+        $query->where('id_customer = ' . $this->id_customer);
+        $player = \Db::getInstance()->getRow($query);
+
+        $this->points = (int)$player['points'];
+        $this->coins = (int)$player['coins'];
+        $this->loyalty = (int)$player['loyalty'];
     }
 
     public function delete() {
@@ -222,6 +230,8 @@ class Player extends \ObjectModel {
 
     public static function importPlayer($id_customer) {
 
+        // Todo: this needs to be tested carefully. For example when are players object created?
+
         $customer = new \Customer((int)$id_customer);
         $player = new Player($id_customer, $customer);
 
@@ -238,7 +248,11 @@ class Player extends \ObjectModel {
                 $points = \LoyaltyModule\LoyaltyModule::getPointsByCustomer($id_customer);
                 $coins_change = ceil($points * $import_points);
 
-                $player->update(0, $coins_change);
+                $playerHistory = new PlayerHistory();
+                $playerHistory->id_customer = $id_customer;
+                $playerHistory->loyalty = $coins_change;
+                $playerHistory->viewable = false;
+                $playerHistory->add();
             }
         }
 
@@ -299,11 +313,11 @@ class Player extends \ObjectModel {
                         }
 
                         $link = new \Link();
-                        $history = new PlayerHistory(null, $player);
+                        $history = new PlayerHistory();
                         $history->id_customer = $id_customer;
                         $history->id_action_order = $id_action_order;
                         $history->url = $link->getPageLink('history');
-                        $history->change_coins = $coins_change;
+                        $history->coins = $coins_change;
                         $history->date_add = $order['date_add'];
 
                         // Handling lang fields for Player History
@@ -328,8 +342,7 @@ class Player extends \ObjectModel {
                             $history->title[$id_lang] = pSQL($title[$id_lang]);
                         }
 
-                        $history->add(false);
-                        $player->update(0, $coins_change);
+                        $history->add();
                     }
 
                 }
@@ -475,20 +488,29 @@ class Player extends \ObjectModel {
         $actions = Action::getAllActions(['a.active=1', 'a.points_change>0']);
 
         foreach ($actions as $key => $action) {
-            $actionObj = new Action($action['id_action']);
+            // $actionObj = new Action($action['id_action']);
 
             // Newsletter
-            if ($actionObj->module=='genzo_krona' && $actionObj->key=='newsletter') {
+            if ($action['module']=='genzo_krona' && $action['key']=='newsletter') {
                 $context = \Context::getContext();
                 $actions[$key]['done'] = ($context->customer->newsletter) ? true : false;
                 $actions[$key]['possible'] = ($context->customer->newsletter) ? false : true;
             }
             else {
-                $executed = (int)Action::getPlayerExecutionTimes($actionObj, $id_customer);
-                if ($executed) {
+
+                $params = array(
+                    'module_name' => $action['module'],
+                    'action_name' => $action['key'],
+                    'id_customer' => $id_customer,
+                );
+
+                $hook = \Hook::exec('displayKronaActionPoints', $params, null, true, false);
+
+                if ($hook['genzo_krona']['executions_done']) {
                     $actions[$key]['done'] = true;
                 }
-                if (($actionObj->execution_type == 'unlimited') || ($executed < $actionObj->execution_max)) {
+
+                if (($action['execution_type'] == 'unlimited') || ($hook['genzo_krona']['executions_possible'])) {
                     $actions[$key]['possible'] = true;
                 }
             }
@@ -499,11 +521,7 @@ class Player extends \ObjectModel {
     }
 
     /* @param Action $action */
-    public function checkIfPlayerStilCanExecuteAction($action) {
-
-        if ($action->execution_type == 'unlimited') {
-            return true;
-        }
+    public function checkIfPlayerStillCanExecuteAction($action, $getInfo = false) {
 
         // How many times was the action already executed for the defined time span?
 
@@ -524,12 +542,26 @@ class Player extends \ObjectModel {
         }
 
         $execution_times = (int)PlayerHistory::countActionByPlayer($this->id_customer, $action->id, $startDate, $endDate);
+        $executions_left = (int)$action->execution_max-$execution_times;
 
-        if ($execution_times < $action->execution_max) {
-            return $action->execution_max-$execution_times; // which is basically the nbr an action can still be executed
+        if ($action->execution_type == 'unlimited' || $executions_left) {
+            if ($getInfo) {
+                return array(
+                    'executions_possible' => true,
+                    'executions_done' => $execution_times,
+                );
+            }
+            return true;
         }
-
-        return false;
+        else {
+            if ($getInfo) {
+                return array(
+                    'executions_possible' => false,
+                    'executions_done' => $execution_times,
+                );
+            }
+            return false;
+        }
     }
 
 }

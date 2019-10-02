@@ -28,7 +28,6 @@ if(Tools::getValue('notification')) {
     $id_customer = (int)Tools::getValue('notification');
     $context = Context::getContext();
     if ($id_customer == $context->customer->id) {
-        $player = new Player($id_customer);
-        echo json_encode($player->notification);
+        echo json_encode(\KronaModule\PlayerHistory::getNotificationValue($id_customer));
     }
 }

@@ -8,8 +8,8 @@
  * @license   All rights reserved.
  */
 
+// Note never add cronjob file here, this breaks whole FO
 include_once(dirname(__FILE__).'/genzo_krona.php');
-include_once(dirname(__FILE__).'/genzo_krona_cron.php');
 
 include_once(dirname(__FILE__).'/classes/Action.php');
 include_once(dirname(__FILE__).'/classes/ActionOrder.php');

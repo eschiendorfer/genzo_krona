@@ -214,16 +214,16 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
     public function renderList() {
 
         if ($this->gamification_total == 'points_coins') {
-            $this->_select .= ', `points`+`coins` as total ';
+            $this->_select .= ', a.`points`+a.`coins` as total ';
         }
         elseif ($this->gamification_total == 'points') {
-            $this->_select .= ', `points` as total ';
+            $this->_select .= ', a.`points` as total ';
         }
         elseif ($this->gamification_total == 'coins') {
-            $this->_select .= ', `coins` as total ';
+            $this->_select .= ', a.`coins` as total ';
         }
 
-        $this->_select .= ', SUM(change_points) AS points_calc, SUM(change_coins) AS coins_calc, SUM(change_loyalty) AS change_loyalty';
+        $this->_select .= ', SUM(pl.points) AS points_calc, SUM(pl.coins) AS coins_calc, SUM(pl.loyalty) AS loyalty_calc';
         $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'genzo_krona_player_history AS pl ON pl.id_customer=a.id_customer';
         $this->_group = ' GROUP BY a.id_customer ';
 
@@ -477,14 +477,14 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         );
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'change',
+            'name'  => 'change', // Todo: add all fields coins, points ...
             'label' => $this->l('Change'),
             'suffix' => Configuration::get('krona_total_name', $this->context->language->id_lang, $this->id_shop_group, $this->id_shop),
             'class'  => 'input fixed-width-sm',
         );
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'change_loyalty',
+            'name'  => 'loyalty',
             'label' => $this->l('Change'),
             'suffix' => Configuration::get('krona_loyalty_name', $this->context->language->id_lang, $this->id_shop_group, $this->id_shop),
             'class'  => 'input fixed-width-sm',
@@ -548,9 +548,9 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             $history->id_customer = $id_customer;
             $history->id_action = ($type == 'action') ? (int)Tools::getValue('id_action') : 0;
             $history->id_action_order = ($type == 'order') ? (int)Tools::getValue('id_action_order') : 0;
-            $history->change_points = (int)Tools::getValue('change_points');
-            $history->change_coins = (int)Tools::getValue('change_coins');
-            $history->change_loyalty = (int)Tools::getValue('change_loyalty');
+            $history->points = (int)Tools::getValue('points');
+            $history->coins = (int)Tools::getValue('coins');
+            $history->loyalty = (int)Tools::getValue('loyalty');
 
             if ($type == 'custom') {
                 foreach ($ids_lang as $id_lang) {
@@ -572,7 +572,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 $history->message = $action->message;
 
                 foreach ($history->message as $id_lang => $message) {
-                    $history->message[$id_lang] = str_replace('{points}', $history->change_points, $message);
+                    $history->message[$id_lang] = str_replace('{points}', $history->points, $message);
                 }
             }
             elseif ($type == 'order') {
@@ -581,7 +581,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     $history->title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $this->id_shop_group, $this->id_shop);
 
                     $message = Configuration::get('krona_order_message', $id_lang, $this->id_shop_group, $this->id_shop);
-                    $history->message[$id_lang] = str_replace('{coins}', $history->change_coins, $message);
+                    $history->message[$id_lang] = str_replace('{coins}', $history->coins, $message);
                 }
             }
 
@@ -593,7 +593,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 $this->errors[] = $this->l('Please fill in message');
             }
 
-            if (!$history->change_points && !$history->change_coins && !$history->change_loyalty) {
+            if (!$history->points && !$history->coins && !$history->loyalty) {
                 $this->errors[] = $this->l('Please fill in (at least one) a value for points, coins or loyalty.');
             }
 
@@ -601,7 +601,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
                 $history->add();
 
-                $player->update($history->change, $history->change_loyalty);
+                $player->update();
 
                 PlayerLevel::updatePlayerLevel($player, 'points', $history->id_action);
                 PlayerLevel::updatePlayerLevel($player, 'coins', $history->id_action);
@@ -619,9 +619,9 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     'title' => $history->title,
                     'message' => $history->message,
                     'action_type' => $type,
-                    'change_points' => $history->change_points,
-                    'change_coins' => $history->change_coins,
-                    'change_loyalty' => $history->change_loyalty,
+                    'points' => $history->points,
+                    'coins' => $history->coins,
+                    'loyalty' => $history->loyalty,
                 );
 
                 return $history;
@@ -638,9 +638,9 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                     $history->message[$id_lang] = Tools::getValue('message_'.$id_lang);
                 }
                 $history->url = Tools::getValue('url');
-                $history->change_points = Tools::getValue('change_points');
-                $history->change_coins = Tools::getValue('change_coins');
-                $history->change_loyalty = Tools::getValue('change_loyalty');
+                $history->points = Tools::getValue('points');
+                $history->coins = Tools::getValue('coins');
+                $history->loyalty = Tools::getValue('loyalty');
                 if ($history->update()) {
                     $this->confirmations[] = $this->l('The player history was changed!');
                 }

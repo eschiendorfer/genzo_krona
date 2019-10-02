@@ -125,7 +125,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
                 $history->title[$id_lang] = $points_name[$id_lang]. ' '. $this->module->l('Conversion');
                 $history->message[$id_lang] = sprintf($this->module->l('You converted %s into a coupon.'),$loyalty.' '.$points_name[$id_lang]);
             }
-            $history->change_loyalty = -$loyalty;
+            $history->loyalty = -$loyalty; // Todo: check this
             $history->add();
 
             $player->update();

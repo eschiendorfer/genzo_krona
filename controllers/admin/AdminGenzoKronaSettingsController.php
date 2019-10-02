@@ -10,6 +10,8 @@
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
+use KronaModule\Player;
+
 class AdminGenzoKronaSettingsController extends ModuleAdminController
 {
 
@@ -104,7 +106,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'pseudonym' => Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop),
             'loyalty_product_page' => Configuration::get('krona_loyalty_product_page', null, $this->id_shop_group, $this->id_shop),
             'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page', null, $this->id_shop_group, $this->id_shop),
-            'loyalty_expire' => Configuration::get('krona_loyalty_expire', null, $this->id_shop_group, $this->id_shop),
+            'loyalty_expire_method' => Configuration::get('krona_loyalty_expire_method', null, $this->id_shop_group, $this->id_shop),
+            'loyalty_expire_days' => Configuration::get('krona_loyalty_expire_days', null, $this->id_shop_group, $this->id_shop),
             'avatar' => Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop),
             'leaderboard' => Configuration::get('krona_leaderboard', null, $this->id_shop_group, $this->id_shop),
             'leaderboard_page' => Configuration::get('krona_leaderboard_page', null, $this->id_shop_group, $this->id_shop),
@@ -451,9 +454,26 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             );
 
             $inputs[] = array(
+                'type' => 'select',
+                'label' => $this->l('Expiring Method'),
+                'name' => 'loyalty_expire_method',
+                'options' => array(
+                    'query' => array(
+                        array('value' => 'none', 'name' => $this->l('None')),
+                        array('value' => 'fixed', 'name' => $this->l('Fixed Expiring Date')),
+                        array('value' => 'refreshing', 'name' => $this->l('Refreshing Expiring Date')),
+                    ),
+                    'id' => 'value',
+                    'name' => 'name',
+                ),
+                'desc' => $this->l('Fixed: the points expire x-days after the customer earned it.').'<br>'.$this->l('Refreshing: when a customer places a new order, the expiring date of all points is refreshing.'),
+                'tab' => 'loyalty',
+            );
+
+            $inputs[] = array(
                 'type' => 'text',
                 'label' => $this->l('Expire Loyalty Points'),
-                'name' => 'loyalty_expire',
+                'name' => 'loyalty_expire_days',
                 'desc' => $this->l('After how many days should the loyalty points be expired? This option will expire all loyalty points. Note: A new order by the customer will update the expire date.'),
                 'suffix' => $this->l('Days'),
                 'class' => 'input fixed-width-sm',
@@ -674,35 +694,36 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             Configuration::updateValue('krona_notification', (bool)Tools::getValue('notification'), false, $this->id_shop_group, $this->id_shop);
 
             // Basic Fields
-            Configuration::updateValue('krona_loyalty_active', pSQL(Tools::getValue('loyalty_active')), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_gamification_active', pSQL(Tools::getValue('gamification_active')), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_loyalty_active', Tools::getValue('loyalty_active'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_gamification_active', Tools::getValue('gamification_active'), false, $this->id_shop_group, $this->id_shop);
 
             if ($loyalty) {
-                Configuration::updateValue('krona_loyalty_total', pSQL(Tools::getValue('loyalty_total')), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_loyalty_product_page', pSQL(Tools::getValue('loyalty_product_page')), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_loyalty_cart_page', pSQL(Tools::getValue('loyalty_cart_page')), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_total', Tools::getValue('loyalty_total'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_product_page', Tools::getValue('loyalty_product_page'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_cart_page', Tools::getValue('loyalty_cart_page'), false, $this->id_shop_group, $this->id_shop);
 
                 // Expiration
-                Configuration::updateValue('krona_loyalty_expire', (int)Tools::getValue('loyalty_expire'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_expire_method', Tools::getValue('loyalty_expire_method'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_expire_days', (int)Tools::getValue('loyalty_expire_days'), false, $this->id_shop_group, $this->id_shop);
 
                 if (Tools::getValue('loyalty_expire_update')!='none') {
-                    self::updateAllExpireLoyalty(Tools::getValue('loyalty_expire_update'));
+                    self::updateAllExpireLoyalty(Tools::getValue('loyalty_expire_update'), Tools::getValue('loyalty_expire_days'));
                 }
             }
             if ($gamification) {
-                Configuration::updateValue('krona_gamification_total', pSQL(Tools::getValue('gamification_total')), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_gamification_total', Tools::getValue('gamification_total'), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_pseudonym', (bool)Tools::getValue('pseudonym'), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_avatar', (bool)Tools::getValue('avatar'), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_leaderboard', (int)Tools::getValue('leaderboard'), false, $this->id_shop_group, $this->id_shop);
                 Configuration::updateValue('krona_leaderboard_page', (int)Tools::getValue('leaderboard_page'), false, $this->id_shop_group, $this->id_shop);
             }
-            Configuration::updateValue('krona_url', pSQL(Tools::getValue('url')), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_url', Tools::getValue('url'), false, $this->id_shop_group, $this->id_shop);
             Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_amount', pSQL(Tools::getValue('order_amount')), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_coupon', pSQL(Tools::getValue('order_coupon')), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_rounding', pSQL(Tools::getValue('order_rounding')), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_coupon_prefix', pSQL(Tools::getValue('coupon_prefix')), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_order_amount', Tools::getValue('order_amount'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_order_coupon', Tools::getValue('order_coupon'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_order_rounding', Tools::getValue('order_rounding'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_coupon_prefix', Tools::getValue('coupon_prefix'), false, $this->id_shop_group, $this->id_shop);
 
             // Handling Status
             $orderStates = OrderState::getOrderStates($this->context->language->id);
@@ -766,14 +787,31 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
         return $url;
     }
 
-    private  function updateAllExpireLoyalty($expire_type) {
-        // Todo: make this function compatible with new player history feature
+    private  function updateAllExpireLoyalty($expire_type, $expire_days) {
+
         $players = Player::getAllPlayers();
 
         foreach ($players as $player) {
-            $playerObj = new \KronaModule\Player($player['id_customer']);
-            $playerObj->loyalty_expire = $playerObj->getExpireLoyalty($expire_type);
-            $playerObj->update();
+
+            if ($expire_type == 'today') {
+                $expire_date = date("Y-m-d 23:59:59", strtotime(" + {$expire_days} days"));
+            }
+            elseif ($expire_type == 'last_order') {
+
+                $query = new \DbQuery();
+                $query->select('MAX(date_add)');
+                $query->from('orders');
+                $query->where('id_customer = ' . $player['id_customer']);
+                $query->where('valid = 1');
+                $last_order = \Db::getInstance()->getValue($query);
+
+                $expire_date = date("Y-m-d H:i:s", strtotime($last_order." + {$expire_days} days"));
+            }
+            else {
+                $expire_date = date("2099-01-01 23:59:59", strtotime(" + {$expire_days} days"));
+            }
+
+            DB::getInstance()->update('genzo_krona_player_history', ['loyalty_expire_date' => $expire_date], 'loyalty-loyalty_used-loyalty_expired >0 AND id_customer='.$player['id_customer']);
         }
     }
 

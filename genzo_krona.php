@@ -578,16 +578,15 @@ class Genzo_Krona extends Module
 
         if (empty($info['error'])) {
 
-            if ($executions_left = $player->checkIfPlayerStilCanExecuteAction($action)) {
+            if ($info = $player->checkIfPlayerStillCanExecuteAction($action, true)) {
                 $info['points'] = $action->points_change;
             }
             else {
                 $info['points'] = 0;
             }
 
-            $info['executions_left'] = $executions_left;
             $info['execution_type'] = $action->execution_type;
-            $info['execution_max'] = $action->execution_max;
+            $info['execution_max'] = (int)$action->execution_max;
         }
 
         return $info;
@@ -796,12 +795,12 @@ class Genzo_Krona extends Module
         else {
 
             // Check if the User is still allowed to execute this action
-            if ($player->checkIfPlayerStilCanExecuteAction($action)) {
+            if ($player->checkIfPlayerStillCanExecuteAction($action)) {
 
                 $history = new PlayerHistory(null, $player);
                 $history->id_customer = $customer->id;
                 $history->id_action = $id_action;
-                $history->change_points = $action->points_change;
+                $history->points = $action->change;
 
                 if (isset($params['action_url']) && !empty($params['action_url'])) {
                     $history->url = $params['action_url']; // Action url is not mandatory
@@ -823,14 +822,14 @@ class Genzo_Krona extends Module
 
                     // After defining the message array we replace the shortcodes -> shortcodes can be used for external messages too
                     $search = array('{points}', '{coins}');
-                    $replace = array($history->change_points, $history->change_coins);
+                    $replace = array($history->points, $history->coins);
                     $history->message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
                     $history->title[$id_lang] = pSQL($action->title[$id_lang]);
                 }
 
                 $history->add();
-                $player->update($action->points_change, 0);
+                $player->update();
 
                 PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
             }
@@ -921,7 +920,21 @@ class Genzo_Krona extends Module
                             $history->id_customer = $id_customer;
                             $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
-                            $history->change_coins = $coins_change;
+                            $history->coins = $coins_change;
+                            $history->loyalty = $coins_change;
+
+                            $expire_method = Configuration::get('krona_loyalty_expire_date', null, $customer->id_shop_group, $customer->id_shop);
+
+                            if ($expire_method!='none') {
+                                $expire_days = Configuration::get('krona_loyalty_expire_days', null, $customer->id_shop_group, $customer->id_shop);
+                                $expire_date = date("Y-m-d H:i:s", strtotime("+{$expire_days} days"));
+                                $history->loyalty_expire_date = $expire_date;
+
+                                // Updating old expiring dates if refreshing method
+                                if ($expire_method == 'refreshing') {
+                                    DB::getInstance()->update('genzo_krona_player_history', ['loyalty_expire_date' => $expire_date], 'loyalty-loyalty_used-loyalty_expired >0 AND id_customer='.$id_customer);
+                                }
+                            }
 
                             // Handling lang fields for Player History
                             $ids_lang = Language::getIDs();
@@ -947,11 +960,7 @@ class Genzo_Krona extends Module
 
                             $history->add();
 
-                            if ($expire_days = Configuration::get('krona_loyalty_expire', null, $customer->id_shop_group, $customer->id_shop)) {
-                                $player->loyalty_expire = date("Y-m-d H:i:s", strtotime("+{$expire_days} days")); // Todo: Add this to player history
-                            }
-
-                            $player->update(0, $coins_change);
+                            $player->update();
                             PlayerLevel::updatePlayerLevel($player, 'coins', $id_action_order);
                         }
                     }
@@ -963,7 +972,7 @@ class Genzo_Krona extends Module
                             $history->id_customer = $id_customer;
                             $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
-                            $history->change_coins = $coins_change * (-1);
+                            $history->coins = $coins_change * (-1);
 
                             $ids_lang = Language::getIDs();
 
@@ -983,7 +992,7 @@ class Genzo_Krona extends Module
                                 $history->title[$id_lang] = pSQL($title[$id_lang]);
                             }
                             $history->add();
-                            $player->update(0, $history->change_coins);
+                            $player->update();
 
                             // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
                         }

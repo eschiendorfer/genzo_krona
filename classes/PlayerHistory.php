@@ -19,68 +19,50 @@ class PlayerHistory extends \ObjectModel {
     public $id_action;
     public $id_action_order;
 
-    /* @deprecated $change */
-    public $change;
+    public $points;
+    public $coins;
+    public $loyalty;
+    public $loyalty_used;
+    public $loyalty_expired;
 
-    public $change_points;
-    public $change_coins;
-    public $change_loyalty; // Todo: adding loyalty_expire
+    public $loyalty_expire_date;
     public $message;
     public $title;
     public $url;
+    public $viewable; // Should this appear in FO?
+    public $viewed;
     public $date_add;
     public $date_upd;
-
-    // Dynamic vars
-
-    /* @var $player Player */
-    public $player;
 
     public static $definition = array(
         'table' => "genzo_krona_player_history",
         'primary' => 'id_history',
         'multilang' => true,
         'fields' => array(
-            'id_customer'      => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'id_action'        => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'id_action_order'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'change_points'    => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'change_coins'    => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'change_loyalty'   => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'title'            => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
-            'message'          => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
-            'url'              => array('type' => self::TYPE_STRING, 'validate' => 'isString',),
-            'date_add'         => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
-            'date_upd'         => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
+            'id_customer'           => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_action'             => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_action_order'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'points'                => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins'                 => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty'               => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty_used'          => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty_expired'       => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty_expire_date'   => array('type' => self::TYPE_DATE),
+            'title'                 => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
+            'message'               => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
+            'url'                   => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'viewable'              => array('type' => self::TYPE_BOOL),
+            'viewed'                => array('type' => self::TYPE_BOOL),
+            'date_add'              => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
+            'date_upd'              => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
         )
     );
-
-    public function __construct($id_history = null, $playerObj = null, $idLang = null) {
-
-        parent::__construct($id_history, $idLang, null);
-
-        if ($playerObj !== false) {
-
-            if (!$playerObj instanceof Player) {
-                $playerObj = new Player($this->id_customer);
-            }
-
-            $this->player = $playerObj;
-        }
-    }
-
-    public function add($autoDate = true, $nullValues = false) {
-
-        $this->player->notification++; // Todo: again rethink this
-
-        return parent::add($autoDate, $nullValues);
-    }
 
     public static function getHistoryByPlayer($id_customer, $filters = null, $pagination = null, $order = null) {
         $id_lang = \Context::getContext()->language->id;
 
         $query = new \DbQuery();
-        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, h.change+h.change_loyalty AS `change`, l.*');
+        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, h.change+h.loyalty AS `change`, l.*'); // Todo: change h.change
         $query->from(self::$definition['table'], 'h');
         $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history`');
         $query->where('`id_customer` = ' . (int)$id_customer);
@@ -170,4 +152,13 @@ class PlayerHistory extends \ObjectModel {
         }
         return \Db::getInstance()->getValue($query);
     }
+
+    public static function getNotificationValue($id_customer) {
+        $query = new \DbQuery();
+        $query->select('COUNT(*)');
+        $query->from('genzo_krona_player_history');
+        $query->where('viewed=0 AND id_customer = ' . $id_customer);
+        return (int)\Db::getInstance()->getValue($query);
+    }
+
 }
