@@ -21,6 +21,7 @@ class PlayerHistory extends \ObjectModel {
 
     public $points;
     public $coins;
+
     public $loyalty;
     public $loyalty_used;
     public $loyalty_expired;
@@ -44,7 +45,7 @@ class PlayerHistory extends \ObjectModel {
             'id_action_order'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'points'                => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'coins'                 => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'loyalty'               => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty'          => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'loyalty_used'          => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'loyalty_expired'       => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'loyalty_expire_date'   => array('type' => self::TYPE_DATE),
@@ -57,6 +58,26 @@ class PlayerHistory extends \ObjectModel {
             'date_upd'              => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
         )
     );
+
+    public function add($autoDate = true, $nullValues = false) {
+
+        // Always remember there is no static loyalty. The customer just collects points and coins. The merchant defines what loyalty is in BO.
+        $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
+
+        print_r($total_mode_loyalty);
+
+        if ($total_mode_loyalty == 'points_coins') {
+            $this->loyalty = $this->points + $this->coins;
+        }
+        elseif ($total_mode_loyalty == 'points') {
+            $this->loyalty = $this->points;
+        }
+        elseif ($total_mode_loyalty == 'coins') {
+            $this->loyalty = $this->coins;
+        }
+
+        return parent::add($autoDate, $nullValues);
+    }
 
     public static function getHistoryByPlayer($id_customer, $filters = null, $pagination = null, $order = null) {
         $id_lang = \Context::getContext()->language->id;

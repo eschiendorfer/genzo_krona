@@ -12,19 +12,24 @@ $(document).ready(function() {
 
 
     // Loyalty Conversion: Coupon Calculation
+    calculateLoyaltyValue();
+
     $('#loyalty').on('input', function() {
-
-        var loyalty = parseFloat($(this).val());
-
-        if (loyalty > loyalty_max) {
-            $(this).val(loyalty_max) ;
-            loyalty = loyalty_max;
-        }
-
-        var coupon = (loyalty * conversion).toFixed(2);
-
-        $('#coupon-value').text(coupon);
+        calculateLoyaltyValue();
     });
 
 });
+
+function calculateLoyaltyValue() {
+    var loyalty = parseFloat($('#loyalty').val());
+
+    if (loyalty > loyalty_max) {
+        $('#loyalty').val(loyalty_max) ;
+        loyalty = loyalty_max;
+    }
+
+    var coupon = (loyalty * conversion).toFixed(2);
+
+    $('#coupon-value').text(coupon);
+}
 

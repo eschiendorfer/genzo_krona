@@ -9,6 +9,11 @@ ALTER TABLE `PREFIX_genzo_krona_player_history`
     ADD `viewable` BOOL NOT NULL DEFAULT 1 AFTER `url`,
     ADD `viewed` BOOL NOT NULL DEFAULT 0 AFTER `url`;
 
-/* Not this only works if we use a second ALTER Table */
+/* Note: this only works if we use a second ALTER Table */
 ALTER TABLE `PREFIX_genzo_krona_player_history`
     CHANGE `change_loyalty` `loyalty` INT(12) NOT NULL;
+
+ALTER TABLE `PREFIX_genzo_krona_player_history`
+    ADD INDEX `id_customer` (`id_customer`),
+    ADD INDEX `id_action` (`id_action`),
+    ADD INDEX `id_action_order` (`id_action_order`);

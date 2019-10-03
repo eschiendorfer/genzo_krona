@@ -23,6 +23,9 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
 
         parent::initContent();
 
+        $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
+        print_r($total_mode_loyalty);
+
         $id_lang = $this->context->language->id;
         $id_shop_group = $this->context->shop->id_shop_group;
         $id_shop = $this->context->shop->id_shop;

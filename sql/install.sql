@@ -40,7 +40,10 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history` (
   `viewed` BOOL NOT NULL DEFAULT 0,
   `date_add` DATETIME NULL,
   `date_upd` DATETIME NULL,
-  PRIMARY KEY ( `id_history` )
+  PRIMARY KEY (`id_history`),
+  INDEX id_customer (`id_customer`),
+  INDEX id_action (`id_action`),
+  INDEX id_action_order (`id_action_order`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
 
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history_lang` (

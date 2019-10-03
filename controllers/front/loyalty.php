@@ -17,8 +17,8 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
     public $errors;
     public $confirmation;
 
-	public function initContent()
-	{	
+	public function initContent() {
+
 		// Disable left and right column
 		$this->display_column_left = false;
 		$this->display_column_right = false;

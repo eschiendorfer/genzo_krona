@@ -336,7 +336,7 @@ class Genzo_Krona extends Module
             !$this->removeAdminMenu('AdminGenzoKronaSettings') OR
             !$this->removeAdminMenu('AdminGenzoKronaSupport')
         ) {
-	        return false;
+
         }
 	    return true;
     }
@@ -720,6 +720,11 @@ class Genzo_Krona extends Module
 
     public function hookDisplayShoppingCartFooter($params) {
 
+	    if (Tools::isSubmit('convertLoyalty') && $loyalty_points = Tools::getValue('loyalty')) {
+	        print_r('test');
+	        $this->convertLoyaltyPointsToCoupon($this->context->customer->id, $loyalty_points);
+        }
+
         $id_shop_group = $this->context->shop->id_shop_group;
         $id_shop = $this->context->shop->id_shop;
 
@@ -768,6 +773,26 @@ class Genzo_Krona extends Module
                 $total = round($coins_in_cart * $actionOrder->coins_change);
             }
 
+            // Loyalty conversion
+            // $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
+
+            $player = ($this->context->customer->id) ? new Player($this->context->customer->id) : false;
+
+            Media::addJsDef(
+                array(
+                    'conversion' => $actionOrder->coins_conversion,
+                    'loyalty_max' => $player->loyalty,
+                )
+            );
+
+            if ($player) {
+                $player = json_decode(json_encode($player), true);
+            }
+
+            // $this->setLoyaltyConversionVars();
+
+
+
             $this->context->smarty->assign(array(
                 'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $id_shop_group, $id_shop),
                 'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $id_shop_group, $id_shop),
@@ -775,6 +800,7 @@ class Genzo_Krona extends Module
                 'minimum' => $minimum,
                 'minimum_amount' => $actionOrder->minimum_amount.' '.$actionOrder->currency_iso,
                 'conversion' => number_format(round($total * $actionOrder->coins_conversion, 2),2).' '.$actionOrder->currency_iso,
+                'player' => $player,
             ));
 
             return $this->display(__FILE__, 'views/templates/hook/shoppingCartFooter.tpl');
@@ -940,7 +966,6 @@ class Genzo_Krona extends Module
                             $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
                             $history->coins = $coins_change;
-                            $history->loyalty = $coins_change;
 
                             $expire_method = Configuration::get('krona_loyalty_expire_date', null, $customer->id_shop_group, $customer->id_shop);
 
@@ -1129,6 +1154,122 @@ class Genzo_Krona extends Module
         );
 
         return $my_routes;
+    }
+
+    // Helper
+    public function convertLoyaltyPointsToCoupon($id_customer, $loyalty_points) {
+
+	    $player = new Player($id_customer);
+        $actionOrder = new ActionOrder($this->context->currency->id);
+
+        $ids_lang = Language::getIDs();
+
+	    // Basic checks
+        if ($loyalty_points > $player->loyalty) {
+            $this->errors[] = $this->errors[] = $this->l('You haven\'t enough loyalty points.'); // Todo: show this error messages
+            return false;
+        }
+        elseif (!$loyalty_points > 0) {
+            $this->errors[] = $this->l('Must select more than 0 loyalty points.');
+            return false;
+        }
+
+        // Add History
+        $this->updatePlayerHistoryWhenConvertingLoyalty($id_customer, $loyalty_points);
+
+        $history = new PlayerHistory();
+        $history->id_customer = $id_customer;
+        $history->id_action = 0;
+        $history->id_action_order = $actionOrder->id_action_order;
+
+        $points_name = array();
+
+        foreach ($ids_lang as $id_lang) {
+            $points_name[$id_lang] = Configuration::get('krona_loyalty_name', $id_lang, $this->context->shop->id_shop_group, $this->context->shop->id);
+            $history->title[$id_lang] = $points_name[$id_lang]. ' '. $this->l('Conversion');
+            $history->message[$id_lang] = sprintf($this->l('You converted %s into a coupon.'),$loyalty_points.' '.$points_name[$id_lang]);
+        }
+        $history->loyalty = 0; // Todo: we would need a new column in player history like force_display_value
+        $history->add();
+
+
+	    // Add Coupon
+        $id_cart_rule = CartRule::getIdByCode('KRONA');
+        $coupon = new CartRule($id_cart_rule);
+
+        // Clone the cart rule and override some values
+        $coupon->id_customer = $id_customer;
+        $coupon->reduction_amount = ($loyalty_points * $actionOrder->coins_conversion);
+
+        // Merchant can set date in cart rule, we need the difference between the dates
+        if ($coupon->date_from && $coupon->date_to) {
+            $validity = strtotime($coupon->date_to) - strtotime($coupon->date_from);
+            $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+{$validity} seconds"));
+        }
+        else {
+            $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+1 year")); // Default
+        }
+        $coupon->date_from = date("Y-m-d H:i:s");
+
+        foreach ($ids_lang as $id_lang) {
+            $game_name = Configuration::get('krona_game_name', $id_lang, $this->context->shop->id_shop_group, $this->context->shop->id);
+            $coupon->name[$id_lang] = $game_name . ' - ' . $loyalty_points . ' ' . $points_name[$id_lang];
+        }
+
+        $prefix = Configuration::get('krona_coupon_prefix', null, $player->customer->id_shop_group, $player->customer->id_shop);
+        $code = strtoupper(Tools::passwdGen(6));
+
+        $coupon->code = ($prefix) ? $prefix.'-'.$code : $code;
+        $coupon->active = true;
+        $coupon->reduction_tax = true; // Todo: this needs to be implement with a configuration or the coupon template needs to be better
+        $coupon->add();
+
+        CartRule::copyConditions($id_cart_rule, $coupon->id);
+
+        // Immediately use the generated coupon in the order
+        if (($cartRule = new CartRule(CartRule::getIdByCode($coupon->code))) && Validate::isLoadedObject($cartRule)){
+            if ($error = $cartRule->checkValidity($this->context, false, true)) {
+                $this->errors[] = $error;
+            } else {
+                $this->context->cart->addCartRule($cartRule->id);
+                CartRule::autoAddToCart($this->context);
+                if (Configuration::get('PS_ORDER_PROCESS_TYPE') == 1) {
+                    Tools::redirect('index.php?controller=order-opc&addingCartRule=1');
+                }
+                Tools::redirect('index.php?controller=order&addingCartRule=1');
+            }
+        }
+
+        $this->confirmation = $this->l('Your Coupon was sucessfully created.');
+
+        return true;
+    }
+
+    private function updatePlayerHistoryWhenConvertingLoyalty($id_customer, $loyalty_points) {
+
+	    // Get the first history that needs to be used
+        $query = new DbQuery();
+        $query->select('id_history');
+        $query->from('genzo_krona_player_history');
+        $query->where('(loyalty-loyalty_used-loyalty_expired) > 0 AND id_customer = ' . $id_customer);
+        $query->orderby('loyalty_expire_date ASC, id_history ASC');
+        $id_history = Db::getInstance()->getValue($query);
+
+        $playerHistory = new PlayerHistory($id_history);
+        $loyalty_left_over = $playerHistory->loyalty-$playerHistory->loyalty_used-$playerHistory->loyalty_expired;
+
+        // The history is enough to fulfill the conversion
+        if ($loyalty_points <= $loyalty_left_over) {
+            $playerHistory->loyalty_used += $loyalty_points;
+            $playerHistory->update();
+            return true;
+        }
+        else {
+            $playerHistory->loyalty_used += $loyalty_left_over;
+            $playerHistory->update();
+            $this->updatePlayerHistoryWhenConvertingLoyalty($id_customer, ($loyalty_points-$loyalty_left_over));
+        }
+
     }
 
     // Todo: Think of product returns (as this would reduce coins & loyalty)

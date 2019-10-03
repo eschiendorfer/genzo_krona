@@ -100,7 +100,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'loyalty_total' => Configuration::get('krona_loyalty_total', null, $this->id_shop_group, $this->id_shop),
             'gamification_active' => Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop),
             'gamification_total' => Configuration::get('krona_gamification_total', null, $this->id_shop_group, $this->id_shop),
-            'url' => Configuration::get('krona_url', null, $this->id_shop_group, $this->id_shop),
+            'url' => Configuration::get('krona_url', null, null, null),
             'customer_active' => Configuration::get('krona_customer_active', null, $this->id_shop_group, $this->id_shop),
             'display_name' => Configuration::get('krona_display_name', null, $this->id_shop_group, $this->id_shop),
             'pseudonym' => Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop),

@@ -114,7 +114,7 @@ class Player extends \ObjectModel {
 
     private function setDynamicValues() {
         $query = new \DbQuery();
-        $query->select('SUM(points) as points, SUM(coins) as coins, SUM(loyalty-loyalty_used-loyalty_expired) AS loyalty');
+        $query->select('0 as points, SUM(`coins`) as coins, SUM(loyalty-loyalty_used-loyalty_expired) AS loyalty');
         $query->from('genzo_krona_player_history');
         $query->where('id_customer = ' . $this->id_customer);
         $player = \Db::getInstance()->getRow($query);
@@ -250,7 +250,7 @@ class Player extends \ObjectModel {
 
                 $playerHistory = new PlayerHistory();
                 $playerHistory->id_customer = $id_customer;
-                $playerHistory->loyalty = $coins_change;
+                $playerHistory->coins = $coins_change;
                 $playerHistory->viewable = false;
                 $playerHistory->add();
             }

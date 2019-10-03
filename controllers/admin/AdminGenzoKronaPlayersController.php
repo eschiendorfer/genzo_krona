@@ -1002,15 +1002,25 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'change',
+            'name'  => 'points',
             'label' => $this->l('Change'),
             'desc'  => $this->l('If you want to give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->total_name,
+            'suffix' => $this->l('Points'),
         );
+
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'coins_change',
+            'name'  => 'coins',
+            'label' => $this->l('Change'),
+            'desc'  => $this->l('If you want to give a penalty you can set -10 for example.'),
+            'class'  => 'input fixed-width-sm',
+            'suffix' => $this->l('Coins'),
+        );
+
+        $inputs[] = array(
+            'type'  => 'text',
+            'name'  => 'loyalty',
             'label' => $this->l('Change'),
             'desc'  => $this->l('If you want to give a penalty you can set -10 for example.'),
             'class'  => 'input fixed-width-sm',
