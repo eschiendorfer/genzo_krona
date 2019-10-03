@@ -18,7 +18,6 @@ class Action extends \ObjectModel {
     public $id_action;
     public $module;
     public $key;
-    public $url;
     public $points_change;
     public $execution_type;
     public $execution_max;
@@ -34,7 +33,6 @@ class Action extends \ObjectModel {
         'fields' => array(
             'module'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'key'            => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'url'            => array('type' => self::TYPE_STRING,),
             'points_change'  => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'execution_type' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'execution_max'  => array('type' => self::TYPE_BOOL, 'validate' => 'isInt'),

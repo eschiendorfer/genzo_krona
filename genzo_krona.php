@@ -326,18 +326,15 @@ class Genzo_Krona extends Module
     }
 
     public function uninstallAdminMenus() {
-	    if (
-            !$this->removeAdminMenu('AdminGenzoKronaActions') OR
-            !$this->removeAdminMenu('AdminGenzoKronaOrders') OR
-            !$this->removeAdminMenu('AdminGenzoKronaLevels') OR
-            !$this->removeAdminMenu('AdminGenzoKronaPlayers') OR
-            !$this->removeAdminMenu('AdminGenzoKronaCoupons') OR
-            !$this->removeAdminMenu('AdminGenzoKronaGroups') OR
-            !$this->removeAdminMenu('AdminGenzoKronaSettings') OR
-            !$this->removeAdminMenu('AdminGenzoKronaSupport')
-        ) {
+	    $this->removeAdminMenu('AdminGenzoKronaActions');
+        $this->removeAdminMenu('AdminGenzoKronaOrders');
+        $this->removeAdminMenu('AdminGenzoKronaLevels');
+        $this->removeAdminMenu('AdminGenzoKronaPlayers');
+        $this->removeAdminMenu('AdminGenzoKronaCoupons');
+        $this->removeAdminMenu('AdminGenzoKronaGroups');
+        $this->removeAdminMenu('AdminGenzoKronaSettings');
+        $this->removeAdminMenu('AdminGenzoKronaSupport');
 
-        }
 	    return true;
     }
 

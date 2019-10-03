@@ -64,8 +64,6 @@ class PlayerHistory extends \ObjectModel {
         // Always remember there is no static loyalty. The customer just collects points and coins. The merchant defines what loyalty is in BO.
         $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
 
-        print_r($total_mode_loyalty);
-
         if ($total_mode_loyalty == 'points_coins') {
             $this->loyalty = $this->points + $this->coins;
         }
