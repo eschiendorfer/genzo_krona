@@ -62,7 +62,7 @@ class PlayerHistory extends \ObjectModel {
         $id_lang = \Context::getContext()->language->id;
 
         $query = new \DbQuery();
-        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, h.change+h.loyalty AS `change`, l.*'); // Todo: change h.change
+        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, h.points+h.coins+h.loyalty AS `change`, l.*'); // Todo: change h.change
         $query->from(self::$definition['table'], 'h');
         $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history`');
         $query->where('`id_customer` = ' . (int)$id_customer);

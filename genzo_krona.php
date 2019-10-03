@@ -60,14 +60,7 @@ class Genzo_Krona extends Module
 			!$this->registerHook('ModuleRoutes') OR
             !$this->registerInbuiltActions() OR
             !$this->registerExternalActions() OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaActions', 'Krona', 1) OR
-            !$this->registerAdminMenu('AdminGenzoKronaActions', 'AdminGenzoKronaOrders', 'Orders', 0) OR
-            !$this->registerAdminMenu('AdminGenzoKronaActions', 'AdminGenzoKronaLevels', 'Levels', 0) OR
-            !$this->registerAdminMenu('AdminGenzoKronaActions', 'AdminGenzoKronaPlayers', 'Players', 0) OR
-            !$this->registerAdminMenu('AdminGenzoKronaActions', 'AdminGenzoKronaCoupons', 'Coupons', 0) OR
-            !$this->registerAdminMenu('AdminGenzoKronaActions', 'AdminGenzoKronaGroups', 'Groups', 0) OR
-            !$this->registerAdminMenu('AdminGenzoKronaActions', 'AdminGenzoKronaSettings', 'Settings', 0) OR
-            !$this->registerAdminMenu('AdminGenzoKronaActions', 'AdminGenzoKronaSupport', 'Support', 0)
+            !$this->installAdminMenus()
         )
 			return false;
 		return true;
@@ -76,14 +69,7 @@ class Genzo_Krona extends Module
 	public function uninstall() {
 		if (!parent::uninstall() OR
 			    !$this->executeSqlScript('uninstall') OR
-                !$this->removeAdminMenu('AdminGenzoKronaActions') OR
-                !$this->removeAdminMenu('AdminGenzoKronaOrders') OR
-                !$this->removeAdminMenu('AdminGenzoKronaLevels') OR
-                !$this->removeAdminMenu('AdminGenzoKronaPlayers') OR
-                !$this->removeAdminMenu('AdminGenzoKronaCoupons') OR
-                !$this->removeAdminMenu('AdminGenzoKronaGroups') OR
-                !$this->removeAdminMenu('AdminGenzoKronaSettings') OR
-                !$this->removeAdminMenu('AdminGenzoKronaSupport')
+                !$this->uninstallAdminMenus()
 			)
 			return false;
 		return true;
@@ -320,6 +306,39 @@ class Genzo_Krona extends Module
             }
         }
         return true;
+    }
+
+    public function installAdminMenus() {
+	    if (
+	        !$this->uninstallAdminMenus() OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaActions', 'Krona', 1) OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaOrders', 'Krona Orders', 0) OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaLevels', 'Krona Levels', 0) OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaPlayers', 'Krona Players', 0) OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaCoupons', 'Krona Coupons', 0) OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaGroups', 'Krona Groups', 0) OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaSettings', 'Krona Settings', 0) OR
+            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaSupport', 'Krona Support', 0)
+        ) {
+	        return false;
+        }
+	    return true;
+    }
+
+    public function uninstallAdminMenus() {
+	    if (
+            !$this->removeAdminMenu('AdminGenzoKronaActions') OR
+            !$this->removeAdminMenu('AdminGenzoKronaOrders') OR
+            !$this->removeAdminMenu('AdminGenzoKronaLevels') OR
+            !$this->removeAdminMenu('AdminGenzoKronaPlayers') OR
+            !$this->removeAdminMenu('AdminGenzoKronaCoupons') OR
+            !$this->removeAdminMenu('AdminGenzoKronaGroups') OR
+            !$this->removeAdminMenu('AdminGenzoKronaSettings') OR
+            !$this->removeAdminMenu('AdminGenzoKronaSupport')
+        ) {
+	        return false;
+        }
+	    return true;
     }
 
     private function registerAdminMenu($parent, $class_name, $name, $active = true) {

@@ -10,8 +10,10 @@ function upgrade_module_2_0_0($module) {
     if (!$module->executeSqlScript('install-2.0.0') OR
         !convertPlayerHistoryColumn() OR
         !saveDefaultConfiguration() OR
-        !$module->executeSqlScript('install-2.0.0-after')
-        ) {
+        !$module->executeSqlScript('install-2.0.0-after') OR
+        !$module->uninstallAdminMenus() OR
+        !$module->installAdminMenus()
+    ) {
         return false;
     }
 
