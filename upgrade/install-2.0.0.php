@@ -9,6 +9,7 @@ function upgrade_module_2_0_0($module) {
 
     if (!$module->executeSqlScript('install-2.0.0') OR
         !convertPlayerHistoryColumn() OR
+        !revertOldCouponConversion($module) OR
         !saveDefaultConfiguration() OR
         !$module->registerHook('actionRegisterGenzoCrmEmail') OR
         !$module->executeSqlScript('install-2.0.0-after') OR
@@ -26,8 +27,9 @@ function convertPlayerHistoryColumn($done = 0) {
     $limit = 1000;
 
     $query = new DbQuery();
-    $query->select('*');
-    $query->from('genzo_krona_player_history');
+    $query->select('pl.*, c.id_shop, c.id_shop_group');
+    $query->from('genzo_krona_player_history', 'pl');
+    $query->innerJoin('customer', 'c', 'pl.id_customer=c.id_customer');
     $query->limit($limit, $done);
     $histories = Db::getInstance()->ExecuteS($query);
 
@@ -36,17 +38,16 @@ function convertPlayerHistoryColumn($done = 0) {
     }
     else {
 
-        foreach ($histories as &$history) {
+        foreach ($histories as $key => &$history) {
             $history['viewed'] = 1;
             if ($id_customer = $history['id_customer']) {
-                //$historyObj = new \KronaModule\PlayerHistory($history['id_history']);
                 if ($history['id_action']) {
                     $history['points'] = $history['change'];
                 } elseif ($history['id_action_order']) {
                     $history['coins'] = $history['change'];
                 } else {
                     // If merchant used a custom playerHistory
-                    $total_mode_gamification = \Configuration::get('krona_gamification_total');
+                    $total_mode_gamification = Configuration::get('krona_gamification_total', null, $history['id_shop_group'], $history['id_shop']);
 
                     if ($total_mode_gamification == 'points_coins' || $total_mode_gamification == 'coins') {
                         $history['coins'] = $history['change'];
@@ -55,16 +56,48 @@ function convertPlayerHistoryColumn($done = 0) {
                     }
 
                 }
+                if ($history['loyalty']==0 && Configuration::get('krona_loyalty_active', null, $history['id_shop_group'], $history['id_shop'])) {
+                    $total_mode_loyalty = Configuration::get('krona_loyalty_total', null, $history['id_shop_group'], $history['id_shop']);
+                    if ($total_mode_loyalty == 'points_coins') {
+                        $history['loyalty'] = $history['points'] + $history['coins'];
+                    }
+                    elseif ($total_mode_loyalty == 'points') {
+                        $history['loyalty'] = $history['points'];
+                    }
+                    elseif ($total_mode_loyalty == 'coins') {
+                        $history['loyalty'] = $history['coins'];
+                    }
+                }
+                unset($histories[$key]['id_shop']);
+                unset($histories[$key]['id_shop_group']);
             }
         }
-
-        // DB::getInstance()->execute('TRUNCATE TABLE '._DB_PREFIX_.'genzo_krona_player_history');
 
         DB::getInstance()->insert('genzo_krona_player_history', $histories, true, true, 3);
 
         return convertPlayerHistoryColumn($done+$limit);
     }
 
+}
+
+/* @param $module Genzo_Krona */
+function revertOldCouponConversion($module) {
+
+    // Transform the coupon conversion into new history way
+    $query = new DbQuery();
+    $query->select('id_history');
+    $query->from('genzo_krona_player_history');
+    $query->where('loyalty < 0');
+    $old_conversions = Db::getInstance()->ExecuteS($query);
+
+    foreach ($old_conversions as $old_conversion) {
+        $playerHistory = new \KronaModule\PlayerHistory($old_conversion['id_history']);
+        $module->convertLoyaltyPointsToCoupon($playerHistory->id_customer, abs($playerHistory->loyalty), true);
+        $playerHistory->loyalty = 0;
+        $playerHistory->update();
+    }
+
+    return true;
 }
 
 function saveDefaultConfiguration() {

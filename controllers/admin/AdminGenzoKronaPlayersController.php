@@ -331,12 +331,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         return parent::renderList();
     }
 
-    /*protected function processBulkDeletePlayers() {
-        print_r($this->boxes);
-        print_r('efsdf');
-        Configuration::updateGlobalValue('krona_bulk', 'here');
-    }*/
-
     public function renderPlayerForm() {
 
         $inputs[] = array(
@@ -624,10 +618,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
                 $history->add();
 
-                $player->update();
-
-                PlayerLevel::updatePlayerLevel($player, 'points', $history->id_action);
-                PlayerLevel::updatePlayerLevel($player, 'coins', $history->id_action);
+                Player::updatePlayerLevels($id_customer);
 
                 $this->confirmations[] = $this->l('The player action was sucessfully saved.');
 

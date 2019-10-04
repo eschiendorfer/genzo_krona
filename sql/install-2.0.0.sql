@@ -1,5 +1,3 @@
-/* Update to 2.0.0 */
-
 ALTER TABLE `PREFIX_genzo_krona_player_history`
     ADD `coins` INT NOT NULL AFTER `change`,
     ADD `points` INT NOT NULL AFTER `change`,
@@ -10,7 +8,6 @@ ALTER TABLE `PREFIX_genzo_krona_player_history`
     ADD `viewable` BOOL NOT NULL DEFAULT 1 AFTER `url`,
     ADD `viewed` BOOL NOT NULL DEFAULT 0 AFTER `url`;
 
-/* Note: this only works if we use a second ALTER Table */
 ALTER TABLE `PREFIX_genzo_krona_player_history`
     CHANGE `change_loyalty` `loyalty` INT(12) NOT NULL;
 
@@ -19,7 +16,5 @@ ALTER TABLE `PREFIX_genzo_krona_player_history`
     ADD INDEX `id_action` (`id_action`),
     ADD INDEX `id_action_order` (`id_action_order`);
 
-
 ALTER TABLE `PREFIX_genzo_krona_player_level`
     CHANGE `id` `id_player_level` INT(12) AUTO_INCREMENT NOT NULL;
-

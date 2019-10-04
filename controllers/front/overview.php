@@ -23,10 +23,6 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
 
         parent::initContent();
 
-        // Todo: delete this after testing
-        $genzo = new Player(9254);
-        $genzo->checkPlayerLevels();
-
         $id_lang = $this->context->language->id;
         $id_shop_group = $this->context->shop->id_shop_group;
         $id_shop = $this->context->shop->id_shop;
@@ -70,7 +66,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController
             'active' => 'Overview',
             'player' => $player,
             'rank' => $playerObj->getRank(),
-            'history' => PlayerHistory::getHistoryByPlayer($id_customer, null, $history_pagination),
+            'history' => PlayerHistory::getHistoryByPlayer($id_customer, ['viewable=1'], $history_pagination),
             'level' => PlayerLevel::getLastPlayerLevel($id_customer),
             'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),

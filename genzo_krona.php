@@ -863,7 +863,7 @@ class Genzo_Krona extends Module
 
                 $history->add();
 
-                $player->checkPlayerLevels();
+                Player::updatePlayerLevels($id_customer);
 
                 // PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
             }
@@ -991,7 +991,7 @@ class Genzo_Krona extends Module
 
                             $history->add();
 
-                            PlayerLevel::updatePlayerLevel($player, 'coins', $id_action_order);
+                            Player::updatePlayerLevels($id_customer);
                         }
                     }
                     foreach ($order_states_cancel as $id_state_cancel) {
@@ -1023,9 +1023,11 @@ class Genzo_Krona extends Module
                                 $history->message[$id_lang] = pSQL($message[$id_lang]);
                                 $history->title[$id_lang] = pSQL($title[$id_lang]);
                             }
+
                             $history->add();
 
-                            // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
+                            // Theoretically we need to check here, if a customer loses a level after the cancel
+                            // But since this is too complex, the merchant should do this manually
                         }
                     }
                 }
@@ -1147,10 +1149,6 @@ class Genzo_Krona extends Module
     public function convertLoyaltyPointsToCoupon($id_customer, $loyalty_points, $penaltyMode = false) {
 
 	    $player = new Player($id_customer);
-        $actionOrder = new ActionOrder($this->context->currency->id);
-
-        $ids_lang = Language::getIDs();
-
         // Make sure penalty mode works trough, even if there aren't enough loyalty points left
         if ($penaltyMode && ($loyalty_points > $player->loyalty)) {
             $loyalty_points = $player->loyalty;
@@ -1170,6 +1168,9 @@ class Genzo_Krona extends Module
         if ($penaltyMode) {
             return true; // The history should be added there
         }
+
+        $actionOrder = new ActionOrder($this->context->currency->id);
+        $ids_lang = Language::getIDs();
 
         $history = new PlayerHistory();
         $history->id_customer = $id_customer;

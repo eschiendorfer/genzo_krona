@@ -73,7 +73,7 @@ class Genzo_KronaTimelineModuleFrontController extends ModuleFrontController
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,
             'active' => 'Timeline',
-            'history' => PlayerHistory::getHistoryByPlayer($id_customer, null, $history_pagination),
+            'history' => PlayerHistory::getHistoryByPlayer($id_customer, ['viewable=1'], $history_pagination),
             'pages' => $pages,
             'page' => $page,
             'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),

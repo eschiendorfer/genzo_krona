@@ -229,13 +229,10 @@ class Player extends \ObjectModel {
 
     public static function importPlayer($id_customer) {
 
-        // Todo: this needs to be tested carefully. For example when are players object created?
+        $customer = new \Customer($id_customer);
 
-        $customer = new \Customer((int)$id_customer);
-        $player = new Player($id_customer, $customer);
-
-        $import_points = (int)\Tools::getValue('import_points');
-        $import_orders = (bool)\Tools::getValue('import_orders');
+        $import_points = (INT)\Tools::getValue('import_points');
+        $import_orders = (BOOL)\Tools::getValue('import_orders');
 
         // Handling Core Loyalty Points
         if ($import_points > 0) {
@@ -345,7 +342,7 @@ class Player extends \ObjectModel {
                     }
 
                 }
-                PlayerLevel::updatePlayerLevel($player, 'coins', 0);
+                Player::updatePlayerLevels($id_customer);
             }
         }
 
@@ -564,7 +561,7 @@ class Player extends \ObjectModel {
     }
 
     /* @param $playerHistory \KronaModule\PlayerHistory */
-    public function checkPlayerLevels() {
+    public static function updatePlayerLevels($id_customer) {
 
         $levels = Level::getLevels(); // Todo: we can make things more efficient, if we use filters here
 
@@ -572,7 +569,7 @@ class Player extends \ObjectModel {
             $results[$level['id_level']] = $level;
         }
 
-        $player_levels = PlayerLevel::getAllPlayerLevels($this->id_customer);
+        $player_levels = PlayerLevel::getAllPlayerLevels($id_customer);
 
         foreach ($player_levels as $player_level) {
 
@@ -610,14 +607,14 @@ class Player extends \ObjectModel {
 
                     // Levels that ask for something like: at least 3 reviews
                     if ($result['condition_type'] == 'action') {
-                        $condition = PlayerHistory::countActionByPlayer($this->id_customer, $result['id_action'], $dateStart);
+                        $condition = PlayerHistory::countActionByPlayer($id_customer, $result['id_action'], $dateStart);
                     }
                     elseif ($result['condition_type'] == 'order') {
-                        $condition = PlayerHistory::countOrderByPlayer($this->id_customer, $result['id_action'], $dateStart);
+                        $condition = PlayerHistory::countOrderByPlayer($id_customer, $result['id_action'], $dateStart);
                     }
                 }
                 else {
-                    $condition = PlayerHistory::sumActionPointsByPlayer($this->id_customer, $result['condition_type'], $dateStart);
+                    $condition = PlayerHistory::sumActionPointsByPlayer($id_customer, $result['condition_type'], $dateStart);
                 }
 
                 // Check if the customer has fulfilled the condition
@@ -627,7 +624,7 @@ class Player extends \ObjectModel {
                     $id_player_level = (isset($result['id_player_level'])) ? $result['id_player_level'] : null;
 
                     $playerLevel = new PlayerLevel($id_player_level);
-                    $playerLevel->id_customer = $this->id_customer;
+                    $playerLevel->id_customer = $id_customer;
                     $playerLevel->id_level = $result['id_level'];
                     $playerLevel->active = 1;
                     $playerLevel->active_until = ($result['duration'] > 0) ? date('Y-m-d 23:59:59', strtotime("+{$level['duration']} days")) : '0000-00-00 00:00:00'; // If duration is not set -> unlimited
@@ -642,7 +639,7 @@ class Player extends \ObjectModel {
                         $coupon = new \CartRule($id_cart_rule);
 
                         // Clone the cart rule and override some values
-                        $coupon->id_customer = $this->id_customer;
+                        $coupon->id_customer = $id_customer;
 
                         // Merchant can set date in cart rule, we need the difference between the dates
                         if ($coupon->date_from && $coupon->date_to) {
@@ -671,7 +668,7 @@ class Player extends \ObjectModel {
                     elseif ($result['reward_type'] == 'group') {
 
                         $id_group = $result['id_reward'];
-                        $customer = new \Customer($this->id_customer);
+                        $customer = new \Customer($id_customer);
                         $customer->addGroups([$id_group]);
 
                         // Smaller means higher priority
@@ -679,7 +676,24 @@ class Player extends \ObjectModel {
                             $customer->id_default_group = $id_group;
                             $customer->update();
                         }
+                    }
 
+                    // Send emails Todo: implement custom emails
+                    if (\Module::isEnabled('genzo_crm')) {
+                        // $content = $this->context->smarty->fetch(_PS_MODULE_DIR_."genzo_krona/mails/{$iso}/new_answer.tpl");
+
+                        $args = array(
+                            'module' => 'genzo_krona',
+                            'key' => 'new_level_achieved',
+                            'id_customer' => $id_customer,
+                            'shortcodes' => array(
+                                'level' => $result['name'],
+                                'next_level' => 'Ritter',
+                                'reward' => 'You got something.',
+                            ),
+                        );
+
+                        \Hook::exec('actionSendEmail', $args, null, false, false);
                     }
                 }
             }
