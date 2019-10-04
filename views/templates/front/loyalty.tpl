@@ -12,14 +12,14 @@
     <p>{l s='Convert your %s now into a coupon and save money on your next order!' sprintf=$loyalty_name mod='genzo_krona'}</p>
     <form method="post" enctype="multipart/form-data">
 
-            <div class="form-row">
-                <div class="krona-label"><label for="loyalty"><b>{l s='Loyalty Points to convert:' mod='genzo_krona'}</b></label></div>
-                <input type="text" class="form-control" id="loyalty" name="loyalty" placeholder="0">
-            </div>
+        <div class="form-row">
+            <div class="krona-label"><label for="loyalty"><b>{l s='Loyalty Points to convert:' mod='genzo_krona'}</b></label></div>
+            <input type="text" class="form-control" id="loyalty" name="loyalty" value="{$player.loyalty}">
+        </div>
 
-            <div class="form-row">
-                <div id="coupon"><b>{l s='Value of Coupon:' mod='genzo_krona'}</b> <span id="coupon-value">0.00</span> {$krona_currency}</div>
-            </div>
+        <div class="form-row">
+            <div id="coupon"><b>{l s='Value of Coupon:' mod='genzo_krona'}</b> <span id="coupon-value">0.00</span> {$krona_currency}</div>
+        </div>
 
         <button type="submit" name="convertLoyalty" class="krona-button">{l s='Convert' mod='genzo_krona'}</button>
     </form>

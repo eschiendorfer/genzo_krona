@@ -52,6 +52,13 @@ class Level extends \ObjectModel {
         )
     );
 
+    public static function getLevels() {
+        $query = new \DbQuery();
+        $query->select('*');
+        $query->from(self::$definition['table']);
+        return \Db::getInstance()->ExecuteS($query);
+    }
+
     public function updatePosition($way, $position) {
 
         if (!$res = \Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(

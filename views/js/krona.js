@@ -10,26 +10,4 @@ $(document).ready(function() {
         $( 'input#avatar-fake' ).val(filename);
     });
 
-
-    // Loyalty Conversion: Coupon Calculation
-    calculateLoyaltyValue();
-
-    $('#loyalty').on('input', function() {
-        calculateLoyaltyValue();
-    });
-
 });
-
-function calculateLoyaltyValue() {
-    var loyalty = parseFloat($('#loyalty').val());
-
-    if (loyalty > loyalty_max) {
-        $('#loyalty').val(loyalty_max) ;
-        loyalty = loyalty_max;
-    }
-
-    var coupon = (loyalty * conversion).toFixed(2);
-
-    $('#coupon-value').text(coupon);
-}
-

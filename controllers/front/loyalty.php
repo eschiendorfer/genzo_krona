@@ -17,6 +17,9 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
     public $errors;
     public $confirmation;
 
+    /* @var $module Genzo_Krona */
+    public $module;
+
 	public function initContent() {
 
 		// Disable left and right column
@@ -46,7 +49,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
             $krona_url = $this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1';
             Tools::redirect($krona_url);
         }
-        elseif (!Player::checkIfPlayerIsActive($id_customer)) {
+        elseif (!$player_obj->active) {
             $settings_url = $this->context->link->getModuleLink('genzo_krona', 'customersettings');
             Tools::redirect($settings_url);
         }
@@ -56,6 +59,8 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
 
 
         // Coupon Value Calculation
+        $this->context->controller->addJS(_MODULE_DIR_.'genzo_krona/views/js/krona-loyalty.js');
+
         $id_actionOrder = ActionOrder::getIdActionOrderByCurrency($this->context->currency->id);
         $actionOrder = new ActionOrder($id_actionOrder);
 
@@ -95,76 +100,15 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController
      * @var Player $player
      * @var ActionOrder $actionOrder
      */
-    private function convertLoyalty($player, $actionOrder) {
-	    $loyalty = (int)Tools::getValue('loyalty');
+    private function convertLoyalty() {
 
-	    if ($loyalty > $player->loyalty) {
-	        $this->errors[] = $this->module->l('You haven\'t enough loyalty points.');
-	        return;
-        }
-        elseif (empty($loyalty)) {
-	        $this->errors[] = $this->module->l('Must select more than 0 loyalty points.');
-	        return;
-        }
-        else {
-	        // Remove Loyalty Points
-	        // Todo: add this process with player histories
+        $loyalty_points = (int)Tools::getValue('loyalty');
 
-	        // Add History
-            $ids_lang = Language::getIDs();
+        // Remove Loyalty Points
+        $this->module->convertLoyaltyPointsToCoupon($this->context->customer->id, $loyalty_points);
 
-            $history = new PlayerHistory(null, $player);
-            $history->id_customer = $player->id_customer;
-            $history->id_action = 0;
-            $history->id_action_order = $actionOrder->id_action_order;
+        $this->confirmation = $this->module->l('Your Coupon was sucessfully created.');
 
-            $points_name = array();
-
-            foreach ($ids_lang as $id_lang) {
-                $points_name[$id_lang] = Configuration::get('krona_loyalty_name', $id_lang, $this->context->shop->id_shop_group, $this->context->shop->id);
-                $history->title[$id_lang] = $points_name[$id_lang]. ' '. $this->module->l('Conversion');
-                $history->message[$id_lang] = sprintf($this->module->l('You converted %s into a coupon.'),$loyalty.' '.$points_name[$id_lang]);
-            }
-            $history->loyalty = -$loyalty; // Todo: check this
-            $history->add();
-
-            $player->update();
-
-            // Add Coupon
-            $id_cart_rule = CartRule::getIdByCode('KRONA');
-            $coupon = new CartRule($id_cart_rule);
-
-            // Clone the cart rule and override some values
-            $coupon->id_customer = $player->id;
-            $coupon->reduction_amount = ($loyalty * $actionOrder->coins_conversion);
-
-            // Merchant can set date in cart rule, we need the difference between the dates
-            if ($coupon->date_from && $coupon->date_to) {
-                $validity = strtotime($coupon->date_to) - strtotime($coupon->date_from);
-                $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+{$validity} seconds"));
-            }
-            else {
-                $coupon->date_to = date("Y-m-d 23:59:59", strtotime("+1 year")); // Default
-            }
-            $coupon->date_from = date("Y-m-d H:i:s");
-
-            foreach ($ids_lang as $id_lang) {
-                $game_name = Configuration::get('krona_game_name', $id_lang, $this->context->shop->id_shop_group, $this->context->shop->id);
-                $coupon->name[$id_lang] = $game_name . ' - ' . $loyalty . ' ' . $points_name[$id_lang];
-            }
-
-            $prefix = Configuration::get('krona_coupon_prefix', null, $player->customer->id_shop_group, $player->customer->id_shop);
-            $code = strtoupper(Tools::passwdGen(6));
-
-            $coupon->code = ($prefix) ? $prefix.'-'.$code : $code;
-            $coupon->active = true;
-            $coupon->add();
-
-            CartRule::copyConditions($id_cart_rule, $coupon->id);
-
-            $this->confirmation = $this->module->l('Your Coupon was sucessfully created.');
-
-        }
     }
 
 }

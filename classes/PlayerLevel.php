@@ -15,6 +15,7 @@ require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 class PlayerLevel extends \ObjectModel {
 
     public $id;
+    public $id_player_level;
     public $id_customer;
     public $id_level;
     public $active;
@@ -26,7 +27,7 @@ class PlayerLevel extends \ObjectModel {
 
     public static $definition = array(
         'table' => "genzo_krona_player_level",
-        'primary' => 'id',
+        'primary' => 'id_player_level',
         'fields' => array(
             'id_customer'   => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_level'   => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
@@ -109,7 +110,7 @@ class PlayerLevel extends \ObjectModel {
         $query->select('id_level');
         $query->from(self::$definition['table']);
         $query->where('`id_customer`='.(int)$id_customer);
-        $query->orderby('id DESC');
+        $query->orderby('id_player_level DESC');
         $id_level = \Db::getInstance()->getValue($query);
 
         $level = ($id_level) ? new Level($id_level, $id_lang) : false;

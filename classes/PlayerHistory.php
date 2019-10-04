@@ -19,6 +19,7 @@ class PlayerHistory extends \ObjectModel {
     public $id_action;
     public $id_action_order;
 
+    public $force_display; // If we want to force a number in the timeline
     public $points;
     public $coins;
 
@@ -43,9 +44,10 @@ class PlayerHistory extends \ObjectModel {
             'id_customer'           => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action'             => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action_order'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'force_display'         => array('type' => self::TYPE_NOTHING),
             'points'                => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'coins'                 => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'loyalty'          => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'loyalty'               => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'loyalty_used'          => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'loyalty_expired'       => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'loyalty_expire_date'   => array('type' => self::TYPE_DATE),
@@ -59,19 +61,28 @@ class PlayerHistory extends \ObjectModel {
         )
     );
 
-    public function add($autoDate = true, $nullValues = false) {
+    public function update($nullValues = true) {
+
+        // We need to have the null value in force_display
+
+        return parent::update($nullValues);
+    }
+
+    public function add($autoDate = true, $nullValues = true) {
 
         // Always remember there is no static loyalty. The customer just collects points and coins. The merchant defines what loyalty is in BO.
-        $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
+        if (\Configuration::get('krona_loyalty_active')) {
+            $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
 
-        if ($total_mode_loyalty == 'points_coins') {
-            $this->loyalty = $this->points + $this->coins;
-        }
-        elseif ($total_mode_loyalty == 'points') {
-            $this->loyalty = $this->points;
-        }
-        elseif ($total_mode_loyalty == 'coins') {
-            $this->loyalty = $this->coins;
+            if ($total_mode_loyalty == 'points_coins') {
+                $this->loyalty = $this->points + $this->coins;
+            }
+            elseif ($total_mode_loyalty == 'points') {
+                $this->loyalty = $this->points;
+            }
+            elseif ($total_mode_loyalty == 'coins') {
+                $this->loyalty = $this->coins;
+            }
         }
 
         return parent::add($autoDate, $nullValues);
@@ -81,7 +92,7 @@ class PlayerHistory extends \ObjectModel {
         $id_lang = \Context::getContext()->language->id;
 
         $query = new \DbQuery();
-        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, h.points+h.coins+h.loyalty AS `change`, l.*'); // Todo: change h.change
+        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, IFNULL(h.force_display, (h.points+h.coins)) AS `change`, l.*');
         $query->from(self::$definition['table'], 'h');
         $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history`');
         $query->where('`id_customer` = ' . (int)$id_customer);
@@ -138,6 +149,9 @@ class PlayerHistory extends \ObjectModel {
         if ($startDate && $endDate) {
             $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
+        elseif ($startDate) {
+            $query->where("`date_add` >= '{$startDate}' ");
+        }
 
         return \Db::getInstance()->getValue($query);
     }
@@ -160,9 +174,14 @@ class PlayerHistory extends \ObjectModel {
         $query->select('SUM(ph.`change`)');
         $query->from(self::$definition['table'], 'ph');
         $query->where('`id_customer` = ' . (int)$id_customer);
+
         if ($startDate && $endDate) {
             $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
+        elseif ($startDate) {
+            $query->where("`date_add` > '{$startDate}' ");
+        }
+
         if ($condition_type == 'points') {
             $query->where("`id_action_order` = 0"); // We only wanna normal actions
         }

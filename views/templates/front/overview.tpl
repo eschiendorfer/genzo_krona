@@ -52,7 +52,7 @@
         {foreach from=$history item=his}
             <div class="timeline-item {if $his.change > 0}green{elseif $his.change==0}grey{else}red{/if}" points-is="{$his.change|replace:"-":""}">
                 <h3>{$his.title}</h3>
-                <p>{$his.date_add|date_format:"%d. %b"}: {$his.message} {if $his.url}<a href="{$his.url}"><i class="fa fa-link"></i></a>{/if}</p>
+                <p>{$his.date_add|date_format:"%d. %b"}: {$his.message} {if isset($his.url) && $his.url}<a href="{$his.url}"><i class="fa fa-link"></i></a>{/if}</p>
             </div>
         {/foreach}
     </div>
@@ -66,15 +66,7 @@
             {foreach from=$actions item=action}
             <tr>
                 <td><i class="icon icon-check{if isset($action.done) && $action.done}-done{/if}"></i></td>
-                <td>
-                    {if $action.url && $action.possible}
-                        <a href="{$action.url}"> {$action.title} </a>
-                    {else}
-                        {$action.title}
-                    {/if}
-
-                    {if $action.possible}({$action.points_change} {$total_name}){/if}
-                </td>
+                <td>{$action.title} {if isset($action.possible) && $action.possible}({$action.points_change} {$total_name}){/if}</td>
             </tr>
             {/foreach}
 

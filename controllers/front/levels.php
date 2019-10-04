@@ -39,7 +39,7 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController
             $krona_url = $this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1';
             Tools::redirect($krona_url);
         }
-        elseif (!Player::checkIfPlayerIsActive($id_customer)) {
+        elseif (!$player_obj->active) {
             $settings_url = $this->context->link->getModuleLink('genzo_krona', 'customersettings');
             Tools::redirect($settings_url);
         }

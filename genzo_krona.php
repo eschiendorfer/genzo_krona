@@ -718,7 +718,6 @@ class Genzo_Krona extends Module
     public function hookDisplayShoppingCartFooter($params) {
 
 	    if (Tools::isSubmit('convertLoyalty') && $loyalty_points = Tools::getValue('loyalty')) {
-	        print_r('test');
 	        $this->convertLoyaltyPointsToCoupon($this->context->customer->id, $loyalty_points);
         }
 
@@ -734,24 +733,24 @@ class Genzo_Krona extends Module
             $order_amount = Configuration::get('krona_order_amount', null, $id_shop_group, $id_shop);
 
             if ($order_amount == 'total_wt') {
-                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price'];
+                $cart_value = $this->context->cart->getSummaryDetails()['total_price'];
             } elseif ($order_amount == 'total') {
-                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_price_without_tax'];
+                $cart_value = $this->context->cart->getSummaryDetails()['total_price_without_tax'];
             } elseif ($order_amount == 'total_products_wt') {
-                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products_wt'];
+                $cart_value = $this->context->cart->getSummaryDetails()['total_products_wt'];
             } elseif ($order_amount == 'total_products') {
-                $coins_in_cart = $this->context->cart->getSummaryDetails()['total_products'];
+                $cart_value = $this->context->cart->getSummaryDetails()['total_products'];
             } else {
-                $coins_in_cart = 0;
+                $cart_value = 0;
             }
 
             // Check if coupons should be substracted
             if (Configuration::get('krona_order_coupon', null, $id_shop_group, $id_shop) && ($order_amount == 'total_products_wt' OR $order_amount == 'total_products')) {
-                $coins_in_cart = $coins_in_cart - $this->context->cart->getSummaryDetails()['total_discounts'];
+                $cart_value = $cart_value - $this->context->cart->getSummaryDetails()['total_discounts'];
             }
 
-            if ($actionOrder->minimum_amount > $coins_in_cart) {
-                $coins_in_cart = 0;
+            if ($actionOrder->minimum_amount > $cart_value) {
+                $cart_value = 0;
                 $minimum = true;
             }
             else {
@@ -761,34 +760,30 @@ class Genzo_Krona extends Module
             // Check the rounding method -> nearest is standard
             $order_rounding = Configuration::get('krona_order_rounding', null, $id_shop_group, $id_shop);
             if ($order_rounding == 'down') {
-                $total = floor($coins_in_cart * $actionOrder->coins_change);
+                $total = floor($cart_value * $actionOrder->coins_change);
             }
             elseif ($order_rounding == 'up') {
-                $total = ceil($coins_in_cart * $actionOrder->coins_change);
+                $total = ceil($cart_value * $actionOrder->coins_change);
             }
             else {
-                $total = round($coins_in_cart * $actionOrder->coins_change);
+                $total = round($cart_value * $actionOrder->coins_change);
             }
 
             // Loyalty conversion
-            // $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
+            $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
 
             $player = ($this->context->customer->id) ? new Player($this->context->customer->id) : false;
 
             Media::addJsDef(
                 array(
                     'conversion' => $actionOrder->coins_conversion,
-                    'loyalty_max' => $player->loyalty,
+                    'loyalty_max' => min($player->loyalty, $cart_value/$actionOrder->coins_conversion),
                 )
             );
 
             if ($player) {
                 $player = json_decode(json_encode($player), true);
             }
-
-            // $this->setLoyaltyConversionVars();
-
-
 
             $this->context->smarty->assign(array(
                 'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $id_shop_group, $id_shop),
@@ -826,7 +821,7 @@ class Genzo_Krona extends Module
             $customer = new Customer($id_customer);
         }
 
-        $action = new Action($id_action, $customer->id_lang, $customer->id_shop);
+        $action = new Action($id_action, null, $customer->id_shop);
 
         /* @var $player Player */
         $player = new Player($id_customer, $customer);
@@ -839,10 +834,10 @@ class Genzo_Krona extends Module
             // Check if the User is still allowed to execute this action
             if ($player->checkIfPlayerStillCanExecuteAction($action)) {
 
-                $history = new PlayerHistory(null, $player);
+                $history = new PlayerHistory();
                 $history->id_customer = $customer->id;
                 $history->id_action = $id_action;
-                $history->points = $action->change;
+                $history->points = $action->points_change;
 
                 if (isset($params['action_url']) && !empty($params['action_url'])) {
                     $history->url = $params['action_url']; // Action url is not mandatory
@@ -850,11 +845,7 @@ class Genzo_Krona extends Module
 
                 // Preparing the lang array for the history message
                 $ids_lang = Language::getIDs();
-                $message = array();
-
-                if (!empty($params['action_message'])) {
-                    $message = $params['action_message'];
-                }
+                $message = !empty($params['action_message']) ? $params['action_message'] : array();
 
                 foreach ($ids_lang as $id_lang) {
 
@@ -871,9 +862,10 @@ class Genzo_Krona extends Module
                 }
 
                 $history->add();
-                $player->update();
 
-                PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
+                $player->checkPlayerLevels();
+
+                // PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
             }
         }
         return true;
@@ -952,13 +944,11 @@ class Genzo_Krona extends Module
                         $coins_change = round($total * $actionOrder->coins_change);
                     }
 
-
-                    // Todo: rethink the usage of the status
                     foreach ($order_states as $id_state_ok) {
 
                         if ($id_state_new == $id_state_ok) {
 
-                            $history = new PlayerHistory(null, $player);
+                            $history = new PlayerHistory();
                             $history->id_customer = $id_customer;
                             $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
@@ -988,11 +978,11 @@ class Genzo_Krona extends Module
                                 $message[$id_lang] = Configuration::get('krona_order_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
 
                                 // Replace message variables
-                                $search = array('{points}', '{coins}', '{reference}', '{amount}');
+                                $search = array('{coins}', '{reference}', '{amount}');
 
                                 $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
 
-                                $replace = array($coins_change, $coins_change, $order->reference, $total_currency);
+                                $replace = array($coins_change, $order->reference, $total_currency);
                                 $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
                                 $history->message[$id_lang] = pSQL($message[$id_lang]);
@@ -1001,7 +991,6 @@ class Genzo_Krona extends Module
 
                             $history->add();
 
-                            $player->update();
                             PlayerLevel::updatePlayerLevel($player, 'coins', $id_action_order);
                         }
                     }
@@ -1009,11 +998,13 @@ class Genzo_Krona extends Module
 
                         if ($id_state_new == $id_state_cancel) {
 
-                            $history = new PlayerHistory(null, $player);
+                            $history = new PlayerHistory();
                             $history->id_customer = $id_customer;
                             $history->id_action_order = $id_action_order;
                             $history->url = $this->context->link->getPageLink('history');
-                            $history->coins = $coins_change * (-1);
+                            $history->force_display = $coins_change;
+
+                            $this->convertLoyaltyPointsToCoupon($id_customer, $coins_change, true);
 
                             $ids_lang = Language::getIDs();
 
@@ -1022,7 +1013,7 @@ class Genzo_Krona extends Module
                                 $message[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
 
                                 // Replace message variables
-                                $search = array('{points}', '{reference}', '{amount}');
+                                $search = array('{coins}', '{reference}', '{amount}');
 
                                 $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
 
@@ -1033,7 +1024,6 @@ class Genzo_Krona extends Module
                                 $history->title[$id_lang] = pSQL($title[$id_lang]);
                             }
                             $history->add();
-                            $player->update();
 
                             // Todo: Theoretically we need to check here, if a customer loses a level after the cancel
                         }
@@ -1154,25 +1144,32 @@ class Genzo_Krona extends Module
     }
 
     // Helper
-    public function convertLoyaltyPointsToCoupon($id_customer, $loyalty_points) {
+    public function convertLoyaltyPointsToCoupon($id_customer, $loyalty_points, $penaltyMode = false) {
 
 	    $player = new Player($id_customer);
         $actionOrder = new ActionOrder($this->context->currency->id);
 
         $ids_lang = Language::getIDs();
 
+        // Make sure penalty mode works trough, even if there aren't enough loyalty points left
+        if ($penaltyMode && ($loyalty_points > $player->loyalty)) {
+            $loyalty_points = $player->loyalty;
+        }
+
 	    // Basic checks
         if ($loyalty_points > $player->loyalty) {
-            $this->errors[] = $this->errors[] = $this->l('You haven\'t enough loyalty points.'); // Todo: show this error messages
             return false;
         }
         elseif (!$loyalty_points > 0) {
-            $this->errors[] = $this->l('Must select more than 0 loyalty points.');
             return false;
         }
 
         // Add History
         $this->updatePlayerHistoryWhenConvertingLoyalty($id_customer, $loyalty_points);
+
+        if ($penaltyMode) {
+            return true; // The history should be added there
+        }
 
         $history = new PlayerHistory();
         $history->id_customer = $id_customer;
@@ -1186,7 +1183,7 @@ class Genzo_Krona extends Module
             $history->title[$id_lang] = $points_name[$id_lang]. ' '. $this->l('Conversion');
             $history->message[$id_lang] = sprintf($this->l('You converted %s into a coupon.'),$loyalty_points.' '.$points_name[$id_lang]);
         }
-        $history->loyalty = 0; // Todo: we would need a new column in player history like force_display_value
+        $history->force_display = -$loyalty_points;
         $history->add();
 
 
@@ -1213,12 +1210,12 @@ class Genzo_Krona extends Module
             $coupon->name[$id_lang] = $game_name . ' - ' . $loyalty_points . ' ' . $points_name[$id_lang];
         }
 
-        $prefix = Configuration::get('krona_coupon_prefix', null, $player->customer->id_shop_group, $player->customer->id_shop);
+        $prefix = Configuration::get('krona_coupon_prefix');
         $code = strtoupper(Tools::passwdGen(6));
 
         $coupon->code = ($prefix) ? $prefix.'-'.$code : $code;
         $coupon->active = true;
-        $coupon->reduction_tax = true; // Todo: this needs to be implement with a configuration or the coupon template needs to be better
+        $coupon->reduction_tax = true;
         $coupon->add();
 
         CartRule::copyConditions($id_cart_rule, $coupon->id);
@@ -1264,7 +1261,7 @@ class Genzo_Krona extends Module
         else {
             $playerHistory->loyalty_used += $loyalty_left_over;
             $playerHistory->update();
-            $this->updatePlayerHistoryWhenConvertingLoyalty($id_customer, ($loyalty_points-$loyalty_left_over));
+            return $this->updatePlayerHistoryWhenConvertingLoyalty($id_customer, ($loyalty_points-$loyalty_left_over));
         }
 
     }

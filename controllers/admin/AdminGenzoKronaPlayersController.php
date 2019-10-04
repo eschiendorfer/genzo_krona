@@ -150,7 +150,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         $this->initPageHeaderToolbar();
 
         // Optional Display
-        $deletePlayers = false;
         $stats = false;
 
         print_r($this->display);
@@ -159,9 +158,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
             $this->content = $this->renderPlayerHistoryForm();
         }
         elseif (Tools::isSubmit('addCustomAction') || $this->display=='customActionForm') {
-
-            print_r('here');
-
             $this->content = $this->generateFormCustomAction();
         }
         elseif ($this->display=='edit' || Tools::getValue('display') == 'formPlayer') {
@@ -175,7 +171,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
         else {
             $this->content = $this->renderList();
             $stats = $this->getStats();
-            $deletePlayers = true;
         }
 
         // This are the real smarty variables
@@ -189,7 +184,6 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
                 'loyalty_name'  => Configuration::get('krona_loyalty_name', $this->context->language->id, $this->id_shop_group, $this->id_shop),
                 'import'  => Configuration::get('krona_import_customer', null, $this->id_shop_group, $this->id_shop),
                 'dont'    => Configuration::get('krona_dont_import_customer', null, $this->id_shop_group, $this->id_shop),
-                'deletePlayers' => $deletePlayers, // Todo: checkout how bulk updating is working
                 'show_page_header_toolbar'  => $this->show_page_header_toolbar,
                 'page_header_toolbar_title' => $this->page_header_toolbar_title,
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
@@ -319,9 +313,15 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
+        $this->bulk_actions = array(
+            'delete' => array(
+                'text' => $this->l('Delete selected'),
+                'icon' => 'icon-trash',
+                'confirm' => $this->l('Delete selected items?')
+            ),
+        );
         $this->_defaultOrderBy = 'total';
         $this->_orderWay = 'DESC';
-        $this->bulk_actions = [];
 
         if (Shop::isFeatureActive()) {
             $ids_shop = Shop::getContextListShopID();
@@ -330,6 +330,12 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         return parent::renderList();
     }
+
+    /*protected function processBulkDeletePlayers() {
+        print_r($this->boxes);
+        print_r('efsdf');
+        Configuration::updateGlobalValue('krona_bulk', 'here');
+    }*/
 
     public function renderPlayerForm() {
 
@@ -516,7 +522,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
         $this->fields_form = $fields_form;
 
-        $this->fields_value = json_decode(json_encode(new PlayerHistory(Tools::getValue('id_history'), false)), true);
+        $this->fields_value = json_decode(json_encode(new PlayerHistory(Tools::getValue('id_history'))), true);
 
         $this->tpl_form_vars = array(
             'languages' => $this->context->controller->getLanguages(),
@@ -529,6 +535,16 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
     }
 
     public function postProcess() {
+
+
+        if (Tools::isSubmit('submitBulkdeletegenzo_krona_player')) {
+           $ids_customer = Tools::getValue('genzo_krona_playerBox');
+
+           foreach ($ids_customer as $id_customer) {
+               $player = new Player($id_customer);
+               $player->delete();
+           }
+        }
 
         if (Tools::isSubmit('savePlayer')) {
             if (Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop)) {
@@ -551,7 +567,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController
 
             $player = new Player($id_customer);
 
-            $history = new PlayerHistory(null, $player);
+            $history = new PlayerHistory();
             $history->id_customer = $id_customer;
             $history->id_action = ($type == 'action') ? (int)Tools::getValue('id_action') : 0;
             $history->id_action_order = ($type == 'order') ? (int)Tools::getValue('id_action_order') : 0;
