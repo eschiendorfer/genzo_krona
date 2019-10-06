@@ -873,6 +873,8 @@ class Genzo_Krona extends Module
 
 	public function hookActionOrderStatusUpdate($params) {
 
+	    // Todo: add order tracking to player_history -> preventing multiple triggers and negative coins
+
         $id_state_new = $params['newOrderStatus']->id;
 
         // Order
@@ -896,7 +898,7 @@ class Genzo_Krona extends Module
             if ($actionOrder->active) {
 
                 // Get Total amount of the order
-                $order_amount = Configuration::get('krona_order_amount', null, $this->context->shop->id_shop_group, $this->context->shop->id);
+                $order_amount = Configuration::get('krona_order_amount', null, $customer->shop->id_shop_group, $customer->shop->id);
 
                 if ($order_amount == 'total_wt') {
                     $total = $order->total_paid; // Total with taxes
@@ -911,7 +913,7 @@ class Genzo_Krona extends Module
                 }
 
                 // Check if coupons should be substracted (in total they are already substracted)
-                if (Configuration::get('krona_order_coupon', null, $this->context->shop->id_shop_group, $this->context->shop->id)) {
+                if (Configuration::get('krona_order_coupon', null, $customer->shop->id_shop_group, $customer->shop->id)) {
                     if ($order_amount == 'total_products_wt') {
                         $total = $total - $order->total_discounts_tax_incl;
                     }
@@ -933,7 +935,7 @@ class Genzo_Krona extends Module
                 }
                 else {
                     // Check the rounding method -> nearest is standard
-                    $order_rounding = Configuration::get('krona_order_rounding', null, $this->context->shop->id_shop_group, $this->context->shop->id);
+                    $order_rounding = Configuration::get('krona_order_rounding', null, $customer->shop->id_shop_group, $customer->shop->id);
                     if ($order_rounding == 'down') {
                         $coins_change = floor($total * $actionOrder->coins_change);
                     }
