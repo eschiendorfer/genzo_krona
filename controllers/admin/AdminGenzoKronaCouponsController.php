@@ -1,22 +1,16 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
-class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore
-{
-    public function __construct() {
-
-        parent::__construct();
-
-    }
+class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore {
 
     public function initContent() {
 
@@ -25,9 +19,7 @@ class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore
         $this->initToolbar();
         $this->initPageHeaderToolbar();
 
-
         $this->content = $this->renderList();
-
 
         // This are the real smarty variables
         $this->context->smarty->assign(
@@ -66,7 +58,6 @@ class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore
         $this->_select = "GROUP_CONCAT(kl.name SEPARATOR ', ') AS levels";
         $this->_group = 'GROUP BY a.`id_cart_rule` ';
 
-
         $this->actions = array('edit');
         $this->toolbar_title = $this->l('Krona Template Coupons');
         $this->token = Tools::getAdminTokenLite('AdminCartRules');
@@ -76,20 +67,6 @@ class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore
         unset($this->fields_list['active']);
 
         return parent::renderList();
-    }
-
-    public function setMedia() {
-
-        parent::setMedia();
-
-        $this->addJS(array(
-            _MODULE_DIR_.'genzo_krona/views/js/admin-krona.js',
-        ));
-
-        $this->addCSS(array(
-            _MODULE_DIR_.'genzo_krona/views/css/admin-krona.css',
-        ));
-
     }
 
 }

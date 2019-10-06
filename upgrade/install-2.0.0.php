@@ -93,6 +93,7 @@ function revertOldCouponConversion($module) {
     foreach ($old_conversions as $old_conversion) {
         $playerHistory = new \KronaModule\PlayerHistory($old_conversion['id_history']);
         $module->convertLoyaltyPointsToCoupon($playerHistory->id_customer, abs($playerHistory->loyalty), true);
+        $playerHistory->force_display = $playerHistory->loyalty;
         $playerHistory->loyalty = 0;
         $playerHistory->update();
     }

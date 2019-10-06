@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -12,13 +12,7 @@ require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use KronaModule\Group;
 
-class AdminGenzoKronaGroupsController extends ModuleAdminController
-{
-
-    /**
-     * @var SettingsGroup object
-     */
-    protected $object;
+class AdminGenzoKronaGroupsController extends ModuleAdminController {
 
     public function __construct() {
 
@@ -87,23 +81,6 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
         return parent::renderList();
     }
 
-    public function displayEditLink($token = null, $id = null) {
-
-        // We have to do it with this override. If we go directly in renderList (currentIndex) the position ajax doesn't work.
-
-       $this->context->link->getAdminLink('AdminGroups', false).'&updategroup';
-
-        $tpl = $this->createTemplate('helpers/list/list_action_edit.tpl');
-
-        $tpl->assign(array(
-            'href' => $this->context->link->getAdminLink('AdminGroups', true).'&updategroup&id_group='.$id,
-            'action' => $this->l('Edit'),
-            'id' => $id
-        ));
-
-        return $tpl->fetch();
-    }
-
     public function initContent() {
 
         // Some Basic Display functions
@@ -156,19 +133,15 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
         $query = new DbQuery();
         $query->select('id_group');
         $query->from($this->table);
-        $settings =  Db::getInstance()->executeS($query);
+        $ids_krona =  array_column(Db::getInstance()->executeS($query), 'id_group');
 
         $query = new DbQuery();
         $query->select('id_group');
         $query->from('group');
-        $groups = Db::getInstance()->executeS($query);
+        $ids_group = array_column(Db::getInstance()->executeS($query), 'id_group');
 
-        // Flaten the multidimensional arrays, so we can use array_dif
-        $settings = array_map('current', $settings);
-        $groups = array_map('current', $groups);
-
-        $missing = array_diff($groups, $settings); // Which groups are missing in the module
-        $redundant = array_diff($settings, $groups); // Which groups are redundant in the module
+        $missing = array_diff($ids_group, $ids_krona); // Which groups are missing in the module
+        $redundant = array_diff($ids_krona, $ids_group); // Which groups are redundant in the module
 
         if (!empty($missing)) {
             foreach ($missing as $id_group) {
@@ -184,7 +157,7 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController
             }
         }
 
-    return true;
+        return true;
     }
 
     public function ajaxProcessUpdatePositions() {

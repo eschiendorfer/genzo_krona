@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -61,12 +61,12 @@ class Level extends \ObjectModel {
 
     public function updatePosition($way, $position) {
 
-        if (!$res = \Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new \DbQuery())
-                ->select('`id_level`, `position`')
-                ->from(self::$definition['table'])
-                ->orderBy('`position` ASC')
-        )) {
+        $query = new \DbQuery();
+        $query->select('`id_level`, `position`');
+        $query->from(self::$definition['table']);
+        $query->orderby('`position` ASC');
+
+        if (!$res = \Db::getInstance()->ExecuteS($query)) {
             return false;
         }
 
@@ -106,12 +106,14 @@ class Level extends \ObjectModel {
     }
 
     public static function getHighestPosition() {
+
         $query = new \DbQuery();
         $query->select('position');
         $query->from(self::$definition['table']);
         $query->orderby('position DESC');
-        return \Db::getInstance()->getValue($query);
+        $position = \Db::getInstance()->getValue($query);
 
+        return max($position, 1);
     }
 
 }

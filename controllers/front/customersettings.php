@@ -1,94 +1,83 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
 use KronaModule\Player;
 
-class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontController
-{
-    public $errors;
+class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontController {
 
-	public function initContent()
-	{	
+    public $errors;
+    public $confirmations;
+
+	public function initContent() {
+
 		// Disable left and right column
 		$this->display_column_left = false;
 		$this->display_column_right = false;
 
         parent::initContent();
 
-        $id_lang = $this->context->language->id;
-        $id_shop_group = $this->context->shop->id_shop_group;
-        $id_shop = $this->context->shop->id_shop;
-        $id_customer = $this->context->customer->id;
-
-        $playerObj = new Player($id_customer);
-
-        // Check if there needs to be a redirction
-        if (!$this->context->customer->isLogged()) {
-            $krona_url = $this->context->link->getModuleLink('genzo_krona', 'home');
-            Tools::redirect($krona_url);
-        }
-        elseif ($playerObj->banned) {
-            $krona_url = $this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1';
-            Tools::redirect($krona_url);
+        // Check if there needs to be a redirection
+        if (!$this->context->customer->isLogged() || !$id_customer = $this->context->customer->id) {
+            Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home'));
         }
 
-        // Customer Saves Settings Form
+        // Customer Saves Settings Form - needs to be before the playerObj, to have refreshed values
         if (Tools::isSubmit('saveCustomerSettings')) {
-            $this->saveCustomerSettings($id_customer);
+            $playerObj = $this->saveCustomerSettings();
+        }
+        else {
             $playerObj = new Player($id_customer);
+        }
+
+        if ($playerObj->banned) {
+            Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1');
         }
 
         if (!$playerObj->active) {
             $this->errors[] = $this->module->l('Please activate your account.');
         }
 
-        $game_name = Configuration::get('krona_game_name', $id_lang, $id_shop_group, $id_shop);
-
-        $player = json_decode(json_encode($playerObj), true); // Turns an object into an array
+        $game_name = Configuration::get('krona_game_name', $this->context->language->id);
 
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Settings'),
             'game_name' => $game_name,
-            'loyalty_name' => Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop),
-            'confirmation' => $this->confirmation,
+            'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),
+            'confirmation' => $this->confirmations,
             'errors' => $this->errors,
             'active' => 'Settings',
-            'player' => $player,
-            'pseudonym' => Configuration::get('krona_pseudonym', null, $id_shop_group, $id_shop),
-            'avatar' => Configuration::get('krona_avatar', null, $id_shop_group, $id_shop),
-            'gamification' => Configuration::get('krona_gamification_active', null, $id_shop_group, $id_shop),
-            'loyalty' => Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop),
+            'player' => json_decode(json_encode($playerObj), true),
+            'pseudonym' => Configuration::get('krona_pseudonym'),
+            'avatar' => Configuration::get('krona_avatar'),
+            'gamification' => Configuration::get('krona_gamification_active'),
+            'loyalty' => Configuration::get('krona_loyalty_active'),
 		));
 
 		$this->setTemplate('customersettings.tpl');
 	}
 
-	private function saveCustomerSettings($id_customer) {
-	    $id_customer = (int)$id_customer;
-	    $active = (bool)Tools::getValue('active');
-	    $pseudonym = pSQL(Tools::getValue('pseudonym'));
+	private function saveCustomerSettings() {
 
-	    $player = new Player($id_customer);
-	    $player->active = $active;
-	    if (Configuration::get('krona_pseudonym', null, $this->context->shop->id_shop_group, $this->context->shop->id_shop)) {
-	        $player->pseudonym = $pseudonym;
+	    $id_customer = $this->context->customer->id;
+
+	    $playerObj = new Player($id_customer);
+	    $playerObj->active = (bool)Tools::getValue('active');
+
+	    if (Configuration::get('krona_pseudonym')) {
+	        $playerObj->pseudonym = pSQL(Tools::getValue('pseudonym'));
         }
+
         if ($_FILES['avatar']['tmp_name']) {
-	        $genzo_krona = new Genzo_Krona();
-            $player->avatar = ($genzo_krona->uploadAvatar($id_customer)) ? $id_customer.'.jpg' : $player->avatar;
-        }
-        if (empty($genzo_krona->errors)) {
-	        $player->update();
-	        $this->confirmation = $this->module->l('Your Customer Settings were sucessfully saved.');
 
-            // Add History
+            $playerObj->avatar = ($this->module->uploadAvatar($id_customer)) ? $id_customer.'.jpg' : $playerObj->avatar;
+
             $hook = array(
                 'module_name' => 'genzo_krona',
                 'action_name' => 'avatar_upload',
@@ -97,8 +86,15 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
 
             \Hook::exec('ActionExecuteKronaAction', $hook);
         }
-        else {
-	        $this->errors = $genzo_krona->errors;
+
+        if (!empty($this->module->errors)) {
+            $this->errors = $this->module->errors;
+            return false;
         }
+
+        $this->confirmations = $this->module->l('Your Customer Settings were sucessfully saved.');
+        $playerObj->update();
+
+        return $playerObj;
     }
 }

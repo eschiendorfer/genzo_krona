@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -63,7 +63,7 @@ class Action extends \ObjectModel {
         return \Db::getInstance()->getValue($query);
     }
 
-    public static function getAllActions ($filters = null) {
+    public static function getAllActions($filters = null) {
 
         $id_lang = \Context::getContext()->language->id;
 
@@ -72,8 +72,7 @@ class Action extends \ObjectModel {
         $query = new \DbQuery();
         $query->select('*');
         $query->from(self::$definition['table'], 'a');
-        $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_action` = a.`id_action`');
-        $query->where('l.`id_lang`='.$id_lang);
+        $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_action` = a.`id_action` AND l.`id_lang`='.$id_lang);
         if ($ids_shop) {
             $query->innerJoin(self::$definition['table'] . '_shop', 's', 's.`id_action` = a.`id_action`');
             $query->where('s.`id_shop` IN (' . implode(',', array_map('intval', $ids_shop)) . ')');
@@ -90,10 +89,11 @@ class Action extends \ObjectModel {
     }
 
     public static function checkIfActionIsActive($module_name, $action_name, $id_shop = null) {
+
         $module_name = pSQL($module_name);
         $action_name = pSQL($action_name);
 
-        if (\Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE') AND !$id_shop) {
+        if (\Shop::isFeatureActive() AND !$id_shop) {
             $id_shop = \Context::getContext()->shop->id;
         }
 
@@ -101,8 +101,7 @@ class Action extends \ObjectModel {
         $query->select('active');
         $query->from(self::$definition['table'], 'a');
         if ($id_shop) {
-            $query->innerJoin(self::$definition['table'].'_shop', 's', 's.`id_action` = a.`id_action`');
-            $query->where('s.`id_shop` = ' . (int)$id_shop);
+            $query->innerJoin(self::$definition['table'].'_shop', 's', 's.`id_action` = a.`id_action` AND s.`id_shop` = ' . (int)$id_shop);
         }
         $query->where("`module` = '{$module_name}'");
         $query->where("`key` = '{$action_name}'");
@@ -150,14 +149,12 @@ class Action extends \ObjectModel {
             $players = Player::getAllPlayers();
 
             foreach ($players as $player) {
-                $id_customer = $player['id_customer'];
-                $customer = new \Customer($id_customer);
 
-                if ($customer->newsletter) {
+                if ($player['newsletter']) {
                     $hook = array(
                         'module_name' => 'genzo_krona',
                         'action_name' => 'newsletter',
-                        'id_customer' => $id_customer,
+                        'id_customer' => $player['id_customer'],
                     );
 
                     \Hook::exec('ActionExecuteKronaAction', $hook);

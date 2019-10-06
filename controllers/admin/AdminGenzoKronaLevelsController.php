@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -16,12 +16,9 @@ use KronaModule\ActionOrder;
 use KronaModule\Coupon;
 
 
-class AdminGenzoKronaLevelsController extends ModuleAdminController
-{
+class AdminGenzoKronaLevelsController extends ModuleAdminController {
 
-    /**
-     * @var Level object
-     */
+    /* @var Level object */
     protected $object;
 
     public $total_name;

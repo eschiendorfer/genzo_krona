@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -68,10 +68,10 @@ class PlayerHistory extends \ObjectModel {
         return parent::update($nullValues);
     }
 
-    public function add($autoDate = true, $nullValues = true) {
+    public function add($force_loyalty = false, $autoDate = true, $nullValues = true) {
 
         // Always remember there is no static loyalty. The customer just collects points and coins. The merchant defines what loyalty is in BO.
-        if (\Configuration::get('krona_loyalty_active')) {
+        if (!$force_loyalty && \Configuration::get('krona_loyalty_active')) {
             $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
 
             if ($total_mode_loyalty == 'points_coins') {
@@ -89,14 +89,15 @@ class PlayerHistory extends \ObjectModel {
     }
 
     public static function getHistoryByPlayer($id_customer, $filters = null, $pagination = null, $order = null) {
+
         $id_lang = \Context::getContext()->language->id;
 
         $query = new \DbQuery();
-        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, IFNULL(h.force_display, (h.points+h.coins)) AS `change`, l.*');
+        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, IFNULL(h.force_display, (h.points+h.coins)) AS `change`, h.loyalty, l.*');
         $query->from(self::$definition['table'], 'h');
-        $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history`');
+        $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history` AND l.`id_lang` = ' . (int)$id_lang);
         $query->where('`id_customer` = ' . (int)$id_customer);
-        $query->where('l.`id_lang` = ' . (int)$id_lang);
+
         if (!empty($filters)) {
             foreach ($filters as $filter) {
                 $query->where($filter);
@@ -118,10 +119,10 @@ class PlayerHistory extends \ObjectModel {
         }
 
         return \Db::getInstance()->ExecuteS($query);
-
     }
 
     public static function getTotalHistoryByPlayer($id_customer, $filters = null) {
+
         $id_lang = \Context::getContext()->language->id;
 
         $query = new \DbQuery();
@@ -130,6 +131,7 @@ class PlayerHistory extends \ObjectModel {
         $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history`');
         $query->where('`id_customer` = ' . (int)$id_customer);
         $query->where('l.`id_lang` = ' . (int)$id_lang);
+
         if (!empty($filters)) {
             foreach ($filters as $filter) {
                 $query->where($filter);
@@ -137,15 +139,18 @@ class PlayerHistory extends \ObjectModel {
         }
 
         $rows = \Db::getInstance()->ExecuteS($query);
+
         return count($rows);
     }
 
     public static function countActionByPlayer($id_customer, $id_action, $startDate = null, $endDate = null) {
+
         $query = new \DbQuery();
         $query->select('Count(*)');
         $query->from(self::$definition['table']);
         $query->where('`id_customer` = ' . (int)$id_customer);
         $query->where('`id_action` = ' . (int)$id_action);
+
         if ($startDate && $endDate) {
             $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
@@ -153,23 +158,29 @@ class PlayerHistory extends \ObjectModel {
             $query->where("`date_add` >= '{$startDate}' ");
         }
 
-        return \Db::getInstance()->getValue($query);
+        return (int)\Db::getInstance()->getValue($query);
     }
 
     public static function countOrderByPlayer($id_customer, $id_action, $startDate = null, $endDate = null) {
+
         $query = new \DbQuery();
         $query->select('Count(*)');
         $query->from(self::$definition['table']);
         $query->where('`id_customer` = ' . (int)$id_customer);
         $query->where('`id_action_order` = ' . (int)$id_action);
+
         if ($startDate && $endDate) {
             $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
+        elseif ($startDate) {
+            $query->where("`date_add` >= '{$startDate}' ");
+        }
 
-        return \Db::getInstance()->getValue($query);
+        return (int)\Db::getInstance()->getValue($query);
     }
 
     public static function sumActionPointsByPlayer($id_customer, $condition_type, $startDate = null, $endDate = null) {
+
         $query = new \DbQuery();
         $query->select('SUM(ph.`change`)');
         $query->from(self::$definition['table'], 'ph');
@@ -188,14 +199,15 @@ class PlayerHistory extends \ObjectModel {
         elseif ($condition_type == 'coins') {
             $query->where("`id_action` = 0"); // We only wanna actionOrders
         }
-        return \Db::getInstance()->getValue($query);
+
+        return (int)\Db::getInstance()->getValue($query);
     }
 
     public static function getNotificationValue($id_customer) {
         $query = new \DbQuery();
         $query->select('COUNT(*)');
         $query->from('genzo_krona_player_history');
-        $query->where('viewed=0 AND id_customer = ' . $id_customer);
+        $query->where('viewed=0 AND viewable=1 AND id_customer = ' . $id_customer);
         return (int)\Db::getInstance()->getValue($query);
     }
 

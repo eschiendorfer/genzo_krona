@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -12,14 +12,12 @@ require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use KronaModule\ActionOrder;
 
-class AdminGenzoKronaOrdersController extends ModuleAdminController
-{
+class AdminGenzoKronaOrdersController extends ModuleAdminController {
 
-    /**
-     * @var ActionOrder object
-     */
-    protected $object;
     public $loyalty_name;
+
+    /* @var ActionOrder object */
+    protected $object;
 
     public function __construct() {
 
@@ -82,11 +80,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
         parent::init();
 
         // Configuration
-        $id_lang = $this->context->language->id;
-        $id_shop_group = $this->context->shop->id_shop_group;
-        $id_shop = $this->context->shop->id;
-
-        $this->loyalty_name = Configuration::get('krona_loyalty_name', $id_lang, $id_shop_group, $id_shop);
+        $this->loyalty_name = Configuration::get('krona_loyalty_name', $this->context->language->id);
     }
 
     public function renderList() {
@@ -144,11 +138,6 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
             'name' => 'id_action_order'
         );
         $inputs[] = array(
-            'type'         => 'html',
-            'name'         => 'html_note',
-            'html_content' => "<p>{$this->l('Note: The other settings like order status, title or message can be set globaly under \"Settings\".')}</p>",
-        );
-        $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Active'),
             'name' => 'active',
@@ -203,13 +192,13 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
                 'title' => $this->l('Edit Order Action:'). ' '. $this->object->currency,
                 'icon' => 'icon-cogs'
             ),
+            'description' => $this->l('Note: The other settings like order status, title or message can be set globally under "Settings".'),
             'input' => $inputs,
             'submit' => array(
                 'title' => $this->l('Save'),
                 'class' => 'btn btn-default pull-right'
             )
         );
-
 
         // Fix of values since we dont use always same names
         $this->fields_form = $fields_form;
@@ -218,8 +207,6 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         );
-
-        $this->default_form_language = $this->context->language->id;
 
         return parent::renderForm();
     }

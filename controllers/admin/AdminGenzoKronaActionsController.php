@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -12,14 +12,13 @@ require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use KronaModule\Action;
 
-class AdminGenzoKronaActionsController extends ModuleAdminController
-{
+class AdminGenzoKronaActionsController extends ModuleAdminController {
 
-    /**
-     * @var Action object
-     */
+    /* @var $module Genzo_Krona */
+    public $module;
+
+    /* @var Action object */
     protected $object;
-    public $total_name;
 
     public function __construct() {
 
@@ -94,17 +93,10 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
     public function init() {
 
         // Check Actions
-        $krona = new Genzo_Krona();
-        $krona->registerExternalActions();
+        $this->module->registerExternalActions();
 
         parent::init();
 
-        // Configuration
-        $id_lang = $this->context->language->id;
-        $id_shop_group = $this->context->shop->id_shop_group;
-        $id_shop = $this->context->shop->id;
-
-        $this->total_name = Configuration::get('krona_total_name', $id_lang, $id_shop_group, $id_shop);
     }
 
     public function initContent() {
@@ -237,7 +229,7 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
             'label' => $this->l('Points Change'),
             'desc'  => $points_desc,
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->total_name,
+            'suffix' => $this->l('Points'),
         );
 
         if (Shop::isFeatureActive()) {
@@ -268,8 +260,6 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
             'id_language' => $this->context->language->id,
         );
 
-        $this->default_form_language = $this->context->language->id;
-
         return parent::renderForm();
     }
 
@@ -286,6 +276,5 @@ class AdminGenzoKronaActionsController extends ModuleAdminController
         ));
 
     }
-
 
 }

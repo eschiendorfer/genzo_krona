@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -40,19 +40,20 @@ class PlayerLevel extends \ObjectModel {
         )
     );
 
-    public static function getAllPlayerLevels ($id_customer, $filters = null, $pagination = null, $order = null ) {
+    // Database
+    public static function getAllPlayerLevels($id_customer, $filters = null, $pagination = null, $order = null ) {
 
         // Doesn't need to be multistore, since its customer related
         $id_lang = (int)\Context::getContext()->language->id;
         $id_customer = (int)$id_customer;
 
         $query = new \DbQuery();
-        $query->select('*');
+        $query->select('*, pl.active as active'); // otherwise its overwritten with the active from l.
         $query->from(self::$definition['table'], 'pl');
         $query->innerJoin('genzo_krona_level', 'l', 'l.`id_level` = pl.`id_level`');
-        $query->innerJoin('genzo_krona_level_lang', 'll', 'll.`id_level` = pl.`id_level`');
+        $query->innerJoin('genzo_krona_level_lang', 'll', 'll.`id_level` = pl.`id_level` AND ll.`id_lang`= ' . $id_lang);
         $query->where('pl.`id_customer` = ' . $id_customer);
-        $query->where('ll.`id_lang`= ' . $id_lang);
+        
         if (!empty($filters)) {
             foreach ($filters as $filter) {
                 $query->where($filter);
@@ -77,18 +78,18 @@ class PlayerLevel extends \ObjectModel {
         return \Db::getInstance()->ExecuteS($query);
     }
 
-    public static function getAllPlayerLevelsTotal ($id_customer, $filters = null) {
+    public static function getAllPlayerLevelsTotal($id_customer, $filters = null) {
 
         // Doesn't need to be multistore, since its customer related
         $id_lang = (int)\Context::getContext()->language->id;
         $id_customer = (int)$id_customer;
 
         $query = new \DbQuery();
-        $query->select('pl.id_level');
+        $query->select('COUNT(id_player_level)');
         $query->from(self::$definition['table'], 'pl');
-        $query->innerJoin('genzo_krona_level_lang', 'll', 'll.`id_level` = pl.`id_level`');
+        $query->innerJoin('genzo_krona_level_lang', 'll', 'll.`id_level` = pl.`id_level` AND ll.`id_lang`= ' . $id_lang);
         $query->where('pl.`id_customer` = ' . $id_customer);
-        $query->where('ll.`id_lang`= ' . $id_lang);
+
         if (!empty($filters)) {
             foreach ($filters as $filter) {
                 $query->where($filter);
@@ -97,9 +98,7 @@ class PlayerLevel extends \ObjectModel {
 
         $query->groupBy('pl.`id_level`');
 
-        $player_levels =  \Db::getInstance()->ExecuteS($query);
-
-        return count($player_levels);
+        return (int)\Db::getInstance()->getValue($query);
     }
 
     public static function getLastPlayerLevel($id_customer) {
@@ -144,7 +143,7 @@ class PlayerLevel extends \ObjectModel {
         return $level;
     }
 
-
+    // Helper
     public static function getPriorityOfGroup($id_group) {
         $query = new \DbQuery();
         $query->select('position');
@@ -230,4 +229,5 @@ class PlayerLevel extends \ObjectModel {
         return ($value > 1) ? true : false;
 
     }
+
 }

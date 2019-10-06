@@ -13,7 +13,10 @@
             <a href="{$link->getModuleLink('genzo_krona', 'loyalty')}">{$loyalty_name}</a>
         </li>
     {/if}
-    <li {if $active=='Settings'}class="active"{/if}>
+    <li class="right {if $active=='Settings'}active{/if}">
         <a href="{$link->getModuleLink('genzo_krona', 'customersettings')}">{l s='Settings' mod='genzo_krona'}</a>
+    </li>
+    <li class="right {if $active=='Home'}active{/if}">
+        <a href="{$link->getModuleLink('genzo_krona', 'home')}">{l s='Info' mod='genzo_krona'}</a>
     </li>
 </ul>

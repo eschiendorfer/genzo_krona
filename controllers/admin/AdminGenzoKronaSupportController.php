@@ -1,22 +1,16 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
-class AdminGenzoKronaSupportController extends ModuleAdminController
-{
-
-    /**
-     * @var SettingsGroup object
-     */
-    protected $object;
+class AdminGenzoKronaSupportController extends ModuleAdminController {
 
     public function __construct() {
 

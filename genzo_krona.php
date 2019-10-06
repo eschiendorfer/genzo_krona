@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -551,7 +551,7 @@ class Genzo_Krona extends Module
     public function hookDisplayKronaCustomer($params) {
 
 	    $id_customer = (int)$params['id_customer'];
-        $player = new Player($id_customer, false);
+        $player = new Player($id_customer);
 
 	    if ($player->active) {
 
@@ -579,7 +579,7 @@ class Genzo_Krona extends Module
 
 	    $id_action = Action::getIdAction($module_name, $action_name);
         $action = new Action($id_action);
-	    $player = new Player($id_customer, false);
+	    $player = new Player($id_customer);
 
         if (!$player->active) {
             $info['error'][] = 'This player is not active';
@@ -594,7 +594,7 @@ class Genzo_Krona extends Module
 
         if (empty($info['error'])) {
 
-            if ($info = $player->checkIfPlayerStillCanExecuteAction($action, true)) {
+            if ($info = $player->checkIfPlayerStillCanExecuteAction($id_customer, $action, true)) {
                 $info['points'] = $action->points_change;
             }
             else {
@@ -628,7 +628,7 @@ class Genzo_Krona extends Module
             Configuration::get('krona_notification', null, $this->context->shop->id_shop_group, $this->context->shop->id) AND
             $this->context->customer->isLogged()
         ) {
-            $player = new Player($this->context->customer->id, false);
+            $player = new Player($this->context->customer->id);
             if ($player->active) {
                 Media::addJsDef(array('id_customer' => $this->context->customer->id));
                 $this->context->controller->addJS($this->_path . '/views/js/notification.js');
@@ -824,7 +824,7 @@ class Genzo_Krona extends Module
         $action = new Action($id_action, null, $customer->id_shop);
 
         /* @var $player Player */
-        $player = new Player($id_customer, $customer);
+        $player = new Player($id_customer);
 
         if (!$player->active || $player->banned || !$action->active) {
             return 'Player or Action not active.';
@@ -832,7 +832,7 @@ class Genzo_Krona extends Module
         else {
 
             // Check if the User is still allowed to execute this action
-            if ($player->checkIfPlayerStillCanExecuteAction($action)) {
+            if ($player->checkIfPlayerStillCanExecuteAction($id_customer, $action)) {
 
                 $history = new PlayerHistory();
                 $history->id_customer = $customer->id;
@@ -926,7 +926,7 @@ class Genzo_Krona extends Module
                 }
 
                 // Check if Player exits
-                $player = new Player($id_customer, $customer);
+                $player = new Player($id_customer);
 
                 if (!$player->active || $player->banned) {
                     return false;
@@ -1149,6 +1149,7 @@ class Genzo_Krona extends Module
     public function convertLoyaltyPointsToCoupon($id_customer, $loyalty_points, $penaltyMode = false) {
 
 	    $player = new Player($id_customer);
+
         // Make sure penalty mode works trough, even if there aren't enough loyalty points left
         if ($penaltyMode && ($loyalty_points > $player->loyalty)) {
             $loyalty_points = $player->loyalty;

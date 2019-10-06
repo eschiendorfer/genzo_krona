@@ -130,7 +130,7 @@ i.icon-krona::before {
     display: inline-block;
 }
 
-[id^="module-genzo_krona"] ul#krona-nav li:last-of-type {
+[id^="module-genzo_krona"] ul#krona-nav li.right {
     float: right;
 }
 

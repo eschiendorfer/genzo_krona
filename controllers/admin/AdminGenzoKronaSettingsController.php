@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -12,15 +12,7 @@ require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 use KronaModule\Player;
 
-class AdminGenzoKronaSettingsController extends ModuleAdminController
-{
-
-    /**
-     * @var SettingsGroup object
-     */
-    protected $object;
-    private $id_shop_group;
-    private $id_shop;
+class AdminGenzoKronaSettingsController extends ModuleAdminController {
 
     public function __construct() {
 
@@ -68,19 +60,19 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
 
         $ids_lang = Language::getIDs();
         $id_lang = $this->context->language->id;
-        $loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
-        $gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
+        $loyalty = Configuration::get('krona_loyalty_active');
+        $gamification = Configuration::get('krona_gamification_active');
 
         // Values
         foreach ($ids_lang as $id_lang) {
-            $total_name[$id_lang] = Configuration::get('krona_total_name', $id_lang, $this->id_shop_group, $this->id_shop);
-            $loyalty_name[$id_lang] = Configuration::get('krona_loyalty_name', $id_lang, $this->id_shop_group, $this->id_shop);
-            $game_name[$id_lang] = Configuration::get('krona_game_name', $id_lang, $this->id_shop_group, $this->id_shop);
-            $order_title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $this->id_shop_group, $this->id_shop);
-            $order_message[$id_lang] = Configuration::get('krona_order_message', $id_lang, $this->id_shop_group, $this->id_shop);
-            $order_canceled_title[$id_lang] = Configuration::get('krona_order_canceled_title', $id_lang, $this->id_shop_group, $this->id_shop);
-            $order_canceled_message[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $this->id_shop_group, $this->id_shop);
-            $home_description[$id_lang] = Configuration::get('krona_description', $id_lang, $this->id_shop_group, $this->id_shop);
+            $total_name[$id_lang] = Configuration::get('krona_total_name', $id_lang);
+            $loyalty_name[$id_lang] = Configuration::get('krona_loyalty_name', $id_lang);
+            $game_name[$id_lang] = Configuration::get('krona_game_name', $id_lang);
+            $order_title[$id_lang] = Configuration::get('krona_order_title', $id_lang);
+            $order_message[$id_lang] = Configuration::get('krona_order_message', $id_lang);
+            $order_canceled_title[$id_lang] = Configuration::get('krona_order_canceled_title', $id_lang);
+            $order_canceled_message[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang);
+            $home_description[$id_lang] = Configuration::get('krona_description', $id_lang);
         }
 
         (Tools::getValue('tab_fake')) ? $tab_fake = Tools::getValue('tab_fake') : $tab_fake = '#general';
@@ -94,37 +86,37 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             'order_canceled_title'    => $order_canceled_title,
             'order_canceled_message'  => $order_canceled_message,
             'home_description'        => $home_description,
-            'levels_grid' => Configuration::get('krona_levels_grid', null, $this->id_shop_group, $this->id_shop),
-            'notification' => Configuration::get('krona_notification', null, $this->id_shop_group, $this->id_shop),
-            'loyalty_active' => Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop),
-            'loyalty_total' => Configuration::get('krona_loyalty_total', null, $this->id_shop_group, $this->id_shop),
-            'gamification_active' => Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop),
-            'gamification_total' => Configuration::get('krona_gamification_total', null, $this->id_shop_group, $this->id_shop),
-            'url' => Configuration::get('krona_url', null, null, null),
-            'customer_active' => Configuration::get('krona_customer_active', null, $this->id_shop_group, $this->id_shop),
-            'display_name' => Configuration::get('krona_display_name', null, $this->id_shop_group, $this->id_shop),
-            'pseudonym' => Configuration::get('krona_pseudonym', null, $this->id_shop_group, $this->id_shop),
-            'loyalty_product_page' => Configuration::get('krona_loyalty_product_page', null, $this->id_shop_group, $this->id_shop),
-            'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page', null, $this->id_shop_group, $this->id_shop),
-            'loyalty_expire_method' => Configuration::get('krona_loyalty_expire_method', null, $this->id_shop_group, $this->id_shop),
-            'loyalty_expire_days' => Configuration::get('krona_loyalty_expire_days', null, $this->id_shop_group, $this->id_shop),
-            'avatar' => Configuration::get('krona_avatar', null, $this->id_shop_group, $this->id_shop),
-            'leaderboard' => Configuration::get('krona_leaderboard', null, $this->id_shop_group, $this->id_shop),
-            'leaderboard_page' => Configuration::get('krona_leaderboard_page', null, $this->id_shop_group, $this->id_shop),
-            'hide_players[]' => explode(',', Configuration::get('krona_hide_players', null, $this->id_shop_group, $this->id_shop)),
-            'order_amount' => Configuration::get('krona_order_amount', null, $this->id_shop_group, $this->id_shop),
-            'order_coupon' => Configuration::get('krona_order_coupon', null, $this->id_shop_group, $this->id_shop),
-            'order_rounding' => Configuration::get('krona_order_rounding', null, $this->id_shop_group, $this->id_shop),
-            'coupon_prefix' => Configuration::get('krona_coupon_prefix', null, $this->id_shop_group, $this->id_shop),
+            'levels_grid' => Configuration::get('krona_levels_grid'),
+            'notification' => Configuration::get('krona_notification'),
+            'loyalty_active' => Configuration::get('krona_loyalty_active'),
+            'loyalty_total' => Configuration::get('krona_loyalty_total'),
+            'gamification_active' => Configuration::get('krona_gamification_active'),
+            'gamification_total' => Configuration::get('krona_gamification_total'),
+            'url' => Configuration::get('krona_url'),
+            'customer_active' => Configuration::get('krona_customer_active'),
+            'display_name' => Configuration::get('krona_display_name'),
+            'pseudonym' => Configuration::get('krona_pseudonym'),
+            'loyalty_product_page' => Configuration::get('krona_loyalty_product_page'),
+            'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page'),
+            'loyalty_expire_method' => Configuration::get('krona_loyalty_expire_method'),
+            'loyalty_expire_days' => Configuration::get('krona_loyalty_expire_days'),
+            'avatar' => Configuration::get('krona_avatar'),
+            'leaderboard' => Configuration::get('krona_leaderboard'),
+            'leaderboard_page' => Configuration::get('krona_leaderboard_page'),
+            'hide_players[]' => explode(',', Configuration::get('krona_hide_players')),
+            'order_amount' => Configuration::get('krona_order_amount'),
+            'order_coupon' => Configuration::get('krona_order_coupon'),
+            'order_rounding' => Configuration::get('krona_order_rounding'),
+            'coupon_prefix' => Configuration::get('krona_coupon_prefix'),
             'tab_fake' => $tab_fake,
         ];
 
         // Order Status
-        $order_state = explode(',', Configuration::get('krona_order_state', null, $this->id_shop_group, $this->id_shop));
+        $order_state = explode(',', Configuration::get('krona_order_state'));
         foreach ($order_state as $id) {
             $this->fields_value['order_state_'.$id] = true;
         }
-        $order_state_cancel = explode(',', Configuration::get('krona_order_state_cancel', null, $this->id_shop_group, $this->id_shop));
+        $order_state_cancel = explode(',', Configuration::get('krona_order_state_cancel'));
         foreach ($order_state_cancel as $id) {
             $this->fields_value['order_state_cancel_'.$id] = true;
         }
@@ -600,7 +592,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
             );
 
             $players = \KronaModule\Player::getAllPlayers();
-            //print_r($players);
 
             $inputs[] = array(
                 'type' => 'select',
@@ -656,8 +647,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
     public function postProcess() {
 
         if (Tools::isSubmit('saveSettings')) {
-            $loyalty = Configuration::get('krona_loyalty_active', null, $this->id_shop_group, $this->id_shop);
-            $gamification = Configuration::get('krona_gamification_active', null, $this->id_shop_group, $this->id_shop);
+            $loyalty = Configuration::get('krona_loyalty_active');
+            $gamification = Configuration::get('krona_gamification_active');
 
             // Settings
             $ids_lang = Language::getIDs();
@@ -682,48 +673,48 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 $home_descriptions[$id_lang] = Tools::getValue('home_description_'.$id_lang);
             }
 
-            Configuration::updateValue('krona_game_name', $game_names, false, $this->id_shop_group, $this->id_shop);
-            if ($gamification) { Configuration::updateValue('krona_total_name', $total_names, false, $this->id_shop_group, $this->id_shop); }
-            if ($loyalty) { Configuration::updateValue('krona_loyalty_name', $loyalty_names, false, $this->id_shop_group, $this->id_shop); }
-            Configuration::updateValue('krona_order_title', $order_titles, false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_message', $order_messages, false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_canceled_title', $order_canceled_titles, false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_canceled_message', $order_canceled_messages, false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_description', $home_descriptions, true, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_levels_grid', (bool)Tools::getValue('levels_grid'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_notification', (bool)Tools::getValue('notification'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_game_name', $game_names);
+            if ($gamification) { Configuration::updateValue('krona_total_name', $total_names); }
+            if ($loyalty) { Configuration::updateValue('krona_loyalty_name', $loyalty_names); }
+            Configuration::updateValue('krona_order_title', $order_titles);
+            Configuration::updateValue('krona_order_message', $order_messages);
+            Configuration::updateValue('krona_order_canceled_title', $order_canceled_titles);
+            Configuration::updateValue('krona_order_canceled_message', $order_canceled_messages);
+            Configuration::updateValue('krona_description', $home_descriptions, true);
+            Configuration::updateValue('krona_levels_grid', (bool)Tools::getValue('levels_grid'));
+            Configuration::updateValue('krona_notification', (bool)Tools::getValue('notification'));
 
             // Basic Fields
-            Configuration::updateValue('krona_loyalty_active', Tools::getValue('loyalty_active'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_gamification_active', Tools::getValue('gamification_active'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_loyalty_active', Tools::getValue('loyalty_active'));
+            Configuration::updateValue('krona_gamification_active', Tools::getValue('gamification_active'));
 
             if ($loyalty) {
-                Configuration::updateValue('krona_loyalty_total', Tools::getValue('loyalty_total'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_loyalty_product_page', Tools::getValue('loyalty_product_page'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_loyalty_cart_page', Tools::getValue('loyalty_cart_page'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_total', Tools::getValue('loyalty_total'));
+                Configuration::updateValue('krona_loyalty_product_page', Tools::getValue('loyalty_product_page'));
+                Configuration::updateValue('krona_loyalty_cart_page', Tools::getValue('loyalty_cart_page'));
 
                 // Expiration
-                Configuration::updateValue('krona_loyalty_expire_method', Tools::getValue('loyalty_expire_method'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_loyalty_expire_days', (int)Tools::getValue('loyalty_expire_days'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_loyalty_expire_method', Tools::getValue('loyalty_expire_method'));
+                Configuration::updateValue('krona_loyalty_expire_days', (int)Tools::getValue('loyalty_expire_days'));
 
                 if (Tools::getValue('loyalty_expire_update')!='none') {
                     self::updateAllExpireLoyalty(Tools::getValue('loyalty_expire_update'), Tools::getValue('loyalty_expire_days'));
                 }
             }
             if ($gamification) {
-                Configuration::updateValue('krona_gamification_total', Tools::getValue('gamification_total'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_pseudonym', (bool)Tools::getValue('pseudonym'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_avatar', (bool)Tools::getValue('avatar'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_leaderboard', (int)Tools::getValue('leaderboard'), false, $this->id_shop_group, $this->id_shop);
-                Configuration::updateValue('krona_leaderboard_page', (int)Tools::getValue('leaderboard_page'), false, $this->id_shop_group, $this->id_shop);
+                Configuration::updateValue('krona_gamification_total', Tools::getValue('gamification_total'));
+                Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'));
+                Configuration::updateValue('krona_pseudonym', (bool)Tools::getValue('pseudonym'));
+                Configuration::updateValue('krona_avatar', (bool)Tools::getValue('avatar'));
+                Configuration::updateValue('krona_leaderboard', (int)Tools::getValue('leaderboard'));
+                Configuration::updateValue('krona_leaderboard_page', (int)Tools::getValue('leaderboard_page'));
             }
-            Configuration::updateValue('krona_url', Tools::getValue('url'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_amount', Tools::getValue('order_amount'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_coupon', Tools::getValue('order_coupon'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_rounding', Tools::getValue('order_rounding'), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_coupon_prefix', Tools::getValue('coupon_prefix'), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_url', Tools::getValue('url'));
+            Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'));
+            Configuration::updateValue('krona_order_amount', Tools::getValue('order_amount'));
+            Configuration::updateValue('krona_order_coupon', Tools::getValue('order_coupon'));
+            Configuration::updateValue('krona_order_rounding', Tools::getValue('order_rounding'));
+            Configuration::updateValue('krona_coupon_prefix', Tools::getValue('coupon_prefix'));
 
             // Handling Status
             $orderStates = OrderState::getOrderStates($this->context->language->id);
@@ -742,13 +733,13 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController
                 }
 
             }
-            Configuration::updateValue('krona_order_state', implode(",", $order_state_selected), false, $this->id_shop_group, $this->id_shop);
-            Configuration::updateValue('krona_order_state_cancel', implode(",", $order_state_cancel_selected), false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_order_state', implode(",", $order_state_selected));
+            Configuration::updateValue('krona_order_state_cancel', implode(",", $order_state_cancel_selected));
 
             // Handling hide_players
             $hide_players = Tools::getValue('hide_players');
             $hide_players = (is_array($hide_players)) ? implode(',', $hide_players) : [];
-            Configuration::updateValue('krona_hide_players', $hide_players, false, $this->id_shop_group, $this->id_shop);
+            Configuration::updateValue('krona_hide_players', $hide_players);
 
             if (empty($this->errors)) {
                 $this->confirmations[] = $this->l('Settings were sucessfully saved.');

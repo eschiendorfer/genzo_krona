@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2018 Emanuel Schiendorfer
+ * Copyright (C) 2019 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2018 Emanuel Schiendorfer
+ * @copyright 2019 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -84,25 +84,21 @@ class ActionOrder extends \ObjectModel {
         $query = new \DbQuery();
         $query->select('id_currency');
         $query->from(self::$definition['table']);
-        $actionOrders =  \Db::getInstance()->executeS($query);
+        $ids_action_order = array_column(\Db::getInstance()->executeS($query), 'id_currency');
 
         $query = new \DbQuery();
         $query->select('id_currency');
         $query->from('currency');
         $query->where('deleted=0');
-        $currencies = \Db::getInstance()->executeS($query);
+        $ids_currency = array_column(\Db::getInstance()->executeS($query), 'id_currency');
 
-        // Flaten the multidimensional arrays, so we can use array_dif
-        $actionOrders = array_map('current', $actionOrders);
-        $currencies = array_map('current', $currencies);
-
-        $missing = array_diff($currencies, $actionOrders); // Which currencies are missing in the module
-        $redundant = array_diff($actionOrders, $currencies); // Which currencies are redundant in the module
+        $missing = array_diff($ids_currency, $ids_action_order); // Which currencies are missing in the module
+        $redundant = array_diff($ids_action_order, $ids_currency); // Which currencies are redundant in the module
 
         if (!empty($missing)) {
-            foreach ($missing as $currency) {
+            foreach ($missing as $id_currency) {
                 $actionOrder = new ActionOrder();
-                $actionOrder->id_currency = $currency;
+                $actionOrder->id_currency = $id_currency;
                 $actionOrder->coins_change = 1;
                 $actionOrder->minimum_amount = 0;
                 $actionOrder->active = 0;
@@ -111,14 +107,11 @@ class ActionOrder extends \ObjectModel {
         }
 
         if (!empty($redundant)) {
-            foreach ($redundant as $currency) {
-                $id_currency = $currency;
+            foreach ($redundant as $id_currency) {
                 $id_action_order = ActionOrder::getIdActionOrderByCurrency($id_currency);
-
                 $actionOrder = new ActionOrder($id_action_order);
                 $actionOrder->delete();
             }
         }
     }
-
 }
