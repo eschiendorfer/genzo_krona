@@ -18,6 +18,7 @@ class PlayerHistory extends \ObjectModel {
     public $id_customer;
     public $id_action;
     public $id_action_order;
+    public $id_order;
 
     public $force_display; // If we want to force a number in the timeline
     public $points;
@@ -29,9 +30,10 @@ class PlayerHistory extends \ObjectModel {
 
     public $loyalty_expire_date;
     public $message;
+    public $comment;
     public $title;
     public $url;
-    public $viewable; // Should this appear in FO?
+    public $viewable = true; // Should this appear in FO?
     public $viewed;
     public $date_add;
     public $date_upd;
@@ -44,6 +46,7 @@ class PlayerHistory extends \ObjectModel {
             'id_customer'           => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action'             => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_action_order'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_order'              => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'force_display'         => array('type' => self::TYPE_NOTHING),
             'points'                => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'coins'                 => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
@@ -53,6 +56,7 @@ class PlayerHistory extends \ObjectModel {
             'loyalty_expire_date'   => array('type' => self::TYPE_DATE),
             'title'                 => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
             'message'               => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
+            'comment'               => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'lang' => true),
             'url'                   => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'viewable'              => array('type' => self::TYPE_BOOL),
             'viewed'                => array('type' => self::TYPE_BOOL),
@@ -61,10 +65,13 @@ class PlayerHistory extends \ObjectModel {
         )
     );
 
-    public function update($nullValues = true) {
-
+    public function save($nullValues = true, $autoDate = true) {
         // We need to have the null value in force_display
+        return parent::save($nullValues, $autoDate);
+    }
 
+    public function update($nullValues = true) {
+        // We need to have the null value in force_display
         return parent::update($nullValues);
     }
 
@@ -86,6 +93,15 @@ class PlayerHistory extends \ObjectModel {
         }
 
         return parent::add($autoDate, $nullValues);
+    }
+
+    // Database
+    public static function getIdHistoryByIdOrder($id_order) {
+        $query = new \DbQuery();
+        $query->select('id_history');
+        $query->from(self::$definition['table']);
+        $query->where('id_order = ' . $id_order);
+        return (int)\Db::getInstance()->getValue($query);
     }
 
     public static function getHistoryByPlayer($id_customer, $filters = null, $pagination = null, $order = null) {

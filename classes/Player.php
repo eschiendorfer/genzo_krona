@@ -461,7 +461,7 @@ class Player extends \ObjectModel {
                         }
                     }
 
-                    // Send emails Todo: implement custom emails
+                    // Send emails Todo: implement conseqs module
                     if (\Module::isEnabled('genzo_crm')) {
                         // $content = $this->context->smarty->fetch(_PS_MODULE_DIR_."genzo_krona/mails/{$iso}/new_answer.tpl");
 
@@ -485,7 +485,9 @@ class Player extends \ObjectModel {
 
     public static function getPossibleActions($id_customer) {
 
-        $actions = Action::getAllActions(['a.active=1', 'a.points_change>0']); // Todo: Add order actions here!?
+        $context = \Context::getContext();
+
+        $actions = Action::getAllActions(['a.active=1', 'a.points_change>0']);
 
         foreach ($actions as $key => $action) {
             // $actionObj = new Action($action['id_action']);
@@ -514,6 +516,17 @@ class Player extends \ObjectModel {
                     $actions[$key]['possible'] = true;
                 }
             }
+        }
+
+        $action_orders = ActionOrder::getAllActionOrder(['o.active=1', 'o.id_currency='.$context->currency->id]);
+
+        if (isset($action_orders[0])) {
+            $actions[] = array(
+                'title' => \Configuration::get('krona_order_title', $context->language->id),
+                'done' => \Order::getCustomerNbOrders($id_customer) ? true : false,
+                'coins_change' => $action_orders[0]['coins_change'],
+                'currency' => $action_orders[0]['name'],
+            );
         }
 
         return $actions;

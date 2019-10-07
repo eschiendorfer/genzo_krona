@@ -1,4 +1,5 @@
 ALTER TABLE `PREFIX_genzo_krona_player_history`
+    ADD `id_order` INT NOT NULL AFTER `id_action_order`,
     ADD `coins` INT NOT NULL AFTER `change`,
     ADD `points` INT NOT NULL AFTER `change`,
     ADD `force_display` INT NULL DEFAULT NULL AFTER `change`,
@@ -7,6 +8,9 @@ ALTER TABLE `PREFIX_genzo_krona_player_history`
     ADD `loyalty_used` INT NOT NULL AFTER `change_loyalty`,
     ADD `viewable` BOOL NOT NULL DEFAULT 1 AFTER `url`,
     ADD `viewed` BOOL NOT NULL DEFAULT 0 AFTER `url`;
+
+ALTER TABLE `PREFIX_genzo_krona_player_history_lang`
+    ADD `comment` VARCHAR(2000) NULL AFTER `message`;
 
 ALTER TABLE `PREFIX_genzo_krona_player_history`
     CHANGE `change_loyalty` `loyalty` INT(12) NOT NULL;

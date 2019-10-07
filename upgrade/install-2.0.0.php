@@ -8,10 +8,12 @@
 function upgrade_module_2_0_0($module) {
 
     if (!$module->executeSqlScript('install-2.0.0') OR
-        !convertPlayerHistoryColumn() OR
-        !revertOldCouponConversion($module) OR
         !saveDefaultConfiguration() OR
+        !convertPlayerHistoryColumn() OR
+        !reconstructIdOrders() OR
+        !revertOldCouponConversion($module) OR
         !$module->registerHook('actionRegisterGenzoCrmEmail') OR
+        !$module->registerHook('actionOrderEdited') OR
         !$module->executeSqlScript('install-2.0.0-after') OR
         !$module->uninstallAdminMenus() OR
         !$module->installAdminMenus()
@@ -99,6 +101,36 @@ function revertOldCouponConversion($module) {
     }
 
     return true;
+}
+
+function reconstructIdOrders() {
+
+    // Get all histories created by orders
+    $query = new DbQuery();
+    $query->select('*');
+    $query->from('genzo_krona_player_history');
+    $query->where('coins != 0');
+    $histories = Db::getInstance()->ExecuteS($query);
+
+    foreach ($histories as &$history) {
+
+        $query = new DbQuery();
+        $query->select('o.id_order');
+        $query->from('orders', 'o');
+        $query->innerJoin('order_history', 'oh', 'oh.id_order=o.id_order');
+        $query->where('id_customer = ' . $history['id_customer']);
+        $date_start = date("Y-m-d H:i:s", (strtotime($history['date_add'])-30));
+        $date_end = date("Y-m-d H:i:s", (strtotime($history['date_add'])+30));
+        $query->where("oh.date_add BETWEEN '{$date_start}' AND '{$date_end}' OR o.date_add BETWEEN '{$date_start}' AND '{$date_end}'");
+        $id_order = (int)Db::getInstance()->getValue($query);
+
+        $history['id_order'] = $id_order ?: 1;
+    }
+
+    DB::getInstance()->insert('genzo_krona_player_history', $histories, true, true, 3);
+
+    return true;
+
 }
 
 function saveDefaultConfiguration() {

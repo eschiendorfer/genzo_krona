@@ -16,7 +16,8 @@
                     {else}
                         {$his.date_add|date_format:"%d. %b %Y"}:
                     {/if}
-                    {$his.message} {if $his.url}<a href="{$his.url}"><i class="fa fa-link"></i></a>{/if}
+                    {$his.message} {if $his.url}<a href="{$his.url}"><i class="fa fa-link"></i></a>{/if}<br>
+                    {$his.comment}
                 </p>
             </div>
         {/foreach}

@@ -306,7 +306,14 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
 
             if (empty($this->errors)) {
 
-                $history->add(true); // Todo: we still have to fix this when using penalties on loyalty, as there needs to be a conversion
+                // Check if it's a penalty
+                if ($history->loyalty < 0) {
+                    $this->module->convertLoyaltyPointsToCoupon($id_customer, abs($history->loyalty), true);
+                    $history->force_display = $history->loyalty;
+                    $history->loyalty = 0;
+                }
+
+                $history->add(true);
 
                 Player::updatePlayerLevels($id_customer);
 

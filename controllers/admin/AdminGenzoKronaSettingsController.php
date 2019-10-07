@@ -116,11 +116,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
         foreach ($order_state as $id) {
             $this->fields_value['order_state_'.$id] = true;
         }
-        $order_state_cancel = explode(',', Configuration::get('krona_order_state_cancel'));
-        foreach ($order_state_cancel as $id) {
-            $this->fields_value['order_state_cancel_'.$id] = true;
-        }
-
 
         $tabs = array(
             'general' => $this->l('General'),
@@ -311,27 +306,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
         $inputs[] = array(
             'type' => 'checkbox',
             'label' => $this->l('Order State'),
-            'desc' => $this->l('On which order state will the order be transformed into coins?'),
+            'desc' => $this->l('Which order states are valid to receive coins? You should select all of them. As the coins will be updated every time the order state changes.'),
             'name' => 'order_state',
-            'multiple' => true,
-            'values' => [
-                'query' => $orderStates,
-                'id' => 'id_order_state',
-                'name' => 'name',
-            ],
-            'expand' => (count($orderStates) > 10) ? [
-                'print_total' => count($orderStates),
-                'default' => 'show',
-                'show' => ['text' => $this->l('Show'), 'icon' => 'plus-sign-alt'],
-                'hide' => ['text' => $this->l('Hide'), 'icon' => 'minus-sign-alt'],
-            ] : null,
-            'tab' => 'order',
-        );
-        $inputs[] = array(
-            'type' => 'checkbox',
-            'label' => $this->l('Cancel Order State'),
-            'desc' => $this->l('On which order state should the coins be taken back?'),
-            'name' => 'order_state_cancel',
             'multiple' => true,
             'values' => [
                 'query' => $orderStates,
@@ -719,7 +695,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             // Handling Status
             $orderStates = OrderState::getOrderStates($this->context->language->id);
             $order_state_selected = array();
-            $order_state_cancel_selected = array();
 
             foreach ($orderStates as $orderState) {
 
@@ -728,13 +703,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 if (Tools::isSubmit('order_state_'.$id_order_state)) {
                     $order_state_selected[] = $id_order_state;
                 }
-                if (Tools::isSubmit('order_state_cancel_'.$id_order_state)) {
-                    $order_state_cancel_selected[] = $id_order_state;
-                }
-
             }
             Configuration::updateValue('krona_order_state', implode(",", $order_state_selected));
-            Configuration::updateValue('krona_order_state_cancel', implode(",", $order_state_cancel_selected));
 
             // Handling hide_players
             $hide_players = Tools::getValue('hide_players');

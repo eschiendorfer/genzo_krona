@@ -27,8 +27,10 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_level` (
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history` (
   `id_history` INT(12) NOT NULL AUTO_INCREMENT,
   `id_customer` INT(12) NOT NULL,
-  `id_action` INT(12) NULL,
-  `id_action_order` INT(12) NULL,
+  `id_action` INT(12) NOT NULL,
+  `id_action_order` INT(12) NOT NULL,
+  `id_order` INT(12) NOT NULL,
+  `force_display` INT(12) NULL,
   `points` INT(12) NOT NULL,
   `coins` INT(12) NOT NULL,
   `loyalty` INT(12) NOT NULL,
@@ -51,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history_lang` (
   `id_lang` INT(12) NOT NULL,
   `title` VARCHAR(200) NULL,
   `message` VARCHAR(2000) NULL,
+  `comment` VARCHAR(2000) NULL,
   PRIMARY KEY ( `id_history`, `id_lang` )
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
 

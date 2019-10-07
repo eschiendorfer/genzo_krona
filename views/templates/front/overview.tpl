@@ -46,6 +46,23 @@
 </div>
 
 <div class="krona-box">
+    <h2>{l s='All possible actions:' mod='genzo_krona'}</h2>
+    <table id="actions">
+
+        {foreach from=$actions item=action}
+            <tr>
+                <td><i class="icon icon-check{if isset($action.done) && $action.done}-done{/if}"></i></td>
+                <td>{$action.title}
+                    {if isset($action.possible) && $action.possible}({$action.points_change} {$total_name}){/if}
+                    {if isset($action.coins_change)}({$action.coins_change} {$loyalty_name}/{$action.currency}){/if}
+                </td>
+            </tr>
+        {/foreach}
+
+    </table>
+</div>
+
+<div class="krona-box">
     <h2>{l s='Your last 5 actions' mod='genzo_krona'}</h2>
 
     <div style="padding-left: 20px;">
@@ -57,21 +74,5 @@
         {/foreach}
     </div>
 </div>
-
-{if $gamification}
-    <div class="krona-box">
-        <h2>{l s='All possible actions:' mod='genzo_krona'}</h2>
-        <table id="actions">
-
-            {foreach from=$actions item=action}
-            <tr>
-                <td><i class="icon icon-check{if isset($action.done) && $action.done}-done{/if}"></i></td>
-                <td>{$action.title} {if isset($action.possible) && $action.possible}({$action.points_change} {$total_name}){/if}</td>
-            </tr>
-            {/foreach}
-
-        </table>
-    </div>
-{/if}
 
 {include file="./footer.tpl"}
