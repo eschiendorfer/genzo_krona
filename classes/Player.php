@@ -150,19 +150,22 @@ class Player extends \ObjectModel {
         if ($ids_shop) {
             $query->select('c.id_shop');
         }
+
         if ($total == 'points_coins') {
-            $query->select('p.points+p.coins AS total');
+            $query->select('SUM(ph.`points`+ph.`coins`) AS total');
         }
         elseif ($total == 'points') {
-            $query->select('p.points AS total');
+            $query->select('SUM(ph.points) AS total');
         }
         elseif ($total == 'coins') {
-            $query->select('p.coins AS total');
+            $query->select('SUM(ph.coins) AS total');
         }
 
         $query->from(self::$definition['table'], 'p');
         $query->select('CONCAT(c.id_customer, ": ", c.firstname," ", c.lastname) AS option_name, c.firstname, c.lastname, c.newsletter');
         $query->innerJoin('customer', 'c', 'p.id_customer = c.id_customer');
+        $query->innerJoin('genzo_krona_player_history', 'ph', 'p.id_customer = ph.id_customer');
+        $query->groupBy('p.id_customer');
 
         if ($ids_shop) {
             $query->where('c.`id_shop` IN (' . implode(',', $ids_shop) . ')');

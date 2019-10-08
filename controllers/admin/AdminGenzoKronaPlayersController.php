@@ -429,16 +429,16 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
     public function renderPlayersList() {
 
         if ($this->gamification_total == 'points_coins') {
-            $this->_select .= ', a.`points`+a.`coins` as total ';
+            $this->_select .= ', SUM(pl.`points`+pl.`coins`) AS total ';
         }
         elseif ($this->gamification_total == 'points') {
-            $this->_select .= ', a.`points` as total ';
+            $this->_select .= ', SUM(pl.`points`) AS total ';
         }
         elseif ($this->gamification_total == 'coins') {
-            $this->_select .= ', a.`coins` as total ';
+            $this->_select .= ', SUM(pl.`coins`) AS total ';
         }
 
-        $this->_select .= ', SUM(pl.points) AS points_calc, SUM(pl.coins) AS coins_calc, SUM(pl.loyalty-pl.loyalty_used-pl.loyalty_expired) AS loyalty_calc'; // Todo: cleanup columns
+        $this->_select .= ', SUM(pl.points) AS points, SUM(pl.coins) AS coins, SUM(pl.loyalty-pl.loyalty_used-pl.loyalty_expired) AS loyalty';
         $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'genzo_krona_player_history AS pl ON pl.id_customer=a.id_customer';
         $this->_group = ' GROUP BY a.id_customer ';
 
@@ -1098,8 +1098,8 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
     // Helper
     private function getStats() {
         $query = new DbQuery();
-        $query->select('SUM(loyalty) as loyalty');
-        $query->from('genzo_krona_player');
+        $query->select('SUM(loyalty-loyalty_used-loyalty_expired) as loyalty');
+        $query->from('genzo_krona_player_history');
         $values = Db::getInstance()->getRow($query);
 
         // Calculate value of loyalty points

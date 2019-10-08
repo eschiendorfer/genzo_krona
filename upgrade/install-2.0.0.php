@@ -112,7 +112,7 @@ function reconstructIdOrders() {
     $query->where('coins != 0');
     $histories = Db::getInstance()->ExecuteS($query);
 
-    foreach ($histories as &$history) {
+    foreach ($histories as $key => &$history) {
 
         $query = new DbQuery();
         $query->select('o.id_order');
@@ -123,8 +123,14 @@ function reconstructIdOrders() {
         $date_end = date("Y-m-d H:i:s", (strtotime($history['date_add'])+30));
         $query->where("oh.date_add BETWEEN '{$date_start}' AND '{$date_end}' OR o.date_add BETWEEN '{$date_start}' AND '{$date_end}'");
         $id_order = (int)Db::getInstance()->getValue($query);
-
-        $history['id_order'] = $id_order ?: 1;
+        if ($id_order) {
+            $history['id_order'] = $id_order ?: 1;
+        }
+        else {
+            $playerHistory = new \KronaModule\PlayerHistory($history['id_history']);
+            $playerHistory->delete();
+            unset($histories[$key]);
+        }
     }
 
     DB::getInstance()->insert('genzo_krona_player_history', $histories, true, true, 3);
