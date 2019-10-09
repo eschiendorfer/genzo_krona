@@ -49,6 +49,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayBackOfficeHeader') OR
             !$this->registerHook('displayHeader') OR
             !$this->registerHook('displayCustomerAccount') OR
+            !$this->registerHook('displayCustomerAccountForm') OR
             !$this->registerHook('displayRightColumnProduct') OR
             !$this->registerHook('displayShoppingCartFooter') OR
             !$this->registerHook('displayKronaCustomer') OR
@@ -646,6 +647,34 @@ class Genzo_Krona extends Module
         return $this->display(__FILE__, 'views/templates/hook/customerAccount.tpl');
     }
 
+    public function hookDisplayCustomerAccountForm($params) {
+
+        // include_once(dirname(__FILE__).'/ReferralProgramModule.php');
+
+        /*if (Configuration::get('PS_CIPHER_ALGORITHM'))
+            $cipherTool = new Rijndael(_RIJNDAEL_KEY_, _RIJNDAEL_IV_);
+        else
+            $cipherTool = new Blowfish(_COOKIE_KEY_, _COOKIE_IV_);
+        $explodeResult = explode('|', $cipherTool->decrypt(Tools::getValue('sponsor')));
+        if ($explodeResult AND count($explodeResult) > 1 AND list($id_referralprogram, $email) = $explodeResult AND (int)($id_referralprogram) AND !empty($email) AND Validate::isEmail($email) AND $id_referralprogram == ReferralProgramModule::isEmailExists($email))
+        {
+            $referralprogram = new ReferralProgramModule($id_referralprogram);
+            if (Validate::isLoadedObject($referralprogram))
+            {
+                 // hack for display referralprogram information in form
+                $_POST['customer_firstname'] = $referralprogram->firstname;
+                $_POST['firstname'] = $referralprogram->firstname;
+                $_POST['customer_lastname'] = $referralprogram->lastname;
+                $_POST['lastname'] = $referralprogram->lastname;
+                $_POST['email'] = $referralprogram->email;
+                $_POST['email_create'] = $referralprogram->email;
+                $sponsor = new Customer((int)$referralprogram->id_sponsor);
+                $_POST['referralprogram'] = $sponsor->email;
+            }
+        }*/
+        return $this->display(__FILE__, 'views/templates/hook/createAccountForm.tpl');
+    }
+
     public function hookDisplayRightColumnProduct($params) {
 
 	    $id_shop_group = $this->context->shop->id_shop_group;
@@ -872,6 +901,24 @@ class Genzo_Krona extends Module
         return true;
 	}
 
+    public function hookActionCustomerAccountAdd($params) {
+
+	    $referred_by = $params['_POST']['referral_code'];
+
+	    if ($referred_by) {
+	        // Todo: finish this
+        }
+
+        $customer = $params['newCustomer'];
+
+        $player = new Player();
+        $player->id_customer = $customer->id;
+        $player->avatar = 'no-avatar.jpg';
+        $player->active = (int)\Configuration::get('krona_customer_active', null, $customer->id_shop_group, $customer->id_shop);
+        $player->referral_code = Player::generateReferralCode();
+        $player->add();
+    }
+
 	public function hookActionOrderStatusUpdate($params) {
 
 	    $id_order = $params['id_order'];
@@ -1022,15 +1069,6 @@ class Genzo_Krona extends Module
         return true;
     }
 
-    public function hookActionCustomerAccountAdd($params) {
-        $customer = $params['newCustomer'];
-
-	    $player = new Player();
-        $player->id_customer = $customer->id;
-        $player->avatar = 'no-avatar.jpg';
-        $player->active = (int)\Configuration::get('krona_customer_active', null, $customer->id_shop_group, $customer->id_shop);
-        $player->add();
-    }
 
     // Email Hooks
     public function hookActionRegisterGenzoCrmEmail($params) {

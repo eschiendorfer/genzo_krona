@@ -12,6 +12,7 @@ function upgrade_module_2_0_0($module) {
         !convertPlayerHistoryColumn() OR
         !reconstructIdOrders() OR
         !revertOldCouponConversion($module) OR
+        !$module->registerHook('displayCustomerAccountForm') OR
         !$module->registerHook('actionRegisterGenzoCrmEmail') OR
         !$module->registerHook('actionOrderEdited') OR
         !$module->executeSqlScript('install-2.0.0-after') OR

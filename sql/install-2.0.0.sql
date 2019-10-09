@@ -22,3 +22,19 @@ ALTER TABLE `PREFIX_genzo_krona_player_history`
 
 ALTER TABLE `PREFIX_genzo_krona_player_level`
     CHANGE `id` `id_player_level` INT(12) AUTO_INCREMENT NOT NULL;
+
+ALTER TABLE `PREFIX_genzo_krona_player_level`
+    ADD INDEX `id_customer` (`id_customer`),
+    ADD INDEX `id_level` (`id_level`);
+
+ALTER TABLE `PREFIX_genzo_krona_player`
+    ADD `referral_code` VARCHAR(40) NOT NULL AFTER `id_customer`,
+    ADD `id_customer_referrer` INT(12) NOT NULL AFTER `id_customer`;
+
+ALTER TABLE `PREFIX_genzo_krona_player`
+    ADD INDEX `id_customer_referrer` (`id_customer_referrer`);
+
+ALTER TABLE `PREFIX_genzo_krona_action_order`
+    ADD `coins_change_max` INT(12) NOT NULL AFTER `coins_change`,
+    ADD `coins_change_buyer` INT(12) NOT NULL AFTER `coins_change`,
+    ADD `coins_change_referrer` INT(12) NOT NULL AFTER `coins_change`;

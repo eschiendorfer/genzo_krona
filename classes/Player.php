@@ -15,6 +15,8 @@ require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 class Player extends \ObjectModel {
 
     public $id_customer;
+    public $id_customer_referer; // Who brought the customer to our store
+    public $referral_code;
     public $avatar;
     public $avatar_full;
     public $active;
@@ -39,6 +41,8 @@ class Player extends \ObjectModel {
         'multilang' => false,
         'fields' => array(
             'id_customer'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_customer_referrer'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'referral_code'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'pseudonym'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'avatar'            => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'active'            => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
@@ -60,6 +64,7 @@ class Player extends \ObjectModel {
                 $this->id_customer = $id_customer;
                 $this->avatar = 'no-avatar.jpg';
                 $this->active = \Configuration::get('krona_customer_active');
+                $this->referral_code = self::generateReferralCode();
                 $this->add();
             }
 
@@ -115,6 +120,21 @@ class Player extends \ObjectModel {
             $this->loyalty = (int)$player['loyalty'];
         }
 
+    }
+
+    public function add($autoDate = true, $nullValues = false) {
+
+        $object = parent::add($autoDate, $nullValues);
+
+        $hook = array(
+            'module_name' => 'genzo_krona',
+            'action_name' => 'account_creation',
+            'id_customer' => $this->id_customer,
+        );
+
+        Hook::exec('ActionExecuteKronaAction', $hook);
+
+        return $object;
     }
 
     public function delete() {
@@ -349,6 +369,7 @@ class Player extends \ObjectModel {
     // Helper
     public static function updatePlayerLevels($id_customer) {
 
+        $results = array();
         $levels = Level::getLevels(); // Todo: we can make things more efficient, if we use filters here
 
         foreach ($levels as $level) {
@@ -628,21 +649,44 @@ class Player extends \ObjectModel {
 
         $gamification_total = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id_shop);
 
-        $query = new \DbQuery();
-        $query->select('COUNT(*)');
-        $query->from(self::$definition['table'], 'p');
-        $query->innerJoin('customer', 'c', 'c.id_customer = p.id_customer');
-        $query->where('id_shop='.$context->shop->id_shop);
-
         if ($gamification_total == 'points_coins') {
-            $query->where('points+coins > ' . $this->total);
+            $having = 'points+coins > ' . $this->total;
         } elseif ($gamification_total == 'points') {
-            $query->where('points > ' . $this->total);
+            $having = 'points > ' . $this->total;
         } elseif ($gamification_total == 'coins') {
-            $query->where('coins > ' . $this->total);
+            $having = 'coins > ' . $this->total;
         }
 
-        return \Db::getInstance()->getValue($query)+1;
+        $sql = '
+            SELECT COUNT(*)
+            FROM '._DB_PREFIX_.'genzo_krona_player AS p
+            INNER JOIN (
+                SELECT id_customer, SUM(points) AS points, SUM(coins) AS coins
+                FROM '._DB_PREFIX_.'genzo_krona_player_history
+                GROUP BY id_customer
+                HAVING '.$having.'
+            ) AS ph ON p.id_customer=ph.id_customer
+            INNER JOIN '._DB_PREFIX_.'customer AS c ON p.id_customer=c.id_customer AND c.id_shop='.$context->shop->id;
+
+        return \Db::getInstance()->getValue($sql)+1;
+    }
+
+    public static function generateReferralCode() {
+
+        $referral_code = '';
+        $exists = true;
+
+        while ($exists) {
+            $referral_code = strtoupper(\Tools::passwdGen(8));
+
+            $query = new \DbQuery();
+            $query->select('COUNT(*)');
+            $query->from(self::$definition['table']);
+            $query->where("referral_code = '{$referral_code}' ");
+            $exists = \Db::getInstance()->getValue($query);
+        }
+
+        return $referral_code;
     }
 
     // CronJob

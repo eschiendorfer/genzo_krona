@@ -19,6 +19,9 @@ class ActionOrder extends \ObjectModel {
     public $currency;
     public $currency_iso;
     public $coins_change;
+    public $coins_change_referrer;
+    public $coins_change_buyer;
+    public $coins_change_max;
     public $coins_conversion;
     public $minimum_amount;
     public $active;
@@ -29,11 +32,14 @@ class ActionOrder extends \ObjectModel {
         'multilang' => false,
         'multishop' => true,
         'fields' => array(
-            'id_currency'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
-            'coins_change'  => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'coins_conversion'  => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
-            'minimum_amount'  => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'active'         => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'id_currency'           => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
+            'coins_change'          => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins_change_referrer' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins_change_buyer'    => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins_change_max'      => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins_conversion'      => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
+            'minimum_amount'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'active'                => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
         )
     );
 

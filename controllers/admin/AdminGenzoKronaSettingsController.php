@@ -59,7 +59,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
     public function renderForm() {
 
         $ids_lang = Language::getIDs();
-        $id_lang = $this->context->language->id;
+
         $loyalty = Configuration::get('krona_loyalty_active');
         $gamification = Configuration::get('krona_gamification_active');
 
@@ -301,7 +301,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'tab' => 'order',
         );
 
-        $orderStates = OrderState::getOrderStates($id_lang);
+        $orderStates = OrderState::getOrderStates($this->context->language->id);
 
         $inputs[] = array(
             'type' => 'checkbox',

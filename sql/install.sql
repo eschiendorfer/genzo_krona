@@ -2,17 +2,20 @@
 
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player` (
   `id_customer` INT(12) NOT NULL,
+  `id_customer_referrer` INT(12) NOT NULL,
+  `referral_code` VARCHAR(40) NOT NULL,
   `pseudonym` VARCHAR(40) NOT NULL,
   `avatar` VARCHAR(200) DEFAULT NULL,
   `active` BOOL DEFAULT 1 NOT NULL,
   `banned` BOOL DEFAULT 0 NOT NULL,
   `date_add` DATETIME NULL,
   `date_upd` DATETIME NULL,
-  PRIMARY KEY ( `id_customer` )
+  PRIMARY KEY ( `id_customer` ),
+  INDEX `id_customer_referrer` (`id_customer_referrer`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
 
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_level` (
-  `id` INT(12) NOT NULL AUTO_INCREMENT,
+  `id_player_level` INT(12) NOT NULL AUTO_INCREMENT,
   `id_customer` INT(12) NOT NULL,
   `id_level` INT(12) NOT NULL,
   `active` BOOL DEFAULT 1 NOT NULL,
@@ -21,7 +24,9 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_level` (
   `achieved_last` DATETIME NOT NULL,
   `date_add` DATETIME NULL,
   `date_upd` DATETIME NULL,
-  PRIMARY KEY ( `id` )
+  PRIMARY KEY ( `id_player_level` ),
+  INDEX `id_customer` (`id_customer`),
+  INDEX `id_level` (`id_customer`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
 
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history` (
@@ -45,7 +50,8 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history` (
   PRIMARY KEY (`id_history`),
   INDEX id_customer (`id_customer`),
   INDEX id_action (`id_action`),
-  INDEX id_action_order (`id_action_order`)
+  INDEX id_action_order (`id_action_order`),
+  INDEX id_order (`id_action_order`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
 
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_history_lang` (
@@ -102,6 +108,9 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_action_order` (
   `id_action_order` INT(12) NOT NULL AUTO_INCREMENT,
   `id_currency` INT(12) NOT NULL,
   `coins_change` INT(12) NOT NULL,
+  `coins_change_referrer` INT(12) NOT NULL,
+  `coins_change_buyer` INT(12) NOT NULL,
+  `coins_change_max` INT(12) NOT NULL,
   `coins_conversion` FLOAT(12,5) NOT NULL,
   `minimum_amount` INT(12) NOT NULL,
   `active` BOOL DEFAULT 0 NOT NULL,

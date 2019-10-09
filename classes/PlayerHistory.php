@@ -185,6 +185,8 @@ class PlayerHistory extends \ObjectModel {
         $query->where('`id_customer` = ' . (int)$id_customer);
         $query->where('`id_action_order` = ' . (int)$id_action);
 
+        // Todo: probably we need to check for order_states here, especially when using the referral
+
         if ($startDate && $endDate) {
             $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
@@ -198,7 +200,7 @@ class PlayerHistory extends \ObjectModel {
     public static function sumActionPointsByPlayer($id_customer, $condition_type, $startDate = null, $endDate = null) {
 
         $query = new \DbQuery();
-        $query->select('SUM(ph.`change`)');
+        $query->select('SUM(ph.`points`)');
         $query->from(self::$definition['table'], 'ph');
         $query->where('`id_customer` = ' . (int)$id_customer);
 
