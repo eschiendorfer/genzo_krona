@@ -894,8 +894,6 @@ class Genzo_Krona extends Module
                 $history->add();
 
                 Player::updatePlayerLevels($id_customer);
-
-                // PlayerLevel::updatePlayerLevel($player, 'points', $id_action);
             }
         }
         return true;
@@ -921,18 +919,20 @@ class Genzo_Krona extends Module
 
 	public function hookActionOrderStatusUpdate($params) {
 
+	    $newStatus = $params['newOrderStatus'];
 	    $id_order = $params['id_order'];
         $order = new Order($id_order);
 
-        return $this->processOrder($order);
+        return $this->processOrder($order, $newStatus->id);
     }
 
 	public function hookActionOrderEdited($params) {
-        return $this->processOrder($params['order']);
+	    $order = $params['order'];
+        return $this->processOrder($order, $order->current_state);
     }
 
     /* @param $order Order */
-    private function processOrder($order) {
+    public function processOrder($order, $id_order_state) {
 
         // Check if there is already history entry
         $id_history = PlayerHistory::getIdHistoryByIdOrder($order->id);
@@ -940,7 +940,7 @@ class Genzo_Krona extends Module
         $ids_order_state = explode(',', Configuration::get('krona_order_state', null, $order->id_shop_group, $order->id_shop));
 
         // Check if the status is relevant
-        if (in_array($order->current_state, $ids_order_state) || $id_history) {
+        if (in_array($id_order_state, $ids_order_state) || $id_history) {
 
             // Check ActionOrder -> This is basically checking the currency
             $id_action_order = ActionOrder::getIdActionOrderByCurrency($order->id_currency);
@@ -1001,7 +1001,7 @@ class Genzo_Krona extends Module
                 $history = new PlayerHistory($id_history);
                 $ids_lang = Language::getIDs();
 
-                if (in_array($order->current_state, $ids_order_state)) {
+                if (in_array($id_order_state, $ids_order_state)) {
 
                     $history->id_customer = $order->id_customer;
                     $history->id_action_order = $id_action_order;

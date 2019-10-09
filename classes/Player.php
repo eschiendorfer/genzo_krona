@@ -119,7 +119,6 @@ class Player extends \ObjectModel {
         if (\Configuration::get('krona_loyalty_active')) {
             $this->loyalty = (int)$player['loyalty'];
         }
-
     }
 
     public function add($autoDate = true, $nullValues = false) {
@@ -132,7 +131,7 @@ class Player extends \ObjectModel {
             'id_customer' => $this->id_customer,
         );
 
-        Hook::exec('ActionExecuteKronaAction', $hook);
+        \Hook::exec('ActionExecuteKronaAction', $hook);
 
         return $object;
     }
@@ -277,90 +276,11 @@ class Player extends \ObjectModel {
             $orders = array_reverse($orders);
 
             if (!empty($orders)) {
-
+                $krona = new \Genzo_Krona();
                 foreach ($orders as $order) {
-
-                    if (!$order['id_order_state']) { break; }
-                    $orderState = new \OrderState($order['id_order_state']);
-
-                    if ($orderState->paid) {
-
-                        // Check ActionOrder -> This is basically checking the currency
-                        $id_action_order = ActionOrder::getIdActionOrderByCurrency($order['id_currency']);
-                        $actionOrder = new ActionOrder($id_action_order);
-
-                        // Get Total amount of the order
-                        $order_amount = \Configuration::get('krona_order_amount', null, $customer->id_shop_group, $customer->id_shop);
-
-                        if ($order_amount == 'total_wt') {
-                            $total = $order['total_paid']; // Total with taxes
-                        } elseif ($order_amount == 'total') {
-                            $total = $order['total_paid_tax_excl'];
-                        } elseif ($order_amount == 'total_products_wt') {
-                            $total = $order['total_products_wt'];
-                        } elseif ($order_amount == 'total_products') {
-                            $total = $order['total_products'];
-                        } else {
-                            $total = $order['total_paid']; // Standard if nothing is set
-                        }
-
-                        // Check if coupons should be substracted (in total they are already substracted)
-                        if (\Configuration::get('krona_order_coupon', null, $customer->id_shop_group, $customer->id_shop)) {
-                            if ($order_amount == 'total_products_wt') {
-                                $total = $total - $order['total_discounts_tax_incl'];
-                            }
-                            elseif ($order_amount == 'total_products') {
-                                $total = $total - $order['total_discounts_tax_excl'];
-                            }
-                        }
-
-                        // Check the rounding method -> near is standard
-                        $order_rounding = \Configuration::get('krona_order_rounding', null, $customer->id_shop_group, $customer->id_shop);
-                        if ($order_rounding == 'down') {
-                            $coins_change = floor($total * $actionOrder->coins_change);
-                        }
-                        elseif ($order_rounding == 'up') {
-                            $coins_change = ceil($total * $actionOrder->coins_change);
-                        }
-                        else {
-                            $coins_change = round($total * $actionOrder->coins_change);
-                        }
-
-                        $link = new \Link();
-                        $history = new PlayerHistory();
-                        $history->id_customer = $id_customer;
-                        $history->id_action_order = $id_action_order;
-                        $history->url = $link->getPageLink('history');
-                        $history->coins = $coins_change;
-                        $history->date_add = $order['date_add'];
-
-                        // Handling lang fields for Player History
-                        $ids_lang = \Language::getIDs();
-                        $title = array();
-                        $message = array();
-
-                        foreach ($ids_lang as $id_lang) {
-
-                            $title[$id_lang] = \Configuration::get('krona_order_title', $id_lang, $customer->id_shop_group, $customer->id_shop);
-                            $message[$id_lang] = \Configuration::get('krona_order_message', $id_lang, $customer->id_shop_group, $customer->id_shop);
-
-                            // Replace message variables
-                            $search = array('{coins}', '{reference}', '{amount}');
-
-                            $total_currency = \Tools::displayPrice(\Tools::convertPrice($total, $order['id_currency']));
-
-                            $replace = array($coins_change, $order['reference'], $total_currency);
-                            $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
-
-                            $history->message[$id_lang] = pSQL($message[$id_lang]);
-                            $history->title[$id_lang] = pSQL($title[$id_lang]);
-                        }
-
-                        $history->add();
-                    }
-
+                    $orderObj = new \Order($order['id_order']);
+                    $krona->processOrder($orderObj, $orderObj->current_state);
                 }
-                Player::updatePlayerLevels($id_customer);
             }
         }
 

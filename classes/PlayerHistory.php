@@ -65,20 +65,32 @@ class PlayerHistory extends \ObjectModel {
         )
     );
 
-    public function save($nullValues = true, $autoDate = true) {
-        // We need to have the null value in force_display
-        return parent::save($nullValues, $autoDate);
+    public function save($force_loyalty = false, $nullValues = true, $autoDate = true) {
+        return (int) $this->id > 0 ? $this->update($force_loyalty, $nullValues) : $this->add($force_loyalty, $autoDate, $nullValues);
     }
 
-    public function update($nullValues = true) {
+    public function update($force_loyalty = false, $nullValues = true) {
+
+        if (!$force_loyalty) {
+            $this->setLoyalty();
+        }
+
         // We need to have the null value in force_display
         return parent::update($nullValues);
     }
 
     public function add($force_loyalty = false, $autoDate = true, $nullValues = true) {
 
+        if (!$force_loyalty) {
+            $this->setLoyalty();
+        }
+
+        return parent::add($autoDate, $nullValues);
+    }
+
+    private function setLoyalty() {
         // Always remember there is no static loyalty. The customer just collects points and coins. The merchant defines what loyalty is in BO.
-        if (!$force_loyalty && \Configuration::get('krona_loyalty_active')) {
+        if (\Configuration::get('krona_loyalty_active')) {
             $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
 
             if ($total_mode_loyalty == 'points_coins') {
@@ -91,8 +103,6 @@ class PlayerHistory extends \ObjectModel {
                 $this->loyalty = $this->coins;
             }
         }
-
-        return parent::add($autoDate, $nullValues);
     }
 
     // Database
