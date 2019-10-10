@@ -61,6 +61,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
         $ids_lang = Language::getIDs();
 
         $loyalty = Configuration::get('krona_loyalty_active');
+        $referral = Configuration::get('krona_referral_active');
         $gamification = Configuration::get('krona_gamification_active');
 
         // Values
@@ -73,6 +74,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             $order_canceled_title[$id_lang] = Configuration::get('krona_order_canceled_title', $id_lang);
             $order_canceled_message[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang);
             $home_description[$id_lang] = Configuration::get('krona_description', $id_lang);
+            $referral_text_referrer[$id_lang] = Configuration::get('krona_referral_text_referrer', $id_lang);
         }
 
         (Tools::getValue('tab_fake')) ? $tab_fake = Tools::getValue('tab_fake') : $tab_fake = '#general';
@@ -86,10 +88,12 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'order_canceled_title'    => $order_canceled_title,
             'order_canceled_message'  => $order_canceled_message,
             'home_description'        => $home_description,
+            'referral_text_referrer'  => $referral_text_referrer,
             'levels_grid' => Configuration::get('krona_levels_grid'),
             'notification' => Configuration::get('krona_notification'),
             'loyalty_active' => Configuration::get('krona_loyalty_active'),
             'loyalty_total' => Configuration::get('krona_loyalty_total'),
+            'referral_active' => Configuration::get('krona_referral_active'),
             'gamification_active' => Configuration::get('krona_gamification_active'),
             'gamification_total' => Configuration::get('krona_gamification_total'),
             'url' => Configuration::get('krona_url'),
@@ -108,6 +112,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'order_coupon' => Configuration::get('krona_order_coupon'),
             'order_rounding' => Configuration::get('krona_order_rounding'),
             'coupon_prefix' => Configuration::get('krona_coupon_prefix'),
+            'referral_order_nbr' => Configuration::get('krona_referral_order_nbr'),
             'tab_fake' => $tab_fake,
         ];
 
@@ -121,6 +126,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'general' => $this->l('General'),
             'order' => $this->l('Orders'),
             'loyalty' => $this->l('Loyalty'),
+            'referral' => $this->l('Referral'),
             'gamification' => $this->l('Gamification'),
             'coupon' => $this->l('Coupons'),
         );
@@ -131,6 +137,25 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'label' => $this->l('Loyalty Activation'),
             'desc' => $this->l('Do you want to let the customer, convert loyalty points into coupons?'),
             'name' => 'loyalty_active',
+            'values' => array(
+                array(
+                    'id' => 'active_on',
+                    'value' => 1,
+                    'label' => $this->l('Yes')
+                ),
+                array(
+                    'id' => 'active_off',
+                    'value' => 0,
+                    'label' => $this->l('No')
+                )
+            ),
+            'tab' => 'general',
+        );
+        $inputs[] = array(
+            'type' => 'switch',
+            'label' => $this->l('Referral Activation'),
+            'desc' => $this->l('Do you want to use the referral system?'),
+            'name' => 'referral_active',
             'values' => array(
                 array(
                     'id' => 'active_on',
@@ -466,8 +491,30 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             );
         }
 
+        // Referral
+        if ($referral) {
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'referral_order_nbr',
+                'label' => $this->l('Number of orders'),
+                'desc' => $this->l('On how many orders, should the customers benefit from your custom rules? Most merchants only give the benefits only on the first order...'),
+                'suffix' => $this->l('Orders'),
+                'class' => 'input fixed-width-sm',
+                'tab' => 'referral',
+            );
+            $inputs[] = array(
+                'type' => 'text',
+                'lang' => true,
+                'name' => 'referral_text_referrer',
+                'label' => $this->l('Text on order for referrer'),
+                'desc' => $this->l('This will appear on the history of the referrer. You can use: {coins} {buyer_name}'),
+                'tab' => 'referral',
+            );
+        }
+
         // Gamification
         if ($gamification) {
+
             $inputs[] = array(
                 'type' => 'select',
                 'label' => $this->l('Gamification Total Value'),
@@ -484,6 +531,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 ),
                 'tab' => 'gamification',
             );
+
             $inputs[] = array(
                 'type' => 'text',
                 'name' => 'total_name',
@@ -492,6 +540,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 'lang' => true,
                 'tab' => 'gamification',
             );
+
             $inputs[] = array(
                 'type' => 'select',
                 'label' => $this->l('Default Display Name'),
@@ -529,6 +578,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 ),
                 'tab' => 'gamification',
             );
+
             $inputs[] = array(
                 'type' => 'switch',
                 'label' => $this->l('Avatar'),
@@ -548,6 +598,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 ),
                 'tab' => 'gamification',
             );
+
             $inputs[] = array(
                 'type' => 'text',
                 'name' => 'leaderboard',
@@ -557,6 +608,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 'class' => 'input fixed-width-sm',
                 'tab' => 'gamification',
             );
+
             $inputs[] = array(
                 'type' => 'text',
                 'name' => 'leaderboard_page',
@@ -623,7 +675,9 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
     public function postProcess() {
 
         if (Tools::isSubmit('saveSettings')) {
+
             $loyalty = Configuration::get('krona_loyalty_active');
+            $referral = Configuration::get('krona_referral_active');
             $gamification = Configuration::get('krona_gamification_active');
 
             // Settings
@@ -657,13 +711,16 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             Configuration::updateValue('krona_order_canceled_title', $order_canceled_titles);
             Configuration::updateValue('krona_order_canceled_message', $order_canceled_messages);
             Configuration::updateValue('krona_description', $home_descriptions, true);
-            Configuration::updateValue('krona_levels_grid', (bool)Tools::getValue('levels_grid'));
-            Configuration::updateValue('krona_notification', (bool)Tools::getValue('notification'));
 
             // Basic Fields
             Configuration::updateValue('krona_loyalty_active', Tools::getValue('loyalty_active'));
+            Configuration::updateValue('krona_referral_active', Tools::getValue('referral_active'));
             Configuration::updateValue('krona_gamification_active', Tools::getValue('gamification_active'));
 
+            Configuration::updateValue('krona_levels_grid', (bool)Tools::getValue('levels_grid'));
+            Configuration::updateValue('krona_notification', (bool)Tools::getValue('notification'));
+
+            // Loyalty
             if ($loyalty) {
                 Configuration::updateValue('krona_loyalty_total', Tools::getValue('loyalty_total'));
                 Configuration::updateValue('krona_loyalty_product_page', Tools::getValue('loyalty_product_page'));
@@ -677,6 +734,22 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                     self::updateAllExpireLoyalty(Tools::getValue('loyalty_expire_update'), Tools::getValue('loyalty_expire_days'));
                 }
             }
+
+            // Referral
+            if ($referral) {
+
+                // Basic Fields
+                Configuration::updateValue('krona_referral_order_nbr', Tools::getValue('referral_order_nbr'));
+
+                // Language Fields
+                foreach ($ids_lang as $id_lang) {
+                    $referral_text_referrer[$id_lang] = Tools::getValue('referral_text_referrer_'.$id_lang);
+                }
+
+                Configuration::updateValue('krona_referral_text_referrer', $referral_text_referrer);
+            }
+
+            // Gamification
             if ($gamification) {
                 Configuration::updateValue('krona_gamification_total', Tools::getValue('gamification_total'));
                 Configuration::updateValue('krona_display_name', (int)Tools::getValue('display_name'));
@@ -685,6 +758,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 Configuration::updateValue('krona_leaderboard', (int)Tools::getValue('leaderboard'));
                 Configuration::updateValue('krona_leaderboard_page', (int)Tools::getValue('leaderboard_page'));
             }
+
             Configuration::updateValue('krona_url', Tools::getValue('url'));
             Configuration::updateValue('krona_customer_active', (bool)Tools::getValue('customer_active'));
             Configuration::updateValue('krona_order_amount', Tools::getValue('order_amount'));

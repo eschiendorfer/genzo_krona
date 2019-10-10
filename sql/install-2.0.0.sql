@@ -36,5 +36,5 @@ ALTER TABLE `PREFIX_genzo_krona_player`
 
 ALTER TABLE `PREFIX_genzo_krona_action_order`
     ADD `coins_change_max` INT(12) NOT NULL AFTER `coins_change`,
-    ADD `coins_change_buyer` INT(12) NOT NULL AFTER `coins_change`,
-    ADD `coins_change_referrer` INT(12) NOT NULL AFTER `coins_change`;
+    ADD `coins_change_buyer` FLOAT(12,2) NOT NULL AFTER `coins_change`,
+    ADD `coins_change_referrer` FLOAT(12,2) NOT NULL AFTER `coins_change`;

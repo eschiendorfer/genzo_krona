@@ -15,7 +15,7 @@ require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 class Player extends \ObjectModel {
 
     public $id_customer;
-    public $id_customer_referer; // Who brought the customer to our store
+    public $id_customer_referrer; // Who brought the customer to our store
     public $referral_code;
     public $avatar;
     public $avatar_full;
@@ -73,12 +73,11 @@ class Player extends \ObjectModel {
 
             if (\Configuration::get('krona_gamification_active')) {
 
-                if (\Configuration::get('krona_pseudonym') && $this->pseudonym) {
-                    $this->display_name = $this->pseudonym;
-                }
-                else {
-                    $this->display_name = self::getDisplayName($this->id_customer);
-                }
+                $names = self::getDisplayNames($this->id_customer);
+
+                $this->firstname = $names['firstname'];
+                $this->lastname = $names['lastname'];
+                $this->display_name = (\Configuration::get('krona_pseudonym') && $this->pseudonym) ? $this->pseudonym : $names['display_name'];
 
                 if (\Configuration::get('krona_avatar')) {
                     $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
@@ -213,7 +212,7 @@ class Player extends \ObjectModel {
                 $player['display_name'] = $player['pseudonym'];
             }
             else {
-                $player['display_name'] = self::getDisplayName($player['id_customer']);
+                $player['display_name'] = self::getDisplayNames($player['id_customer'])['display_name'];
             };
         }
 
@@ -239,6 +238,14 @@ class Player extends \ObjectModel {
             }
         }
 
+        return \Db::getInstance()->getValue($query);
+    }
+
+    public static function getIdByReferralCode($referral_code) {
+        $query = new \DbQuery();
+        $query->select('id_customer');
+        $query->from(self::$definition['table']);
+        $query->where("referral_code = '{$referral_code}'");
         return \Db::getInstance()->getValue($query);
     }
 
@@ -521,32 +528,38 @@ class Player extends \ObjectModel {
         }
     }
 
-    public static function getDisplayName($id_customer, $player = null) {
+    public static function getDisplayNames($id_customer) {
 
         $customer = new \Customer($id_customer);
 
         $display_name =  \Configuration::get('krona_display_name', null, $customer->id_shop_group, $customer->id_shop);
 
         if ($display_name == 1) {
-            $pseudonym = $customer->firstname . ' ' . $customer->lastname; // John Doe
+            $name = $customer->firstname . ' ' . $customer->lastname; // John Doe
         }
         elseif ($display_name == 2) {
-            $pseudonym = $customer->firstname . ' ' . self::shortenWord($customer->lastname); // John D.
+            $name = $customer->firstname . ' ' . self::shortenWord($customer->lastname); // John D.
         }
         elseif ($display_name == 3) {
-            $pseudonym = self::shortenWord($customer->firstname) . ' ' . $customer->lastname; // J. Doe
+            $name = self::shortenWord($customer->firstname) . ' ' . $customer->lastname; // J. Doe
         }
         elseif ($display_name == 4) {
-            $pseudonym = self::shortenWord($customer->firstname . ' ' . $customer->lastname); // J. D.
+            $name = self::shortenWord($customer->firstname . ' ' . $customer->lastname); // J. D.
         }
         elseif ($display_name == 5) {
-            $pseudonym = $customer->firstname; // John
+            $name = $customer->firstname; // John
         }
         else {
-            $pseudonym = 'No name';
+            $name = 'No name';
         }
 
-        return $pseudonym;
+        $names = array(
+            'display_name' => $name,
+            'firstname' => $customer->firstname,
+            'lastname'  => $customer->lastname,
+        );
+
+        return $names;
 
     }
 
@@ -607,6 +620,22 @@ class Player extends \ObjectModel {
         }
 
         return $referral_code;
+    }
+
+    public static function getNbrOfOrders($id_customer, $only_valid = true) {
+
+        $query = new \DbQuery();
+        $query->select('COUNT(*)');
+        $query->from('orders');
+        $query->where('id_customer = ' . $id_customer);
+
+        if ($only_valid) {
+            $context = \Context::getContext();
+            $in_states = \Configuration::get('krona_order_state', null, $context->shop->id_shop_group, $context->shop->id_shop);
+            $query->where("current_state IN ({$in_states})");
+        }
+
+        return \Db::getInstance()->getValue($query);
     }
 
     // CronJob

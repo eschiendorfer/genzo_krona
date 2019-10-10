@@ -34,8 +34,8 @@ class ActionOrder extends \ObjectModel {
         'fields' => array(
             'id_currency'           => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
             'coins_change'          => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'coins_change_referrer' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'coins_change_buyer'    => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'coins_change_referrer' => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
+            'coins_change_buyer'    => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
             'coins_change_max'      => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'coins_conversion'      => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
             'minimum_amount'        => array('type' => self::TYPE_INT, 'validate' => 'isInt'),

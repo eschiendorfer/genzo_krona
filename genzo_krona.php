@@ -567,10 +567,8 @@ class Genzo_Krona extends Module
 
             return $player;
         }
-        else {
-	        return false;
-        }
 
+	    return false;
     }
 
     public function hookDisplayKronaActionPoints($params) {
@@ -901,20 +899,25 @@ class Genzo_Krona extends Module
 
     public function hookActionCustomerAccountAdd($params) {
 
-	    $referred_by = $params['_POST']['referral_code'];
+	    // Check if the customer has any referrer
+	    $id_customer_referrer = 0;
 
-	    if ($referred_by) {
-	        // Todo: finish this
+	    if ($referred_by = pSQL($params['_POST']['referral_code'])) {
+	        $id_customer_referrer = Player::getIdByReferralCode($referred_by);
         }
 
+	    // Add the player
         $customer = $params['newCustomer'];
 
         $player = new Player();
         $player->id_customer = $customer->id;
+        $player->id_customer_referrer = $id_customer_referrer;
+        $player->referral_code = Player::generateReferralCode();
         $player->avatar = 'no-avatar.jpg';
         $player->active = (int)\Configuration::get('krona_customer_active', null, $customer->id_shop_group, $customer->id_shop);
-        $player->referral_code = Player::generateReferralCode();
+
         $player->add();
+
     }
 
 	public function hookActionOrderStatusUpdate($params) {
@@ -935,7 +938,7 @@ class Genzo_Krona extends Module
     public function processOrder($order, $id_order_state) {
 
         // Check if there is already history entry
-        $id_history = PlayerHistory::getIdHistoryByIdOrder($order->id);
+        $id_history = PlayerHistory::getIdHistoryByIdOrder($order->id_customer, $order->id);
 
         $ids_order_state = explode(',', Configuration::get('krona_order_state', null, $order->id_shop_group, $order->id_shop));
 
@@ -985,45 +988,78 @@ class Genzo_Krona extends Module
                     return false;
                 }
 
-                // Check the rounding method -> nearest is standard
-                $order_rounding = Configuration::get('krona_order_rounding', null, $order->id_shop_group, $order->id_shop);
+                $historyBuyer = new PlayerHistory($id_history);
 
-                if ($order_rounding == 'down') {
-                    $coins_change = floor($total * $actionOrder->coins_change);
-                }
-                elseif ($order_rounding == 'up') {
-                    $coins_change = ceil($total * $actionOrder->coins_change);
-                }
-                else {
-                    $coins_change = round($total * $actionOrder->coins_change);
-                }
-
-                $history = new PlayerHistory($id_history);
                 $ids_lang = Language::getIDs();
 
                 if (in_array($id_order_state, $ids_order_state)) {
 
-                    $history->id_customer = $order->id_customer;
-                    $history->id_action_order = $id_action_order;
-                    $history->id_order = $order->id;
-                    $history->url = $this->context->link->getPageLink('history');
-                    $history->coins = $coins_change;
+                    // Check if referral is relevant
+                    $id_history_referrer = PlayerHistory::getIdHistoryByIdOrder($player->id_customer_referrer, $order->id);
+                    $historyReferrer = new PlayerHistory($id_history_referrer);
 
+                    $coins_change = $actionOrder->coins_change;
+                    $coins_change_referrer = 0;
+
+                    if (
+                        $player->id_customer_referrer &&
+                        Configuartion::get('krona_referral_order_nbr') &&
+                        (Configuration::get('krona_referral_order_nbr', null, $order->id_shop_group, $order->id_shop) > Player::getNbrOfOrders($order->id_customer, true))
+                    ) {
+                        $coins_change = $actionOrder->coins_change_buyer;
+                        $coins_change_referrer = $actionOrder->coins_change_referrer;
+                    }
+
+                    // Check the rounding method -> nearest is standard
+                    $order_rounding = Configuration::get('krona_order_rounding', null, $order->id_shop_group, $order->id_shop);
+
+                    if ($order_rounding == 'down') {
+                        $coins = floor($total * $coins_change);
+                        $coins_referrer = floor($total * $coins_change_referrer);
+                    }
+                    elseif ($order_rounding == 'up') {
+                        $coins = ceil($total * $coins_change);
+                        $coins_referrer = ceil($total * $coins_change_referrer);
+                    }
+                    else {
+                        $coins = round($total * $coins_change);
+                        $coins_referrer = round($total * $coins_change_referrer);
+                    }
+
+                    // Check for maximum
+                    $coins = min(round($coins), $actionOrder->coins_change_max);
+                    $coins_referrer = min(round($coins_referrer), $actionOrder->coins_change_max);
+
+                    // Handle the buyer
+                    $historyBuyer->id_customer = $order->id_customer;
+                    $historyBuyer->id_action_order = $id_action_order;
+                    $historyBuyer->id_order = $order->id;
+                    $historyBuyer->url = $this->context->link->getPageLink('history');
+                    $historyBuyer->coins = $coins;
+
+                    // Expiring
                     $expire_method = Configuration::get('krona_loyalty_expire_date', null, $order->id_shop_group, $order->id_shop);
 
                     if ($expire_method!='none') {
+
                         $expire_days = Configuration::get('krona_loyalty_expire_days', null, $order->id_shop_group, $order->id_shop);
                         $expire_date = date("Y-m-d H:i:s", strtotime("+{$expire_days} days"));
-                        $history->loyalty_expire_date = $expire_date;
 
-                        // Updating other old expiring dates of customer, if refreshing method
-                        if ($expire_method == 'refreshing') {
-                            DB::getInstance()->update('genzo_krona_player_history', ['loyalty_expire_date' => $expire_date], 'loyalty-loyalty_used-loyalty_expired >0 AND id_customer='.$order->id_customer);
+                        // As the merchants don't want to update the expire date, after a order state update
+                        if (!$id_history) {
+
+                            $historyBuyer->loyalty_expire_date = $expire_date;
+                            $historyReferrer->loyalty_expire_date = $expire_date;
+
+                            // Updating other old expiring dates of customer, if refreshing method
+                            if ($expire_method == 'refreshing') {
+                                $sql_customer = ' (id_customer='.$order->id_customer.' OR id_customer='.$player->id_customer_referrer.')';
+                                DB::getInstance()->update('genzo_krona_player_history', ['loyalty_expire_date' => $expire_date], 'loyalty-loyalty_used-loyalty_expired > 0 AND '.$sql_customer);
+                            }
                         }
                     }
 
                     // Handling lang fields for Player History
-
                     $title = array();
                     $message = array();
 
@@ -1037,28 +1073,57 @@ class Genzo_Krona extends Module
 
                         $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
 
-                        $replace = array($coins_change, $order->reference, $total_currency);
+                        $replace = array($coins, $order->reference, $total_currency);
                         $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
-                        $history->message[$id_lang] = pSQL($message[$id_lang]);
-                        $history->title[$id_lang] = pSQL($title[$id_lang]);
+                        $historyBuyer->message[$id_lang] = pSQL($message[$id_lang]);
+                        $historyBuyer->title[$id_lang] = pSQL($title[$id_lang]);
                     }
 
-                    $history->save();
-
+                    $historyBuyer->save();
                     Player::updatePlayerLevels($order->id_customer);
+
+                    // Handle the referrer
+                    if ($coins_referrer) {
+
+                        $historyReferrer->id_customer = $player->id_customer_referrer;
+                        $historyReferrer->id_action_order = $id_action_order;
+                        $historyReferrer->id_order = $order->id;
+                        $historyReferrer->coins = $coins_referrer;
+
+                        // Handling lang fields for Player History
+                        $title = array();
+                        $message = array();
+
+                        foreach ($ids_lang as $id_lang) {
+
+                            $title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $order->id_shop_group, $order->id_shop);
+                            $message[$id_lang] = Configuration::get('krona_referral_text_referrer', $id_lang, $order->id_shop_group, $order->id_shop);
+
+                            // Replace message variables
+                            $search = array('{coins}', '{buyer_name}');
+                            $replace = array($coins, $player->firstname.' '.$player->lastname[1].'.');
+
+                            $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
+
+                            $historyReferrer->message[$id_lang] = pSQL($message[$id_lang]);
+                            $historyReferrer->title[$id_lang] = pSQL($title[$id_lang]);
+                        }
+
+                        $historyReferrer->save();
+                    }
                 }
                 else {
                     // When an order is cancelled or get's a status that doesn't deserve points
-                    $this->convertLoyaltyPointsToCoupon($order->id_customer, $history->loyalty, true);
-                    $history->loyalty = 0;
-                    $history->coins = 0;
+                    $this->convertLoyaltyPointsToCoupon($order->id_customer, $historyBuyer->loyalty, true);
+                    $historyBuyer->loyalty = 0;
+                    $historyBuyer->coins = 0;
 
                     foreach ($ids_lang as $id_lang) {
-                        $history->comment[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $order->id_shop_group, $order->id_shop);
+                        $historyBuyer->comment[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $order->id_shop_group, $order->id_shop);
                     }
 
-                    $history->update();
+                    $historyBuyer->update();
 
                     // Theoretically we need to check here, if a customer loses a level after the cancel
                     // But since this is too complex, the merchant should do this manually
@@ -1290,5 +1355,7 @@ class Genzo_Krona extends Module
         }
 
     }
+
+    // Todo: fix the avatar -> move it to upload folder
 
 }

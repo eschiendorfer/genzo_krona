@@ -122,20 +122,14 @@ class PlayerLevel extends \ObjectModel {
         $id_lang = \Context::getContext()->language->id;
         $id_shop = \Context::getContext()->shop->id;
 
-        if ($last_level = self::getLastPlayerLevel($id_customer)) {
-            $position = $last_level->position+1;
-        }
-        else {
-            $position = 0;
-        }
-
         $query = new \DbQuery();
         $query->select('l.id_level');
         $query->from('genzo_krona_level', 'l');
-        $query->innerJoin('genzo_krona_level_shop', 's', 'l.id_level=s.id_level');
-        $query->where('id_shop='.$id_shop);
-        $query->where('position = ' . $position);
-        $query->where('active = 1');
+        $query->innerJoin('genzo_krona_level_shop', 's', 'l.id_level=s.id_level AND s.id_shop='.$id_shop);
+        $query->leftJoin('genzo_krona_player_level', 'pl', 'pl.id_level=l.id_level AND pl.id_customer='.$id_customer);
+        $query->orderBy('position ASC');
+        $query->where('l.active = 1 AND (pl.id_player_level IS NULL OR pl.active=0)');
+
         $id_next_level = \Db::getInstance()->getValue($query);
 
         $level = ($id_next_level) ? new Level($id_next_level, $id_lang) : false;
@@ -174,20 +168,21 @@ class PlayerLevel extends \ObjectModel {
     public static function executeCronSetbackLevels() {
 
         $query = new \DbQuery();
-        $query->select('p.id, p.id_customer, l.id_reward');
+        $query->select('p.id_player_level, p.id_customer, l.id_reward');
         $query->from(self::$definition['table'], 'p');
         $query->innerJoin('genzo_krona_level', 'l', 'l.`id_level` = p.`id_level`');
         $query->where('p.`active` = 1');
         $query->where('p.`active_until` != ""');
         $query->where('p.`active_until` < CURDATE()');
         $query->where("l.`reward_type` = 'group'");
-        $ids_level = \Db::getInstance()->ExecuteS($query);
 
-        foreach ($ids_level as $id_level) {
+        $levels = \Db::getInstance()->ExecuteS($query);
 
-            $id = $id_level['id'];
-            $id_customer = $id_level['id_customer'];
-            $id_group = $id_level['id_reward'];
+        foreach ($levels as $level) {
+
+            $id_player_level = $level['id_player_level'];
+            $id_customer = $level['id_customer'];
+            $id_group = $level['id_reward'];
 
             // First we undo the reward
 
@@ -205,7 +200,7 @@ class PlayerLevel extends \ObjectModel {
             }
 
             // Second we deactivate the Player Level
-            $playerLevel = new PlayerLevel($id);
+            $playerLevel = new PlayerLevel($id_player_level);
             $playerLevel->active = 0;
             $playerLevel->update();
         }

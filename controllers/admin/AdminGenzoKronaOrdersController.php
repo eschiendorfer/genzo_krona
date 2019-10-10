@@ -137,6 +137,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
             'type' => 'hidden',
             'name' => 'id_action_order'
         );
+
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Active'),
@@ -154,6 +155,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
                 )
             ),
         );
+
         $inputs[] = array(
             'type'  => 'text',
             'name'  => 'coins_change',
@@ -162,6 +164,27 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
             'class'  => 'input fixed-width-sm',
             'suffix' => $this->l('Coins').'/'.$this->object->currency_iso,
         );
+
+        if (Configuration::get('krona_referral_active')) {
+            $inputs[] = array(
+                'type'  => 'text',
+                'name'  => 'coins_change_buyer',
+                'label' => $this->l('Referral coins reward buyer'),
+                'desc'  => sprintf($this->l('Example: For every %s spent, the buyer will get X coins. This always needs to be higher than basic coins reward above.'),$this->object->currency),
+                'class'  => 'input fixed-width-sm',
+                'suffix' => $this->l('Coins').'/'.$this->object->currency_iso,
+            );
+
+            $inputs[] = array(
+                'type'  => 'text',
+                'name'  => 'coins_change_referrer',
+                'label' => $this->l('Referral coins reward referrer'),
+                'desc'  => sprintf($this->l('Example: For every %s spent, the referrer will get X coins.'),$this->object->currency),
+                'class'  => 'input fixed-width-sm',
+                'suffix' => $this->l('Coins').'/'.$this->object->currency_iso,
+            );
+        }
+
         $inputs[] = array(
             'type'  => 'text',
             'name'  => 'minimum_amount',
@@ -170,6 +193,7 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
             'class'  => 'input fixed-width-sm',
             'suffix' => $this->object->currency_iso,
         );
+
         $inputs[] = array(
             'type'  => 'text',
             'name'  => 'coins_conversion',

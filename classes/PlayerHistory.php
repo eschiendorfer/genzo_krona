@@ -106,10 +106,11 @@ class PlayerHistory extends \ObjectModel {
     }
 
     // Database
-    public static function getIdHistoryByIdOrder($id_order) {
+    public static function getIdHistoryByIdOrder($id_customer, $id_order) {
         $query = new \DbQuery();
         $query->select('id_history');
         $query->from(self::$definition['table']);
+        $query->where('id_customer = ' . $id_customer);
         $query->where('id_order = ' . $id_order);
         return (int)\Db::getInstance()->getValue($query);
     }
@@ -210,7 +211,7 @@ class PlayerHistory extends \ObjectModel {
     public static function sumActionPointsByPlayer($id_customer, $condition_type, $startDate = null, $endDate = null) {
 
         $query = new \DbQuery();
-        $query->select('SUM(ph.`points`)');
+        $query->select('SUM(ph.`points`+ph.`coins`)');
         $query->from(self::$definition['table'], 'ph');
         $query->where('`id_customer` = ' . (int)$id_customer);
 
