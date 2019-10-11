@@ -361,7 +361,7 @@ class Player extends \ObjectModel {
                     $playerLevel->id_customer = $id_customer;
                     $playerLevel->id_level = $result['id_level'];
                     $playerLevel->active = 1;
-                    $playerLevel->active_until = ($result['duration'] > 0) ? date('Y-m-d 23:59:59', strtotime("+{$level['duration']} days")) : '0000-00-00 00:00:00'; // If duration is not set -> unlimited
+                    $playerLevel->active_until = ($result['duration'] > 0) ? date('Y-m-d 23:59:59', strtotime("+({$level['duration']}-1) days")) : '0000-00-00 00:00:00'; // If duration is not set -> unlimited
                     $playerLevel->achieved++;
                     $playerLevel->achieved_last = date("Y-m-d H:i:s", strtotime("+1 second")); // This is securing, that the last done action, wont be taken again into account
                     $playerLevel->save();

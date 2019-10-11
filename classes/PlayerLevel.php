@@ -168,13 +168,12 @@ class PlayerLevel extends \ObjectModel {
     public static function executeCronSetbackLevels() {
 
         $query = new \DbQuery();
-        $query->select('p.id_player_level, p.id_customer, l.id_reward');
+        $query->select('p.id_player_level, p.id_customer, l.reward_type, l.id_reward');
         $query->from(self::$definition['table'], 'p');
         $query->innerJoin('genzo_krona_level', 'l', 'l.`id_level` = p.`id_level`');
         $query->where('p.`active` = 1');
         $query->where('p.`active_until` != ""');
         $query->where('p.`active_until` < CURDATE()');
-        $query->where("l.`reward_type` = 'group'");
 
         $levels = \Db::getInstance()->ExecuteS($query);
 
@@ -184,10 +183,8 @@ class PlayerLevel extends \ObjectModel {
             $id_customer = $level['id_customer'];
             $id_group = $level['id_reward'];
 
-            // First we undo the reward
-
-            // Check if the customer gets this group by any other level
-            if (!self::checkIfStillGroup($id_customer, $id_group)) {
+            // Handle levels with group rewards -> check if the customer gets this group by any other level
+            if ($level['reward_type']=='group' && !self::checkIfStillGroup($id_customer, $id_group)) {
 
                 \Db::getInstance()->delete('customer_group', "id_customer={$id_customer} AND id_group={$id_group}");
 

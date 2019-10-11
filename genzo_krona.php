@@ -990,25 +990,26 @@ class Genzo_Krona extends Module
 
                 $historyBuyer = new PlayerHistory($id_history);
 
+                $id_history_referrer = PlayerHistory::getIdHistoryByIdOrder($player->id_customer_referrer, $order->id);
+                $historyReferrer = new PlayerHistory($id_history_referrer);
+
                 $ids_lang = Language::getIDs();
 
                 if (in_array($id_order_state, $ids_order_state)) {
 
                     // Check if referral is relevant
-                    $id_history_referrer = PlayerHistory::getIdHistoryByIdOrder($player->id_customer_referrer, $order->id);
-                    $historyReferrer = new PlayerHistory($id_history_referrer);
-
                     $coins_change = $actionOrder->coins_change;
                     $coins_change_referrer = 0;
 
                     if (
                         $player->id_customer_referrer &&
-                        Configuartion::get('krona_referral_order_nbr') &&
-                        (Configuration::get('krona_referral_order_nbr', null, $order->id_shop_group, $order->id_shop) > Player::getNbrOfOrders($order->id_customer, true))
+                        Configuration::get('krona_referral_order_nbr') &&
+                        (Configuration::get('krona_referral_order_nbr', null, $order->id_shop_group, $order->id_shop) >= Player::getNbrOfOrders($order->id_customer, true))
                     ) {
                         $coins_change = $actionOrder->coins_change_buyer;
                         $coins_change_referrer = $actionOrder->coins_change_referrer;
                     }
+
 
                     // Check the rounding method -> nearest is standard
                     $order_rounding = Configuration::get('krona_order_rounding', null, $order->id_shop_group, $order->id_shop);
@@ -1027,8 +1028,13 @@ class Genzo_Krona extends Module
                     }
 
                     // Check for maximum
-                    $coins = min(round($coins), $actionOrder->coins_change_max);
-                    $coins_referrer = min(round($coins_referrer), $actionOrder->coins_change_max);
+                    if ($actionOrder->coins_change_max) {
+                        $coins = min($coins, $actionOrder->coins_change_max);
+                        $coins_referrer = min($coins_referrer, $actionOrder->coins_change_max);
+                    }
+
+                    $coins = round($coins);
+                    $coins_referrer =round($coins_referrer);
 
                     // Handle the buyer
                     $historyBuyer->id_customer = $order->id_customer;
@@ -1102,7 +1108,7 @@ class Genzo_Krona extends Module
 
                             // Replace message variables
                             $search = array('{coins}', '{buyer_name}');
-                            $replace = array($coins, $player->firstname.' '.$player->lastname[1].'.');
+                            $replace = array($coins_referrer, $player->firstname.' '.$player->lastname[0].'.');
 
                             $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
@@ -1114,8 +1120,8 @@ class Genzo_Krona extends Module
                     }
                 }
                 else {
+
                     // When an order is cancelled or get's a status that doesn't deserve points
-                    $this->convertLoyaltyPointsToCoupon($order->id_customer, $historyBuyer->loyalty, true);
                     $historyBuyer->loyalty = 0;
                     $historyBuyer->coins = 0;
 
@@ -1124,6 +1130,20 @@ class Genzo_Krona extends Module
                     }
 
                     $historyBuyer->update();
+
+                    // Check for referrer
+                    if ($id_history_referrer) {
+
+                        $historyReferrer->loyalty = 0;
+                        $historyReferrer->coins = 0;
+
+                        foreach ($ids_lang as $id_lang) {
+                            $historyReferrer->comment[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $order->id_shop_group, $order->id_shop);
+                        }
+
+                        $historyReferrer->update();
+
+                    }
 
                     // Theoretically we need to check here, if a customer loses a level after the cancel
                     // But since this is too complex, the merchant should do this manually
