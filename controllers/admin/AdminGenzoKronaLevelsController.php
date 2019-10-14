@@ -18,6 +18,9 @@ use KronaModule\Coupon;
 
 class AdminGenzoKronaLevelsController extends ModuleAdminController {
 
+    /* @var $module Genzo_Krona */
+    public $module;
+
     /* @var Level object */
     protected $object;
 
@@ -334,7 +337,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController {
             $inputs[] = array(
                 'type' => 'html',
                 'name' => 'html_icon',
-                'html_content' => "<img src='/modules/genzo_krona/views/img/icon/{$this->object->icon}_middle.png' width='50' height='50' />",
+                'html_content' => "<img src='/upload/genzo_krona/img/icon/{$this->object->icon}_middle.png' width='50' height='50' />",
             );
         }
         $inputs[] = array(
@@ -443,14 +446,13 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController {
 
             if($_FILES['icon']['tmp_name']) {
                 $icon_old = $level->icon; // We need to delete the old image, since we don't override it
-                $krona = new Genzo_Krona();
-                $icon = $krona->uploadIcon();
+                $icon = $this->module->uploadIcon();
                 $level->icon = ($icon) ? $icon : 'no-icon';
 
                 if (isset($icon_old) && $icon_old != 'no-icon' && $icon_old != $level->icon) {
-                    unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_small.png');
-                    unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_middle.png');
-                    unlink(_PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $icon_old.'_big.png');
+                    unlink(_PS_UPLOAD_DIR_ . 'genzo_krona/img/icon/' . $icon_old.'_small.png');
+                    unlink(_PS_UPLOAD_DIR_ . 'genzo_krona/img/icon/' . $icon_old.'_middle.png');
+                    unlink(_PS_UPLOAD_DIR_ . 'genzo_krona/img/icon/' . $icon_old.'_big.png');
                 }
             }
 

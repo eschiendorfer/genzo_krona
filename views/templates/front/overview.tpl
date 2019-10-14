@@ -7,16 +7,28 @@
 
 {include file="./nav.tpl"}
 <div id="overview">
-    {if $loyalty}
+    {if $loyalty || $referral}
         <div id="loyalty" class="krona-box" {if !$gamification}style="width: 100%"{/if}>
             <ul class="overview" >
-                <li>
-                    <b>{l s='Loyalty Points' mod='genzo_krona'}</b><br>
-                    {$player.loyalty}
-                </li>
+                {if $loyalty}
+                    <li>
+                        <b>{$loyalty_name}</b><br>
+                        {$player.loyalty}
+                    </li>                    <li>
+                        <b>{l s='Expiring' mod='genzo_krona'} {$loyalty_name}</b><br>
+                        {$player.expire_points} {l s='on' mod='genzo_krona'} {$player.expire_date|date_format:"%d. %b %Y"}
+                    </li>
+                {/if}
+                {if $referral}
+                    <li>
+                        <b>{l s='Referral Code' mod='genzo_krona'}</b><br>
+                        {$player.referral_code}
+                    </li>
+                {/if}
             </ul>
         </div>
     {/if}
+
     {if $gamification}
         <div id="gamification" class="krona-box">
             <ul class="overview">

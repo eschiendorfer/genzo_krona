@@ -56,12 +56,14 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayKronaActionPoints') OR
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
+            !$this->registerHook('actionObjectCustomerDeleteAfter') OR
             !$this->registerHook('actionOrderStatusUpdate') OR
             !$this->registerHook('actionOrderEdited') OR
             !$this->registerHook('actionRegisterGenzoCrmEmail') OR
 			!$this->registerHook('ModuleRoutes') OR
             !$this->registerInbuiltActions() OR
             !$this->registerExternalActions() OR
+            !$this->moveImageFiles() OR
             !$this->installAdminMenus()
         )
 			return false;
@@ -176,8 +178,14 @@ class Genzo_Krona extends Module
 
         foreach ($ids_lang as $id_lang) {
             $game_names[$id_lang] = 'Loyalty Reward Program'; // Just as an example
-            $total_names[$id_lang] = 'Lifetime Points'; // Just as an example
+            $total_names[$id_lang] = 'Points'; // Just as an example
             $loyalty_names[$id_lang] = 'Loyalty Points'; // Just as an example
+
+            $order_title[$id_lang] = 'New Order'; // Just as an example
+            $order_message[$id_lang] = 'Your new order (#{reference}) for {amount} brought you {coins} loyalty points. Note, that they will expire on {loyalty_expire_date}.'; // Just as an example
+            $order_canceled_message[$id_lang] = 'Unfortunately your order (#{reference}) is no more valid, therefore we had to remove you {coins} loyalty points.'; // Just as an example
+            $referral_title_referrer[$id_lang] = 'New referral order'; // Just as an example
+            $referral_text_referrer[$id_lang] = 'Your friend {buyer_name} placed an order, which brought you {coins} loyalty points. Note, that they will expire on {loyalty_expire_date}.'; // Just as an example
         }
 
         foreach (Shop::getShops() as $shop) {
@@ -195,6 +203,21 @@ class Genzo_Krona extends Module
             if (!Configuration::get('krona_loyalty_name', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_loyalty_name', $loyalty_names, false, $id_shop_group, $id_shop);
             }
+            if (!Configuration::get('krona_order_title', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_order_title', $order_title, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_order_message', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_order_message', $order_message, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_order_canceled_message', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_order_canceled_message', $order_canceled_message, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_referral_title_referrer', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_referral_title_referrer', $referral_title_referrer, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_referral_text_referrer', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_referral_text_referrer', $referral_text_referrer, false, $id_shop_group, $id_shop);
+            }
 
             // Basic Fields
             if (!Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop)) {
@@ -208,6 +231,9 @@ class Genzo_Krona extends Module
             }
             if (!Configuration::get('krona_gamification_total', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_gamification_total', 'points_coins', false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_referral_active', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_referral_active', 1, false, $id_shop_group, $id_shop);
             }
             if (!Configuration::get('krona_url', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_url', 'krona', false, $id_shop_group, $id_shop);
@@ -226,6 +252,15 @@ class Genzo_Krona extends Module
             }
             if (!Configuration::get('krona_loyalty_cart_page', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_loyalty_cart_page', 1, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_loyalty_expire_method', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_expire_method', 'none', false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_loyalty_expire_days', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_expire_days', 365, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_referral_order_nbr', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_referral_order_nbr', 1, false, $id_shop_group, $id_shop);
             }
             if (!Configuration::get('krona_avatar', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_avatar', 1, false, $id_shop_group, $id_shop);
@@ -440,13 +475,19 @@ class Genzo_Krona extends Module
             (@is_array(getimagesize($file_tmp))) ? $image = true : $image = false;
 
             if ($image) {
-                $file_path = _PS_MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $id_customer . '.jpg'; // We need absolute path
+                $file_path = _PS_UPLOAD_DIR_. 'genzo_krona/img/avatar/'; // We need absolute path
 
-                move_uploaded_file($file_tmp, $file_path);
+                if (!file_exists($file_path)) {
+                    mkdir($file_path, 0777, true);
+                }
+
+                $filename = $id_customer . '.jpg';
+
+                move_uploaded_file($file_tmp, $file_path.$filename);
 
                 $avatar = new Zebra_Image();
-                $avatar->source_path = $file_path;
-                $avatar->target_path = $file_path;
+                $avatar->source_path = $file_path.$filename;
+                $avatar->target_path = $file_path.$filename;
                 $avatar->jpeg_quality = 95;
                 $avatar->resize(100, 100, ZEBRA_IMAGE_CROP_CENTER);
             }
@@ -493,29 +534,33 @@ class Genzo_Krona extends Module
             (@is_array(getimagesize($file_tmp))) ? $image = true : $image = false;
 
             if ($image) {
-                $file_path = _PS_MODULE_DIR_ . 'genzo_krona/views/img/icon/' . $file_name; // We need absolute path
+                $file_path = _PS_UPLOAD_DIR_ . 'genzo_krona/img/icon/'; // We need absolute path
 
-                move_uploaded_file($file_tmp, $file_path.$file_extension);
+                if (!file_exists($file_path)) {
+                    mkdir($file_path, 0777, true);
+                }
+
+                move_uploaded_file($file_tmp, $file_path.$file_name.$file_extension);
 
                 $avatar_small = new Zebra_Image();
-                $avatar_small->source_path = $file_path.$file_extension;
-                $avatar_small->target_path = $file_path.'_small.png';
+                $avatar_small->source_path = $file_path.$file_name.$file_extension;
+                $avatar_small->target_path = $file_path.$file_name.'_small.png';
                 $avatar_small->png_compression = 1;
                 $avatar_small->resize(30, 30, ZEBRA_IMAGE_BOXED, -1);
 
                 $avatar_middle = new Zebra_Image();
-                $avatar_middle->source_path = $file_path.$file_extension;
-                $avatar_middle->target_path = $file_path.'_middle.png';
+                $avatar_middle->source_path = $file_path.$file_name.$file_extension;
+                $avatar_middle->target_path = $file_path.$file_name.'_middle.png';
                 $avatar_middle->png_compression = 1;
                 $avatar_middle->resize(80, 80, ZEBRA_IMAGE_BOXED, -1);
 
                 $avatar_big = new Zebra_Image();
-                $avatar_big->source_path = $file_path.$file_extension;
-                $avatar_big->target_path = $file_path.'_big.png';
+                $avatar_big->source_path = $file_path.$file_name.$file_extension;
+                $avatar_big->target_path = $file_path.$file_name.'_big.png';
                 $avatar_big->png_compression = 1;
                 $avatar_big->resize(120, 120, ZEBRA_IMAGE_BOXED, -1);
 
-                unlink($file_path.$file_extension);
+                unlink($file_path.$file_name.$file_extension);
             }
             else {
                 $this->errors[] = $this->l('Image Upload failed');
@@ -523,6 +568,37 @@ class Genzo_Krona extends Module
             return $file_name;
         }
         return false;
+    }
+
+    public function moveImageFiles() {
+
+        // Avatar files
+        $old_folder_path = _PS_MODULE_DIR_.'genzo_krona/views/img/avatar/';
+        $new_folder_path = _PS_UPLOAD_DIR_.'genzo_krona/img/avatar/';
+        $this->moveFiles($old_folder_path, $new_folder_path);
+
+        // Icon/Level files
+        $old_folder_path = _PS_MODULE_DIR_.'genzo_krona/views/img/icon/';
+        $new_folder_path = _PS_UPLOAD_DIR_.'genzo_krona/img/icon/';
+        $this->moveFiles($old_folder_path, $new_folder_path);
+
+        return true;
+    }
+
+    public function moveFiles($old_folder_path, $new_folder_path) {
+
+        if (!file_exists($new_folder_path)) {
+            mkdir($new_folder_path, 0777, true);
+        }
+
+        $ignore = array(".","..","Thumbs.db", 'index.php');
+        $original_files = scandir($old_folder_path);
+
+        foreach ($original_files as $file) {
+            if (!in_array($file, $ignore)){
+                rename($old_folder_path.$file, $new_folder_path.$file); // rename the file
+            }
+        }
     }
 
     public function saveToggle($table, $primary_column, $toggle_column) {
@@ -745,87 +821,91 @@ class Genzo_Krona extends Module
 
     public function hookDisplayShoppingCartFooter($params) {
 
+	    if (!Configuration::get('krona_loyalty_active')) {
+            return null;
+        }
+
+        if (!Configuration::get('krona_loyalty_checkout_conversion') && !Configuration::get('krona_loyalty_cart_page')) {
+            return null;
+        }
+
 	    if (Tools::isSubmit('convertLoyalty') && $loyalty_points = Tools::getValue('loyalty')) {
 	        $this->convertLoyaltyPointsToCoupon($this->context->customer->id, $loyalty_points);
         }
 
-        $id_shop_group = $this->context->shop->id_shop_group;
-        $id_shop = $this->context->shop->id_shop;
+        $id_currency = $this->context->currency->id;
+        $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
+        $actionOrder = new ActionOrder($id_ActionOrder);
 
-        if (Configuration::get('krona_loyalty_cart_page', null, $id_shop_group, $id_shop) AND Configuration::get('krona_loyalty_active', null, $id_shop_group, $id_shop)) {
+        $order_amount = Configuration::get('krona_order_amount');
 
-            $id_currency = $this->context->currency->id;
-            $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
-            $actionOrder = new ActionOrder($id_ActionOrder);
-
-            $order_amount = Configuration::get('krona_order_amount', null, $id_shop_group, $id_shop);
-
-            if ($order_amount == 'total_wt') {
-                $cart_value = $this->context->cart->getSummaryDetails()['total_price'];
-            } elseif ($order_amount == 'total') {
-                $cart_value = $this->context->cart->getSummaryDetails()['total_price_without_tax'];
-            } elseif ($order_amount == 'total_products_wt') {
-                $cart_value = $this->context->cart->getSummaryDetails()['total_products_wt'];
-            } elseif ($order_amount == 'total_products') {
-                $cart_value = $this->context->cart->getSummaryDetails()['total_products'];
-            } else {
-                $cart_value = 0;
-            }
-
-            // Check if coupons should be substracted
-            if (Configuration::get('krona_order_coupon', null, $id_shop_group, $id_shop) && ($order_amount == 'total_products_wt' OR $order_amount == 'total_products')) {
-                $cart_value = $cart_value - $this->context->cart->getSummaryDetails()['total_discounts'];
-            }
-
-            if ($actionOrder->minimum_amount > $cart_value) {
-                $cart_value = 0;
-                $minimum = true;
-            }
-            else {
-                $minimum = false;
-            }
-
-            // Check the rounding method -> nearest is standard
-            $order_rounding = Configuration::get('krona_order_rounding', null, $id_shop_group, $id_shop);
-            if ($order_rounding == 'down') {
-                $total = floor($cart_value * $actionOrder->coins_change);
-            }
-            elseif ($order_rounding == 'up') {
-                $total = ceil($cart_value * $actionOrder->coins_change);
-            }
-            else {
-                $total = round($cart_value * $actionOrder->coins_change);
-            }
-
-            // Loyalty conversion
-            $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
-
-            $player = ($this->context->customer->id) ? new Player($this->context->customer->id) : false;
-
-            Media::addJsDef(
-                array(
-                    'conversion' => $actionOrder->coins_conversion,
-                    'loyalty_max' => min($player->loyalty, $cart_value/$actionOrder->coins_conversion),
-                )
-            );
-
-            if ($player) {
-                $player = json_decode(json_encode($player), true);
-            }
-
-            $this->context->smarty->assign(array(
-                'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $id_shop_group, $id_shop),
-                'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id, $id_shop_group, $id_shop),
-                'krona_coins_in_cart' => $total,
-                'minimum' => $minimum,
-                'minimum_amount' => $actionOrder->minimum_amount.' '.$actionOrder->currency_iso,
-                'conversion' => number_format(round($total * $actionOrder->coins_conversion, 2),2).' '.$actionOrder->currency_iso,
-                'player' => $player,
-            ));
-
-            return $this->display(__FILE__, 'views/templates/hook/shoppingCartFooter.tpl');
+        if ($order_amount == 'total_wt') {
+            $cart_value = $this->context->cart->getSummaryDetails()['total_price'];
+        } elseif ($order_amount == 'total') {
+            $cart_value = $this->context->cart->getSummaryDetails()['total_price_without_tax'];
+        } elseif ($order_amount == 'total_products_wt') {
+            $cart_value = $this->context->cart->getSummaryDetails()['total_products_wt'];
+        } elseif ($order_amount == 'total_products') {
+            $cart_value = $this->context->cart->getSummaryDetails()['total_products'];
+        } else {
+            $cart_value = 0;
         }
-        return null;
+
+        // Check if coupons should be substracted
+        if (Configuration::get('krona_order_coupon') && ($order_amount == 'total_products_wt' OR $order_amount == 'total_products')) {
+            $cart_value = $cart_value - $this->context->cart->getSummaryDetails()['total_discounts'];
+        }
+
+        if ($actionOrder->minimum_amount > $cart_value) {
+            $cart_value = 0;
+            $minimum = true;
+        }
+        else {
+            $minimum = false;
+        }
+
+        // Check the rounding method -> nearest is standard
+        $order_rounding = Configuration::get('krona_order_rounding');
+        if ($order_rounding == 'down') {
+            $total = floor($cart_value * $actionOrder->coins_change);
+        }
+        elseif ($order_rounding == 'up') {
+            $total = ceil($cart_value * $actionOrder->coins_change);
+        }
+        else {
+            $total = round($cart_value * $actionOrder->coins_change);
+        }
+
+        // Loyalty conversion
+        $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
+
+        $player = ($this->context->customer->id) ? new Player($this->context->customer->id) : false;
+
+        Media::addJsDef(
+            array(
+                'conversion' => $actionOrder->coins_conversion,
+                'loyalty_max' => min($player->loyalty, $cart_value/$actionOrder->coins_conversion),
+            )
+        );
+
+        if ($player) {
+            $player = json_decode(json_encode($player), true);
+        }
+
+        $this->context->smarty->assign(array(
+            'display_coins' => Configuration::get('krona_loyalty_cart_page'),
+            'display_conversion' => Configuration::get('krona_loyalty_checkout_conversion'),
+            'game_name' => Configuration::get('krona_game_name', $this->context->language->id),
+            'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),
+            'krona_coins_in_cart' => $total,
+            'minimum' => $minimum,
+            'minimum_amount' => $actionOrder->minimum_amount.' '.$actionOrder->currency_iso,
+            'conversion' => number_format(round($total * $actionOrder->coins_conversion, 2),2).' '.$actionOrder->currency_iso,
+            'player' => $player,
+        ));
+
+        return $this->display(__FILE__, 'views/templates/hook/shoppingCartFooter.tpl');
+
     }
 
     public function hookActionExecuteKronaAction($params) {
@@ -920,6 +1000,14 @@ class Genzo_Krona extends Module
 
     }
 
+    public function hookActionObjectCustomerDeleteAfter($params) {
+
+        /* @var $customer \Customer */
+        $customer = $params['object'];
+        $player = new Player($customer->id);
+        $player->delete();
+    }
+
 	public function hookActionOrderStatusUpdate($params) {
 
 	    $newStatus = $params['newOrderStatus'];
@@ -993,7 +1081,7 @@ class Genzo_Krona extends Module
                 $id_history_referrer = PlayerHistory::getIdHistoryByIdOrder($player->id_customer_referrer, $order->id);
                 $historyReferrer = new PlayerHistory($id_history_referrer);
 
-                $ids_lang = Language::getIDs();
+                $languages = Language::getLanguages();
 
                 if (in_array($id_order_state, $ids_order_state)) {
 
@@ -1004,7 +1092,7 @@ class Genzo_Krona extends Module
                     if (
                         $player->id_customer_referrer &&
                         Configuration::get('krona_referral_order_nbr') &&
-                        (Configuration::get('krona_referral_order_nbr', null, $order->id_shop_group, $order->id_shop) >= Player::getNbrOfOrders($order->id_customer, true))
+                        (Configuration::get('krona_referral_order_nbr', null, $order->id_shop_group, $order->id_shop) > Player::getNbrOfOrders($order->id_customer, true))
                     ) {
                         $coins_change = $actionOrder->coins_change_buyer;
                         $coins_change_referrer = $actionOrder->coins_change_referrer;
@@ -1069,17 +1157,19 @@ class Genzo_Krona extends Module
                     $title = array();
                     $message = array();
 
-                    foreach ($ids_lang as $id_lang) {
+                    foreach ($languages as $language) {
+
+                        $id_lang = $language['id_lang'];
 
                         $title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $order->id_shop_group, $order->id_shop);
                         $message[$id_lang] = Configuration::get('krona_order_message', $id_lang, $order->id_shop_group, $order->id_shop);
 
                         // Replace message variables
-                        $search = array('{coins}', '{reference}', '{amount}');
+                        $search = array('{coins}', '{reference}', '{amount}', '{loyalty_expire_date}');
 
                         $total_currency = Tools::displayPrice(Tools::convertPrice($total, $order->id_currency));
 
-                        $replace = array($coins, $order->reference, $total_currency);
+                        $replace = array($coins, $order->reference, $total_currency, date($language['date_format_lite'], strtotime($historyBuyer->loyalty_expire_date)));
                         $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
                         $historyBuyer->message[$id_lang] = pSQL($message[$id_lang]);
@@ -1101,14 +1191,16 @@ class Genzo_Krona extends Module
                         $title = array();
                         $message = array();
 
-                        foreach ($ids_lang as $id_lang) {
+                        foreach ($languages as $language) {
 
-                            $title[$id_lang] = Configuration::get('krona_order_title', $id_lang, $order->id_shop_group, $order->id_shop);
+                            $id_lang = $language['id_lang'];
+
+                            $title[$id_lang] = Configuration::get('krona_referral_title_referrer', $id_lang, $order->id_shop_group, $order->id_shop);
                             $message[$id_lang] = Configuration::get('krona_referral_text_referrer', $id_lang, $order->id_shop_group, $order->id_shop);
 
                             // Replace message variables
-                            $search = array('{coins}', '{buyer_name}');
-                            $replace = array($coins_referrer, $player->firstname.' '.$player->lastname[0].'.');
+                            $search = array('{coins}', '{buyer_name}', '{loyalty_expire_date}');
+                            $replace = array($coins_referrer, $player->firstname.' '.$player->lastname[0].'.', date($language['date_format_lite'], strtotime($historyBuyer->loyalty_expire_date)));
 
                             $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
 
@@ -1124,6 +1216,8 @@ class Genzo_Krona extends Module
                     // When an order is cancelled or get's a status that doesn't deserve points
                     $historyBuyer->loyalty = 0;
                     $historyBuyer->coins = 0;
+
+                    $ids_lang = Language::getIDs();
 
                     foreach ($ids_lang as $id_lang) {
                         $historyBuyer->comment[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang, $order->id_shop_group, $order->id_shop);
@@ -1376,6 +1470,8 @@ class Genzo_Krona extends Module
 
     }
 
-    // Todo: fix the avatar -> move it to upload folder
-
+    // Todo: improving possible action table
+    // Todo: Modify the docs - change the link to the forum as well
+    // Todo: Make voucher for referral possible -> levels
+    // Todo: Message like: 25 loyalty points expired today
 }

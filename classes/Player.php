@@ -29,6 +29,8 @@ class Player extends \ObjectModel {
     public $coins;
     public $total;
     public $loyalty;
+    public $expire_points; // How many points will expire next?
+    public $expire_date;
 
     public $pseudonym;
     public $display_name;
@@ -80,7 +82,7 @@ class Player extends \ObjectModel {
                 $this->display_name = (\Configuration::get('krona_pseudonym') && $this->pseudonym) ? $this->pseudonym : $names['display_name'];
 
                 if (\Configuration::get('krona_avatar')) {
-                    $this->avatar_full = _MODULE_DIR_ . 'genzo_krona/views/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
+                    $this->avatar_full = '/upload/genzo_krona/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
                 }
 
             }
@@ -117,6 +119,25 @@ class Player extends \ObjectModel {
         // Override loyalty value if loyalty is active
         if (\Configuration::get('krona_loyalty_active')) {
             $this->loyalty = (int)$player['loyalty'];
+        }
+
+        // Expiring points
+        $this->expire_points = 0;
+        $this->expire_date = null;
+
+        if (\Configuration::get('krona_loyalty_active') && \Configuration::get('krona_loyalty_expire_method')!='none') {
+            $query = new \DbQuery();
+            $query->select('SUM(loyalty-loyalty_used-loyalty_expired) AS expire_points, DATE(loyalty_expire_date) AS expire_date');
+            $query->from('genzo_krona_player_history');
+            $query->where('id_customer = ' . $this->id_customer);
+            $query->where('loyalty > 0 ');
+            $query->groupBy('expire_date');
+            $query->orderBy('expire_date');
+            $expire = \Db::getInstance()->getRow($query);
+
+            $this->expire_points = (int)$expire['expire_points'];
+            $this->expire_date = $expire['expire_date'];
+
         }
     }
 
@@ -329,7 +350,7 @@ class Player extends \ObjectModel {
                     }
 
                     // If a player has achieved a level, he has to achieve it again from scratch
-                    if ($result['achieved_last'] > $dateStart) {
+                    if (isset($result['achieve_last']) && $result['achieved_last'] > $dateStart) {
                         $dateStart = $result['achieved_last'];
                     }
                 }
@@ -361,7 +382,8 @@ class Player extends \ObjectModel {
                     $playerLevel->id_customer = $id_customer;
                     $playerLevel->id_level = $result['id_level'];
                     $playerLevel->active = 1;
-                    $playerLevel->active_until = ($result['duration'] > 0) ? date('Y-m-d 23:59:59', strtotime("+({$level['duration']}-1) days")) : '0000-00-00 00:00:00'; // If duration is not set -> unlimited
+                    $adjustment = $result['duration']-1;
+                    $playerLevel->active_until = ($result['duration'] > 0) ? date('Y-m-d 23:59:59', strtotime("+{$adjustment} days")) : '0000-00-00 00:00:00'; // If duration is not set -> unlimited
                     $playerLevel->achieved++;
                     $playerLevel->achieved_last = date("Y-m-d H:i:s", strtotime("+1 second")); // This is securing, that the last done action, wont be taken again into account
                     $playerLevel->save();

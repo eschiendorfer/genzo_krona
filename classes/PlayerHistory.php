@@ -102,6 +102,11 @@ class PlayerHistory extends \ObjectModel {
             elseif ($total_mode_loyalty == 'coins') {
                 $this->loyalty = $this->coins;
             }
+
+            // Expiring
+            if (\Configuration::get('loyalty_expire_method')!='none' && $days = \Configuration::get('krona_loyalty_expire_days')) {
+                $this->loyalty_expire_date = date("Y-m-d H:i:s", strtotime("+{$days} days"));
+            };
         }
     }
 
@@ -190,19 +195,21 @@ class PlayerHistory extends \ObjectModel {
 
     public static function countOrderByPlayer($id_customer, $id_action, $startDate = null, $endDate = null) {
 
+        $in_states = \Configuration::get('krona_order_state');
+
         $query = new \DbQuery();
         $query->select('Count(*)');
-        $query->from(self::$definition['table']);
-        $query->where('`id_customer` = ' . (int)$id_customer);
-        $query->where('`id_action_order` = ' . (int)$id_action);
-
-        // Todo: probably we need to check for order_states here, especially when using the referral
+        $query->from(self::$definition['table'], 'ph');
+        $query->innerJoin('orders', 'o', 'ph.id_order=o.id_order');
+        $query->where('ph.`id_customer` = ' . (int)$id_customer .' AND o.id_customer='.(int)$id_customer);
+        $query->where('ph.`id_action_order` = ' . (int)$id_action);
+        $query->where("o.current_state IN ({$in_states})");
 
         if ($startDate && $endDate) {
-            $query->where("`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
+            $query->where("ph.`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");
         }
         elseif ($startDate) {
-            $query->where("`date_add` >= '{$startDate}' ");
+            $query->where("ph.`date_add` >= '{$startDate}' ");
         }
 
         return (int)\Db::getInstance()->getValue($query);

@@ -71,9 +71,9 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             $game_name[$id_lang] = Configuration::get('krona_game_name', $id_lang);
             $order_title[$id_lang] = Configuration::get('krona_order_title', $id_lang);
             $order_message[$id_lang] = Configuration::get('krona_order_message', $id_lang);
-            $order_canceled_title[$id_lang] = Configuration::get('krona_order_canceled_title', $id_lang);
             $order_canceled_message[$id_lang] = Configuration::get('krona_order_canceled_message', $id_lang);
             $home_description[$id_lang] = Configuration::get('krona_description', $id_lang);
+            $referral_title_referrer[$id_lang] = Configuration::get('krona_referral_title_referrer', $id_lang);
             $referral_text_referrer[$id_lang] = Configuration::get('krona_referral_text_referrer', $id_lang);
         }
 
@@ -85,9 +85,9 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'game_name'               => $game_name,
             'order_title'             => $order_title,
             'order_message'           => $order_message,
-            'order_canceled_title'    => $order_canceled_title,
             'order_canceled_message'  => $order_canceled_message,
             'home_description'        => $home_description,
+            'referral_title_referrer'  => $referral_title_referrer,
             'referral_text_referrer'  => $referral_text_referrer,
             'levels_grid' => Configuration::get('krona_levels_grid'),
             'notification' => Configuration::get('krona_notification'),
@@ -102,6 +102,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'pseudonym' => Configuration::get('krona_pseudonym'),
             'loyalty_product_page' => Configuration::get('krona_loyalty_product_page'),
             'loyalty_cart_page' => Configuration::get('krona_loyalty_cart_page'),
+            'loyalty_checkout_conversion' => Configuration::get('krona_loyalty_checkout_conversion'),
             'loyalty_expire_method' => Configuration::get('krona_loyalty_expire_method'),
             'loyalty_expire_days' => Configuration::get('krona_loyalty_expire_days'),
             'avatar' => Configuration::get('krona_avatar'),
@@ -359,18 +360,11 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'type' => 'text',
             'name' => 'order_message',
             'label' => $this->l('Message order'),
-            'desc' => $this->l('You can use:') . ' {coins} {reference} {amount}',
+            'desc' => $this->l('You can use:') . ' {coins} {loyalty_expire_date} {reference} {amount}',
             'lang' => true,
             'tab' => 'order',
         );
-        $inputs[] = array(
-            'type' => 'text',
-            'name' => 'order_canceled_title',
-            'label' => $this->l('Title canceled order'),
-            'desc' => $this->l('The user will see title and message in Front Office.'),
-            'lang' => true,
-            'tab' => 'order',
-        );
+
         $inputs[] = array(
             'type' => 'text',
             'name' => 'order_canceled_message',
@@ -426,11 +420,32 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 ),
                 'tab' => 'loyalty',
             );
+
             $inputs[] = array(
                 'type' => 'switch',
                 'label' => $this->l('Loyalty on cart page'),
                 'desc' => $this->l('Show how many coins a customers receives, if he places the order.'),
                 'name' => 'loyalty_cart_page',
+                'values' => array(
+                    array(
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes')
+                    ),
+                    array(
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('No')
+                    )
+                ),
+                'tab' => 'loyalty',
+            );
+
+            $inputs[] = array(
+                'type' => 'switch',
+                'label' => $this->l('Loyalty conversion on checkout'),
+                'desc' => $this->l('Should the customer been able to convert his points directly at the checkout?'),
+                'name' => 'loyalty_checkout_conversion',
                 'values' => array(
                     array(
                         'id' => 'active_on',
@@ -505,9 +520,17 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             $inputs[] = array(
                 'type' => 'text',
                 'lang' => true,
+                'name' => 'referral_title_referrer',
+                'label' => $this->l('Title on order for referrer'),
+                'desc' => $this->l('This will appear on the history of the referrer.'),
+                'tab' => 'referral',
+            );
+            $inputs[] = array(
+                'type' => 'text',
+                'lang' => true,
                 'name' => 'referral_text_referrer',
                 'label' => $this->l('Text on order for referrer'),
-                'desc' => $this->l('This will appear on the history of the referrer. You can use: {coins} {buyer_name}'),
+                'desc' => $this->l('This will appear on the history of the referrer. You can use: {coins} {loyalty_expire_date} {buyer_name}'),
                 'tab' => 'referral',
             );
         }
@@ -687,7 +710,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             $loyalty_names = array();
             $order_titles = array();
             $order_messages = array();
-            $order_canceled_titles = array();
             $order_canceled_messages = array();
             $home_descriptions = array();
 
@@ -698,7 +720,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 $loyalty_names[$id_lang] = Tools::getValue('loyalty_name_'.$id_lang);
                 $order_titles[$id_lang] = Tools::getValue('order_title_'.$id_lang);
                 $order_messages[$id_lang] = Tools::getValue('order_message_'.$id_lang);
-                $order_canceled_titles[$id_lang] = Tools::getValue('order_canceled_title_'.$id_lang);
                 $order_canceled_messages[$id_lang] = Tools::getValue('order_canceled_message_'.$id_lang);
                 $home_descriptions[$id_lang] = Tools::getValue('home_description_'.$id_lang);
             }
@@ -708,7 +729,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             if ($loyalty) { Configuration::updateValue('krona_loyalty_name', $loyalty_names); }
             Configuration::updateValue('krona_order_title', $order_titles);
             Configuration::updateValue('krona_order_message', $order_messages);
-            Configuration::updateValue('krona_order_canceled_title', $order_canceled_titles);
             Configuration::updateValue('krona_order_canceled_message', $order_canceled_messages);
             Configuration::updateValue('krona_description', $home_descriptions, true);
 
@@ -725,6 +745,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 Configuration::updateValue('krona_loyalty_total', Tools::getValue('loyalty_total'));
                 Configuration::updateValue('krona_loyalty_product_page', Tools::getValue('loyalty_product_page'));
                 Configuration::updateValue('krona_loyalty_cart_page', Tools::getValue('loyalty_cart_page'));
+                Configuration::updateValue('krona_loyalty_checkout_conversion', Tools::getValue('loyalty_checkout_conversion'));
 
                 // Expiration
                 Configuration::updateValue('krona_loyalty_expire_method', Tools::getValue('loyalty_expire_method'));
@@ -743,9 +764,11 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
 
                 // Language Fields
                 foreach ($ids_lang as $id_lang) {
+                    $referral_title_referrer[$id_lang] = Tools::getValue('referral_title_referrer_'.$id_lang);
                     $referral_text_referrer[$id_lang] = Tools::getValue('referral_text_referrer_'.$id_lang);
                 }
 
+                Configuration::updateValue('krona_referral_title_referrer', $referral_title_referrer);
                 Configuration::updateValue('krona_referral_text_referrer', $referral_text_referrer);
             }
 

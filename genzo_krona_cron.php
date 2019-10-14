@@ -32,7 +32,7 @@ if (isset($_GET['secure_key'])) {
             Player::cronExpireLoyalty();
 
             // Update the date, so that the cron is only executed once a day
-            // Configuration::updateGlobalValue('krona_newsletter_cron', date('Y-m-d')); // Todo: add this when test finished
+            Configuration::updateGlobalValue('krona_newsletter_cron', date('Y-m-d'));
 
             echo "executed";
             return true;

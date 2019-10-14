@@ -12,9 +12,12 @@ function upgrade_module_2_0_0($module) {
         !convertPlayerHistoryColumn() OR
         !reconstructIdOrders() OR
         !revertOldCouponConversion($module) OR
+        !cleanPlayers() OR
+        !$module->moveImageFiles() OR
         !$module->registerHook('displayCustomerAccountForm') OR
         !$module->registerHook('actionRegisterGenzoCrmEmail') OR
         !$module->registerHook('actionOrderEdited') OR
+        !$module->registerHook('actionObjectCustomerDeleteAfter') OR
         !$module->executeSqlScript('install-2.0.0-after') OR
         !$module->uninstallAdminMenus() OR
         !$module->installAdminMenus()
@@ -143,11 +146,43 @@ function reconstructIdOrders() {
 function saveDefaultConfiguration() {
     $ids_shop = Shop::getCompleteListOfShopsID();
 
+    foreach (Language::getIDs() as $id_lang) {
+        $referral_title_referrer[$id_lang] = 'New referral order'; // Just as an example
+        $referral_text_referrer[$id_lang] = 'Your friend {buyer_name} placed an order, which brought you {coins} loyalty points. Note, that they will expire on {loyalty_expire_date}.'; // Just as an example
+    }
+
     foreach ($ids_shop as $id_shop) {
         $id_shop_group = Shop::getGroupFromShop($id_shop);
         Configuration::updateValue('krona_loyalty_expire_method', 'none', false, $id_shop_group, $id_shop);
         Configuration::updateValue('krona_loyalty_expire_days', 365, false, $id_shop_group, $id_shop);
+        Configuration::updateValue('krona_referral_active', 1, false, $id_shop_group, $id_shop);
+        Configuration::updateValue('krona_referral_order_nbr', 1, false, $id_shop_group, $id_shop);
+        Configuration::updateValue('krona_referral_title_referrer', $referral_title_referrer, false, $id_shop_group, $id_shop);
+        Configuration::updateValue('krona_referral_text_referrer', $referral_text_referrer, false, $id_shop_group, $id_shop);
     }
+
+    return true;
+}
+
+function cleanPlayers() {
+
+    $query = new \DbQuery();
+    $query->select('*');
+    $query->from('genzo_krona_player');
+    $players = \Db::getInstance()->ExecuteS($query);
+
+    foreach ($players as $key => &$player) {
+        if(!Customer::customerIdExistsStatic($player['id_customer'])) {
+            $playerObj = new \KronaModule\Player($player['id_customer']);
+            $playerObj->delete();
+            unset($players[$key]);
+        }
+        else {
+            $player['referral_code'] = \KronaModule\Player::generateReferralCode();
+        }
+    }
+
+    DB::getInstance()->insert('genzo_krona_player', $players, true, true, 3);
 
     return true;
 }

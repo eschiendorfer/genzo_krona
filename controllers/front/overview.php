@@ -52,6 +52,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             'level' => PlayerLevel::getLastPlayerLevel($id_customer),
             'loyalty' => Configuration::get('krona_loyalty_active'),
             'gamification' => Configuration::get('krona_gamification_active'),
+            'referral' => Configuration::get('krona_referral_active'),
             'actions' => Player::getPossibleActions($id_customer),
         ));
 

@@ -477,7 +477,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
             $fields_list['points_calc'] = array(
                 'title' => $this->l('Points_calc'),
                 'class' => 'fixed-width-xs',
-                'align' => 'left',
+                'align' => 'left', // Todo: remove calc columns
             );
         }
 

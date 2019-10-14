@@ -1,9 +1,9 @@
 <div class="level {if $grid}grid{else}list{/if} krona-box">
     <div class="icon">
         {if $grid}
-            <img src="{$modules_dir}genzo_krona/views/img/icon/{$level.icon}_small.png">
+            <img src="{$base_dir}upload/genzo_krona/img/icon/{$level.icon}_small.png">
         {else}
-            <img src="{$modules_dir}genzo_krona/views/img/icon/{$level.icon}_big.png">
+            <img src="{$base_dir}upload/genzo_krona/img/icon/{$level.icon}_big.png">
         {/if}
     </div>
 
