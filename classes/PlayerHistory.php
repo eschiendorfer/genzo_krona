@@ -91,6 +91,7 @@ class PlayerHistory extends \ObjectModel {
     private function setLoyalty() {
         // Always remember there is no static loyalty. The customer just collects points and coins. The merchant defines what loyalty is in BO.
         if (\Configuration::get('krona_loyalty_active')) {
+
             $total_mode_loyalty = \Configuration::get('krona_loyalty_total');
 
             if ($total_mode_loyalty == 'points_coins') {
@@ -104,7 +105,7 @@ class PlayerHistory extends \ObjectModel {
             }
 
             // Expiring
-            if (\Configuration::get('loyalty_expire_method')!='none' && $days = \Configuration::get('krona_loyalty_expire_days')) {
+            if (!$this->loyalty_expired && \Configuration::get('loyalty_expire_method')!='none' && $days = \Configuration::get('krona_loyalty_expire_days')) {
                 $this->loyalty_expire_date = date("Y-m-d H:i:s", strtotime("+{$days} days"));
             };
         }

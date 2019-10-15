@@ -326,16 +326,21 @@ class Player extends \ObjectModel {
 
         $player_levels = PlayerLevel::getAllPlayerLevels($id_customer);
 
-        foreach ($player_levels as $player_level) {
+        foreach ($player_levels as $key => $player_level) {
 
             // We dont want any info about inactive levels
             if (isset($results[$player_level['id_level']])) {
-                $results[$player_level['id_level']] = $player_level;
+                unset($player_levels[$key]['active']);// otherwise the active from the level is overwritten
+                $results[$player_level['id_level']] = $player_levels[$key];
             }
         }
 
         // The check begins
         foreach ($results as $result) {
+
+            if (!$result['active']) {
+                continue;
+            }
 
             // Check if the player still has the right to achieve this level
             if (!isset($result['achieved']) || $result['achieve_max'] == 0 || ($result['achieve_max'] > $result['achieved'])) {
@@ -663,17 +668,70 @@ class Player extends \ObjectModel {
     // CronJob
     public static function cronExpireLoyalty() {
 
+        $players = Player::getAllPlayers();
+
         foreach (\Shop::getCompleteListOfShopsID() as $id_shop) {
+
             $id_shop_group = \Shop::getGroupFromShop($id_shop);
-            if (\Configuration::get('krona_loyalty_expire', null, $id_shop_group, $id_shop)) {
-                $sql = 'UPDATE '._DB_PREFIX_.self::$definition['table'].' AS p
+
+            if (\Configuration::get('krona_loyalty_expire_method', null, $id_shop_group, $id_shop)!='none') {
+
+                foreach ($players as $player) {
+                    $query = new \DbQuery();
+                    $query->select('ph.id_history, ph.id_customer, (ph.loyalty-ph.loyalty_used-ph.loyalty_expired) AS expire, c.id_shop, c.id_shop_group');
+                    $query->from('genzo_krona_player_history', 'ph');
+                    $query->innerJoin('customer', 'c', 'c.id_customer=ph.id_customer AND c.id_shop='.$id_shop);
+                    $query->where('ph.loyalty_expire_date IS NOT NULL AND ph.loyalty_expire_date < NOW()');
+                    $query->where('(ph.loyalty-ph.loyalty_used-ph.loyalty_expired) > 0');
+                    $query->where('ph.id_customer='.$player['id_customer']);
+                    $histories = \Db::getInstance()->ExecuteS($query);
+
+                    $expire_total = 0;
+
+                    foreach ($histories as $history) {
+                        $playerHistory = new PlayerHistory($history['id_history']);
+                        $playerHistory->loyalty_expired = $history['expire'];
+                        $playerHistory->update();
+
+                        $expire_total += $history['expire'];
+                    }
+
+                    if ($expire_total) {
+
+                        $expiredHistory = new PlayerHistory();
+                        $expiredHistory->id_customer = $player['id_customer'];
+                        $expiredHistory->force_display = -$expire_total;
+
+                        foreach (\Language::getIDs() as $id_lang) {
+
+                            $title[$id_lang] = \Configuration::get('krona_loyalty_expire_title', $id_lang, $player['id_shop_group'], $player['id_shop']);
+                            $message[$id_lang] = \Configuration::get('krona_loyalty_expire_message', $id_lang, $player['id_shop_group'], $player['id_shop']);
+
+                            // Replace message variables
+                            $search = array('{loyalty_points}');
+                            $replace = array($expire_total);
+
+                            $message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
+
+                            $expiredHistory->message[$id_lang] = pSQL($message[$id_lang]);
+                            $expiredHistory->title[$id_lang] = pSQL($title[$id_lang]);
+                        }
+
+                        $expiredHistory->add();
+                    }
+
+
+                }
+
+                /*$sql = 'UPDATE '._DB_PREFIX_.self::$definition['table'].' AS p
                         INNER JOIN '._DB_PREFIX_.'customer AS c ON c.id_customer=p.id_customer
                         SET p.loyalty_expired = (p.loyalty-p.loyalty_used-p.loyalty_expired)
                         WHERE loyalty_expire IS NOT NULL AND loyalty_expire < NOW() AND c.id_shop='.$id_shop;
 
-                \Db::getInstance()->execute($sql);
+                \Db::getInstance()->execute($sql);*/
             }
-        }
+        }die();
+
     }
 
 }

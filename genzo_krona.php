@@ -178,7 +178,7 @@ class Genzo_Krona extends Module
 
         foreach ($ids_lang as $id_lang) {
             $game_names[$id_lang] = 'Loyalty Reward Program'; // Just as an example
-            $total_names[$id_lang] = 'Points'; // Just as an example
+            $total_names[$id_lang] = 'Lifetime Points'; // Just as an example
             $loyalty_names[$id_lang] = 'Loyalty Points'; // Just as an example
 
             $order_title[$id_lang] = 'New Order'; // Just as an example
@@ -186,6 +186,8 @@ class Genzo_Krona extends Module
             $order_canceled_message[$id_lang] = 'Unfortunately your order (#{reference}) is no more valid, therefore we had to remove you {coins} loyalty points.'; // Just as an example
             $referral_title_referrer[$id_lang] = 'New referral order'; // Just as an example
             $referral_text_referrer[$id_lang] = 'Your friend {buyer_name} placed an order, which brought you {coins} loyalty points. Note, that they will expire on {loyalty_expire_date}.'; // Just as an example
+            $loyalty_expire_title[$id_lang] = 'Loyalty Points expired'; // Just as an example
+            $loyalty_expire_message[$id_lang] = 'Unfortunately today expired {loyalty_points} of your loyalty points.'; // Just as an example
         }
 
         foreach (Shop::getShops() as $shop) {
@@ -217,6 +219,12 @@ class Genzo_Krona extends Module
             }
             if (!Configuration::get('krona_referral_text_referrer', null, $id_shop_group, $id_shop)) {
                 Configuration::updateValue('krona_referral_text_referrer', $referral_text_referrer, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_loyalty_expire_title', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_expire_title', $loyalty_expire_title, false, $id_shop_group, $id_shop);
+            }
+            if (!Configuration::get('krona_loyalty_expire_message', null, $id_shop_group, $id_shop)) {
+                Configuration::updateValue('krona_loyalty_expire_message', $loyalty_expire_message, false, $id_shop_group, $id_shop);
             }
 
             // Basic Fields
@@ -1132,7 +1140,7 @@ class Genzo_Krona extends Module
                     $historyBuyer->coins = $coins;
 
                     // Expiring
-                    $expire_method = Configuration::get('krona_loyalty_expire_date', null, $order->id_shop_group, $order->id_shop);
+                    $expire_method = Configuration::get('krona_loyalty_expire_method', null, $order->id_shop_group, $order->id_shop);
 
                     if ($expire_method!='none') {
 
@@ -1473,5 +1481,4 @@ class Genzo_Krona extends Module
     // Todo: improving possible action table
     // Todo: Modify the docs - change the link to the forum as well
     // Todo: Make voucher for referral possible -> levels
-    // Todo: Message like: 25 loyalty points expired today
 }

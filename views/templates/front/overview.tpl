@@ -14,10 +14,13 @@
                     <li>
                         <b>{$loyalty_name}</b><br>
                         {$player.loyalty}
-                    </li>                    <li>
-                        <b>{l s='Expiring' mod='genzo_krona'} {$loyalty_name}</b><br>
-                        {$player.expire_points} {l s='on' mod='genzo_krona'} {$player.expire_date|date_format:"%d. %b %Y"}
                     </li>
+                    {if $player.loyalty && Configuration::get('krona_loyalty_expire_method')!='none'}
+                        <li>
+                            <b>{l s='Expiring' mod='genzo_krona'} {$loyalty_name}</b><br>
+                            {$player.expire_points} {l s='on' mod='genzo_krona'} {$player.expire_date|date_format:"%d. %b %Y"}
+                        </li>
+                    {/if}
                 {/if}
                 {if $referral}
                     <li>

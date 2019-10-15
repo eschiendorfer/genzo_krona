@@ -75,6 +75,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             $home_description[$id_lang] = Configuration::get('krona_description', $id_lang);
             $referral_title_referrer[$id_lang] = Configuration::get('krona_referral_title_referrer', $id_lang);
             $referral_text_referrer[$id_lang] = Configuration::get('krona_referral_text_referrer', $id_lang);
+            $loyalty_expire_title[$id_lang] = Configuration::get('krona_loyalty_expire_title', $id_lang);
+            $loyalty_expire_message[$id_lang] = Configuration::get('krona_loyalty_expire_message', $id_lang);
         }
 
         (Tools::getValue('tab_fake')) ? $tab_fake = Tools::getValue('tab_fake') : $tab_fake = '#general';
@@ -89,6 +91,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'home_description'        => $home_description,
             'referral_title_referrer'  => $referral_title_referrer,
             'referral_text_referrer'  => $referral_text_referrer,
+            'loyalty_expire_title'  => $loyalty_expire_title,
+            'loyalty_expire_message'  => $loyalty_expire_message,
             'levels_grid' => Configuration::get('krona_levels_grid'),
             'notification' => Configuration::get('krona_notification'),
             'loyalty_active' => Configuration::get('krona_loyalty_active'),
@@ -152,6 +156,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ),
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Referral Activation'),
@@ -171,6 +176,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ),
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Gamification Activation'),
@@ -190,6 +196,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ),
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type' => 'text',
             'name' => 'game_name',
@@ -198,6 +205,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'lang' => true,
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type'  => 'text',
             'name'  => 'url',
@@ -205,6 +213,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'desc'  => $this->l('The url in the frontoffice will look like: domain.com/url'),
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Customer Activation'),
@@ -224,6 +233,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ),
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type'  => 'textarea',
             'name'  => 'home_description',
@@ -233,6 +243,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'autoload_rte' => true,
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Levels Display Grid'),
@@ -252,6 +263,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ),
             'tab' => 'general',
         );
+
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Notification'),
@@ -291,6 +303,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ),
             'tab' => 'order',
         );
+
         $inputs[] = array(
             'type' => 'switch',
             'label' => $this->l('Substract Coupon'),
@@ -310,6 +323,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ),
             'tab' => 'order',
         );
+
         $inputs[] = array(
             'type' => 'select',
             'label' => $this->l('Rounding'),
@@ -348,6 +362,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             ] : null,
             'tab' => 'order',
         );
+
         $inputs[] = array(
             'type' => 'text',
             'name' => 'order_title',
@@ -356,6 +371,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
             'lang' => true,
             'tab' => 'order',
         );
+
         $inputs[] = array(
             'type' => 'text',
             'name' => 'order_message',
@@ -393,6 +409,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 ),
                 'tab' => 'loyalty',
             );
+
             $inputs[] = array(
                 'type' => 'text',
                 'name' => 'loyalty_name',
@@ -401,6 +418,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 'lang' => true,
                 'tab' => 'loyalty',
             );
+
             $inputs[] = array(
                 'type' => 'switch',
                 'label' => $this->l('Loyalty on product page'),
@@ -475,6 +493,24 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                     'name' => 'name',
                 ),
                 'desc' => $this->l('Fixed: the points expire x-days after the customer earned it.').'<br>'.$this->l('Refreshing: when a customer places a new order, the expiring date of all points is refreshing.'),
+                'tab' => 'loyalty',
+            );
+
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'loyalty_expire_title',
+                'label' => $this->l('Expire loyalty title'),
+                'desc' => $this->l('The customer will see this in the FO history.'),
+                'lang' => true,
+                'tab' => 'loyalty',
+            );
+
+            $inputs[] = array(
+                'type' => 'text',
+                'name' => 'loyalty_expire_message',
+                'label' => $this->l('Expire loyalty message'),
+                'desc' => $this->l('The customer will see this in the FO history. You can use: {loyalty_points}'),
+                'lang' => true,
                 'tab' => 'loyalty',
             );
 
@@ -742,6 +778,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
 
             // Loyalty
             if ($loyalty) {
+
+                // Basic Fields
                 Configuration::updateValue('krona_loyalty_total', Tools::getValue('loyalty_total'));
                 Configuration::updateValue('krona_loyalty_product_page', Tools::getValue('loyalty_product_page'));
                 Configuration::updateValue('krona_loyalty_cart_page', Tools::getValue('loyalty_cart_page'));
@@ -754,6 +792,15 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 if (Tools::getValue('loyalty_expire_update')!='none') {
                     self::updateAllExpireLoyalty(Tools::getValue('loyalty_expire_update'), Tools::getValue('loyalty_expire_days'));
                 }
+
+                // Language Fields
+                foreach ($ids_lang as $id_lang) {
+                    $loyalty_expire_title[$id_lang] = Tools::getValue('loyalty_expire_title_'.$id_lang);
+                    $loyalty_expire_message[$id_lang] = Tools::getValue('loyalty_expire_message_'.$id_lang);
+                }
+
+                Configuration::updateValue('krona_loyalty_expire_title', $loyalty_expire_title);
+                Configuration::updateValue('krona_loyalty_expire_message', $loyalty_expire_message);
             }
 
             // Referral

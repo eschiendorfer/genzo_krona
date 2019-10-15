@@ -149,6 +149,8 @@ function saveDefaultConfiguration() {
     foreach (Language::getIDs() as $id_lang) {
         $referral_title_referrer[$id_lang] = 'New referral order'; // Just as an example
         $referral_text_referrer[$id_lang] = 'Your friend {buyer_name} placed an order, which brought you {coins} loyalty points. Note, that they will expire on {loyalty_expire_date}.'; // Just as an example
+        $loyalty_expire_title[$id_lang] = 'Loyalty Points expired'; // Just as an example
+        $loyalty_expire_message[$id_lang] = 'Unfortunately today expired {loyalty_points} of your loyalty points.'; // Just as an example
     }
 
     foreach ($ids_shop as $id_shop) {
@@ -159,6 +161,8 @@ function saveDefaultConfiguration() {
         Configuration::updateValue('krona_referral_order_nbr', 1, false, $id_shop_group, $id_shop);
         Configuration::updateValue('krona_referral_title_referrer', $referral_title_referrer, false, $id_shop_group, $id_shop);
         Configuration::updateValue('krona_referral_text_referrer', $referral_text_referrer, false, $id_shop_group, $id_shop);
+        Configuration::updateValue('krona_loyalty_expire_title', $loyalty_expire_title, false, $id_shop_group, $id_shop);
+        Configuration::updateValue('krona_loyalty_expire_message', $loyalty_expire_message, false, $id_shop_group, $id_shop);
     }
 
     return true;
