@@ -194,7 +194,8 @@ class PlayerHistory extends \ObjectModel {
         return (int)\Db::getInstance()->getValue($query);
     }
 
-    public static function countOrderByPlayer($id_customer, $id_action, $startDate = null, $endDate = null) {
+    /* $mode can be: order, ref_referrer, ref_buyer */
+    public static function countOrderByPlayer($id_customer, $id_action, $mode = 'order', $startDate = null, $endDate = null) {
 
         $in_states = \Configuration::get('krona_order_state');
 
@@ -202,9 +203,21 @@ class PlayerHistory extends \ObjectModel {
         $query->select('Count(*)');
         $query->from(self::$definition['table'], 'ph');
         $query->innerJoin('orders', 'o', 'ph.id_order=o.id_order');
-        $query->where('ph.`id_customer` = ' . (int)$id_customer .' AND o.id_customer='.(int)$id_customer);
+        $query->where('ph.`id_customer` = ' . (int)$id_customer);
         $query->where('ph.`id_action_order` = ' . (int)$id_action);
         $query->where("o.current_state IN ({$in_states})");
+
+        if ($mode=='order' || $mode=='ref_buyer') {
+            $query->where('o.id_customer='.(int)$id_customer);
+        }
+        elseif ($mode == 'ref_referrer') {
+            $query->where('o.id_customer!='.(int)$id_customer);
+        }
+
+        if ($mode == 'ref_buyer') {
+            $query->innerJoin('genzo_krona_player', 'p', 'p.id_customer=ph.id_customer');
+            $query->where ('p.id_customer_referrer > 0'); // This is the only difference between was_referred and normal order level
+        }
 
         if ($startDate && $endDate) {
             $query->where("ph.`date_add` BETWEEN '{$startDate}' AND '{$endDate}'");

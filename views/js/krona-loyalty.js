@@ -3,6 +3,7 @@ $(document).ready(function() {
     // Check if all vars are set for loyalty points of a product
     if (
         typeof krona_coins_change !== 'undefined' &&
+        typeof krona_coins_change_max !== 'undefined' &&
         typeof krona_coins_conversion !== 'undefined' &&
         typeof krona_coins_in_cart !== 'undefined' &&
         typeof krona_order_rounding !== 'undefined' &&
@@ -11,7 +12,7 @@ $(document).ready(function() {
     ) {
         // Catch all attribute changes of the product
         $(document).on('change', '.product_attributes input, .product_attributes select, #attributes select', function () {
-            setTimeout(updateLoyalty, 100); // Schedule last
+            setTimeout(updateLoyaltyActionValue(), 100); // Schedule last
         });
 
         // Force color "button" to fire event change
@@ -41,6 +42,7 @@ function updateLoyaltyActionValue() {
     // Show Loyalty Points on Product Page
     var price;
     var coins_change = krona_coins_change;
+    var coins_max = krona_coins_change_max;
     var coins_conversion = krona_coins_conversion;
     var coins_in_cart = krona_coins_in_cart;
     var rounding = krona_order_rounding;
@@ -74,6 +76,10 @@ function updateLoyaltyActionValue() {
     else {
         total_points = Math.round(coins_in_cart + points);
         points = Math.round(price * coins_change);
+    }
+
+    if (coins_max > 0) {
+        points = Math.min(points, coins_max);
     }
 
     // var voucher = total_points * coins_conversion;

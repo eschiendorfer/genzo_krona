@@ -95,7 +95,7 @@ $(document).ready(function() {
             hideElement(id_form, 'condition_points');
             hideElement(id_form, 'id_action_order');
         }
-        else if (condition_type === "order") {
+        else if (condition_type === "order" || condition_type === "has_referred" || condition_type === "was_referred") {
             hideElement(id_form, 'id_action');
             showElement(id_form, 'condition_action');
             hideElement(id_form, 'condition_points');

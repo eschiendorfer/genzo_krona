@@ -57,7 +57,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
             !$this->registerHook('actionObjectCustomerDeleteAfter') OR
-            !$this->registerHook('actionOrderStatusUpdate') OR
+            !$this->registerHook('actionOrderStatusPostUpdate') OR
             !$this->registerHook('actionOrderEdited') OR
             !$this->registerHook('actionRegisterGenzoCrmEmail') OR
 			!$this->registerHook('ModuleRoutes') OR
@@ -800,8 +800,21 @@ class Genzo_Krona extends Module
                 $tax_rate = 1 + (Tax::getProductTaxRate($id_product) / 100);
             }
 
+            // Check which coin_change is relevant
+            $coins_change = $actionOrder->coins_change;
+
+            if ($this->context->customer->id) {
+                $player = new Player($this->context->customer->id);
+
+                if ($player->id_customer_referrer && (Configuration::get('krona_referral_order_nbr', null, $id_shop_group, $id_shop) > Player::getNbrOfOrders($this->context->customer->id, true))) {
+                    $coins_change = $actionOrder->coins_change_buyer;
+                }
+            }
+
+
             Media::addJsDef(array(
-                'krona_coins_change' => $actionOrder->coins_change,
+                'krona_coins_change' => $coins_change,
+                'krona_coins_change_max' => $actionOrder->coins_change_max,
                 'krona_coins_conversion' => $actionOrder->coins_conversion,
                 'krona_coins_in_cart' => $coins_in_cart * $actionOrder->coins_change,
                 'krona_order_rounding' => Configuration::get('krona_order_rounding', null, $id_shop_group, $id_shop),
@@ -872,22 +885,37 @@ class Genzo_Krona extends Module
             $minimum = false;
         }
 
+        // Check which coin_change is relevant
+        $player = ($this->context->customer->id) ? new Player($this->context->customer->id) : false;
+
+        $coins_change = $actionOrder->coins_change;
+
+        if ($player instanceof Player &&
+            $player->id_customer_referrer &&
+            (Configuration::get('krona_referral_order_nbr', null, $this->context->shop->id_shop_group, $this->context->shop->id_shop) > Player::getNbrOfOrders($this->context->customer->id, true))
+        ) {
+            $coins_change = $actionOrder->coins_change_buyer;
+        }
+
         // Check the rounding method -> nearest is standard
         $order_rounding = Configuration::get('krona_order_rounding');
         if ($order_rounding == 'down') {
-            $total = floor($cart_value * $actionOrder->coins_change);
+            $total = floor($cart_value * $coins_change);
         }
         elseif ($order_rounding == 'up') {
-            $total = ceil($cart_value * $actionOrder->coins_change);
+            $total = ceil($cart_value * $coins_change);
         }
         else {
-            $total = round($cart_value * $actionOrder->coins_change);
+            $total = round($cart_value * $coins_change);
+        }
+
+        // Check for the max threshold
+        if ($actionOrder->coins_change_max) {
+            $total = min($total, $actionOrder->coins_change_max);
         }
 
         // Loyalty conversion
         $this->context->controller->addJS($this->_path.'/views/js/krona-loyalty.js');
-
-        $player = ($this->context->customer->id) ? new Player($this->context->customer->id) : false;
 
         Media::addJsDef(
             array(
@@ -1016,22 +1044,22 @@ class Genzo_Krona extends Module
         $player->delete();
     }
 
-	public function hookActionOrderStatusUpdate($params) {
+	public function hookActionOrderStatusPostUpdate($params) {
 
-	    $newStatus = $params['newOrderStatus'];
+	    // $newStatus = $params['newOrderStatus'];
 	    $id_order = $params['id_order'];
         $order = new Order($id_order);
 
-        return $this->processOrder($order, $newStatus->id);
+        return $this->processOrder($order);
     }
 
 	public function hookActionOrderEdited($params) {
 	    $order = $params['order'];
-        return $this->processOrder($order, $order->current_state);
+        return $this->processOrder($order);
     }
 
     /* @param $order Order */
-    public function processOrder($order, $id_order_state) {
+    public function processOrder($order) {
 
         // Check if there is already history entry
         $id_history = PlayerHistory::getIdHistoryByIdOrder($order->id_customer, $order->id);
@@ -1039,7 +1067,7 @@ class Genzo_Krona extends Module
         $ids_order_state = explode(',', Configuration::get('krona_order_state', null, $order->id_shop_group, $order->id_shop));
 
         // Check if the status is relevant
-        if (in_array($id_order_state, $ids_order_state) || $id_history) {
+        if (in_array($order->current_state, $ids_order_state) || $id_history) {
 
             // Check ActionOrder -> This is basically checking the currency
             $id_action_order = ActionOrder::getIdActionOrderByCurrency($order->id_currency);
@@ -1091,7 +1119,7 @@ class Genzo_Krona extends Module
 
                 $languages = Language::getLanguages();
 
-                if (in_array($id_order_state, $ids_order_state)) {
+                if (in_array($order->current_state, $ids_order_state)) {
 
                     // Check if referral is relevant
                     $coins_change = $actionOrder->coins_change;
@@ -1100,12 +1128,11 @@ class Genzo_Krona extends Module
                     if (
                         $player->id_customer_referrer &&
                         Configuration::get('krona_referral_order_nbr') &&
-                        (Configuration::get('krona_referral_order_nbr', null, $order->id_shop_group, $order->id_shop) > Player::getNbrOfOrders($order->id_customer, true))
+                        (Configuration::get('krona_referral_order_nbr', null, $order->id_shop_group, $order->id_shop) >= Player::getNbrOfOrders($order->id_customer, true))
                     ) {
                         $coins_change = $actionOrder->coins_change_buyer;
                         $coins_change_referrer = $actionOrder->coins_change_referrer;
                     }
-
 
                     // Check the rounding method -> nearest is standard
                     $order_rounding = Configuration::get('krona_order_rounding', null, $order->id_shop_group, $order->id_shop);
@@ -1217,6 +1244,7 @@ class Genzo_Krona extends Module
                         }
 
                         $historyReferrer->save();
+                        Player::updatePlayerLevels($player->id_customer_referrer);
                     }
                 }
                 else {
@@ -1478,7 +1506,9 @@ class Genzo_Krona extends Module
 
     }
 
-    // Todo: improving possible action table
-    // Todo: Modify the docs - change the link to the forum as well
-    // Todo: Make voucher for referral possible -> levels
+    // Todo for version 2.1
+    // Show and allow edit for referral customers
+    // Improving possible action table
+    // When you look at the overview, you have a Rank, if you click on it it takes you to the top of the leaderboard. It would be nice if it were take you to yourself, in the list.  So you click on it, and maybe it takes you to page 23, which you are listed on.  Then you can easily see who is around you on the rank list. Also, it would be nice if you could search for players in the rank list
+
 }

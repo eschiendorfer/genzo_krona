@@ -18,6 +18,8 @@ function upgrade_module_2_0_0($module) {
         !$module->registerHook('actionRegisterGenzoCrmEmail') OR
         !$module->registerHook('actionOrderEdited') OR
         !$module->registerHook('actionObjectCustomerDeleteAfter') OR
+        !$module->registerHook('actionOrderStatusPostUpdate') OR
+        !$module->unregisterHook('actionOrderStatusUpdate') OR
         !$module->executeSqlScript('install-2.0.0-after') OR
         !$module->uninstallAdminMenus() OR
         !$module->installAdminMenus()

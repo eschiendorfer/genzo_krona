@@ -5,7 +5,7 @@
         <div class="panel col-lg-12">
             <div class="panel-heading">{l s='Bug Reporting' mod='genzo_krona'}</div>
             <p><b>Github:</b> <a target="_blank" href="https://github.com/eschiendorfer/genzo_krona">https://github.com/eschiendorfer/genzo_krona</a></p>
-            <p><b>Forum:</b> <a target="_blank" href="https://forum.thirtybees.com/topic/1505/planned-free-module-loyalty-points">https://forum.thirtybees.com/topic/1505/planned-free-module-loyalty-points</a></p>
+            <p><b>Forum:</b> <a target="_blank" href="https://forum.thirtybees.com/topic/1505-1505/free-module-loyalty-points-genzo_krona/">https://forum.thirtybees.com/topic/1505-1505/free-module-loyalty-points-genzo_krona/</a></p>
         </div>
         <div class="panel col-lg-12">
             <div class="panel-heading">{l s='Do you like this module?' mod='genzo_krona'}</div>
@@ -29,16 +29,17 @@
             <div class="panel-heading">{l s='Documentation' mod='genzo_krona'}</div>
             <p>This loyalty module has the official name “genzo_krona”, but I am just calling it Krona in this Documentation. With Krona you get a powerful loyalty / gamification module. It’s very flexible and can be expanded with other modules. The best thing is, Krona is open source and completely free.</p>
             <h2>Why to use this module?</h2>
-            <p>The strength of this modules is, that other modules can hook in. Do you want to reward, when a customer is writing a review? No problem. Just install revws module by datakick and you can reward this action. Do you want to give points, when a customer has birthday? No problem. Just install slick-303 birthday module. </p>
+            <p>The strength of this modules is, that other modules can hook in. Do you want to reward, when a customer is writing a review? No problem. Just install <a href="https://forum.thirtybees.com/topic/1422-free-modulerevws-product-reviews" target="_blank">revws module</a> by datakick and you can reward this action.
+                Do you want to give points, when a customer has birthday? No problem. Just install slick-303 <a href="https://forum.thirtybees.com/topic/1540-1540/free-module-birthday-gift/" target="_blank">birthday module.</a></p>
             <p>If you are looking for a simple module, which just rewards when a customer places an order. Then you don’t need this module. Though it’s probably still a good choice. Krona is much more than a basic loyalty system as you will learn on the next sections.</p>
-            <p>Please note: that Krona is quite a complex module. It was not only complex to code, but it’s also quite complex to set it up, since it fits so many use cases. I recommend to do the following steps after installation:</p>
+            <p>Please note: that Krona is quite a complex module. It was not only complex to code, but it’s also quite complex to set up, since it fits so many use cases. I recommend to do the following steps after installation:</p>
             <ol>
                 <li>Go into all Settings tabs and save them first.</li>
                 <li>Go to Orders and enable/edit your currency.</li>
-                <li>Import your players, with whichever or both options you want.</li>
+                <li>Import your players, with the options you like.</li>
                 <li>Go to Groups and organize those.</li>
                 <li>Go to Actions and edit/enable the ones you want to use.</li>
-                <li>Then just setup some Levels and you’re good to go.</li>
+                <li>Then setup some Levels and you’re good to go.</li>
             </ol>
             <p>Krona has almost unlimited use cases. Here are just a few examples how you could use it.</p>
             <ul>
@@ -48,6 +49,7 @@
                 <li>Publish a leaderboard with the players and motivate them to collect more points.</li>
             </ul>
             <p>Actions, Orders and Levels are the heart of Krona. In this documentation the headings are listed like the sidebar in the backoffice. I strongly recommend to read the whole documentation, after installing Krona for the first time.</p>
+
             <h2>Actions</h2>
             <a href="{$img_docs}actions-list.jpg" class="fancybox"><img src="{$img_docs}actions-list.jpg"></a>
             <p>After installing you can already use four inbuilt functions. These are: account creation, page visit, avatar upload and newsletter subscription. But you can expand these actions with other modules. It’s quite simple for a module developer to hook into Krona, it will take them only an hour or so. So don’t hesitate to ask them, using the Krona interface.</p>
@@ -55,6 +57,7 @@
             <p>This is the typical editing view of an action. You can set a “<strong>title</strong>” and a “<strong>message</strong>”, which will be displayed in the customer timeline in the frontoffice. </p>
             <p>With the “<strong>execution type</strong>” you can prevent, that a customer collects unlimited points, by always repeating the same action. Let’s say, you want to give points, when a customer has birthday. We all know these very clever guys, who will change their birthday every day, so they collect massive amount of points. Not with us! Just set up the execution type to “max per year” and “<strong>execution max</strong>” to 1. It means, that a customer can only collect points once a year for this action. You can do the same for month, day and lifetime. It’s also possible, to set it to unlimited. </p>
             <p>The “<strong>points change</strong>” value is the value a customer gets, when executing this action. In the screenshot a player get’s 100 points when he creates his account. This can be seen as a starting point, since creation the account is always the first action.</p>
+
             <h2>Orders</h2>
             <a href="{$img_docs}orders-list.jpg" class="fancybox"><img src="{$img_docs}orders-list.jpg"></a>
             <p>Orders could be called the classical way of a loyalty system. You reward customers, who buy products in your store. You can set this up depending on the currency. But keep in mind that some settings are saved globally. This is described under “Settings”.</p>
@@ -62,7 +65,14 @@
             <a href="{$img_docs}order-dollar.jpg" class="fancybox"><img src="{$img_docs}order-dollar.jpg"></a>
             <p>The “<strong>coins reward</strong>” value defines, how many coins a customer gets, when he spends 1 Dollar (or any other currency). I recommend to set this value to 1, 10 or 100. </p>
             <p>You can prevent, that small orders are rewarded with coins. If you set “<strong>minimum amount</strong>” to 20 USD, only higher orders than 20 USD will be rewarded. To be honest: I don’t recommend to use this feature, as it confuses customers. It was just implemented, since it’s a part of the native loyalty module from thirty bees.</p>
+            <p>You can prevent, that customers collectto many coins with one order. Just define a value in “<strong>max coins change</strong>”. I am not a fan of such methods, since it's not really customer friendly (who spends a lot, should get a lot of rewards), but it's up to you.</p>
             <p>The “<strong>loyalty conversion</strong>” value defines how worthy the loyalty points are. This may sound confusing to you, when you are reading this docs the first time. Under “Settings” I will describe the relation between coins and loyalty points in detail. If you set it to 0.01, 1 loyalty point is worth 1 cent.</p>
+            <h3>Referral</h3>
+            <p>Since version 2.0.0 it's possible to use referrals. Every customer has a <b>"referral code"</b> in his FO account overview. He gives this code, to his friend. The friends types the code during the registraion process.</p>
+            <p>Thats the reason you can set up a <b>"coins reward referrer"</b> and a <b>"coins reward buyer"</b>. If the friend places an order he will get "coins reward buyer". In order to be a reward, this needs always to be higher than the normal coins reward.</p>
+            <p>An example: your basic coins change is 1 coin/$. Your coins reward buyer equals 1,5 coins/$ and your coins reward referrer equals 0,5. This means you give the double amount of loyalty points in referral orders than in normal orders. An orer with for 50$ will bring 75 coins to the buyer and 25 coins to the referrer.</p>
+            <p>In the settings you can limit on how many orders the coins change for referrer and coins change for buyer should be active. Normally the merchants limit this special reward to the first order.</p>
+
             <h2>Players</h2>
             <a href="{$img_docs}players-import.jpg" class="fancybox"><img src="{$img_docs}players-import.jpg"></a>
             <p>You can <strong>import</strong> all your customers, so they become part of Krona. If you click on the import button they will all be imported. If you were using the native loyalty module, you can import their loyalty points balance into Krona. I recommend, to set this value to 1. So your customers will have the same value as before. </p>
@@ -72,8 +82,10 @@
             <p>In the player list you will see a lot of columns depend on your settings. The active value can be changed by the customer in the frontoffice too. We are basically offering them a way to say: “Nope, I am not interested in the loyalty program.” I guess, we should respect that. The banned option, can only be set up from the backoffice. If a customer is cheating, you can block him from participating any further.</p>
             <a href="{$img_docs}players-edit.jpg" class="fancybox"><img src="{$img_docs}players-edit.jpg"></a>
             <a href="{$img_docs}players-edit-2.jpg" class="fancybox"><img src="{$img_docs}players-edit-2.jpg"></a>
-            <p>In the edit view you can’t change points or coins directly, since this would mess things up with “levels”. But you can add “<strong>custom actions</strong>”. There you can change points and coins in any direction. </p>
+            <p>In the edit view you can’t change points or coins directly, since this would mess things up with “levels”. But you can add “<strong>custom actions</strong>”. There you can change points and coins in any direction.</p>
             <p>If for example somebody writes useless reviews (spam), you could make a custom action, which is like a penalty. You take off the points, he has collected before. It’s like a warning. If he continues, you still could ban him. But of course I hope, you aren’t forced, to take such measurements.</p>
+            <p>Since version 2.0.0 it's also possible to edit or delete entries from the player history.</p>
+
             <h2>Levels</h2>
             <a href="{$img_docs}levels-list.jpg" class="fancybox"><img src="{$img_docs}levels-list.jpg"></a>
             <p>Levels are very powerful tool to reward your customers. In the “<strong>condition type</strong>” you set up, what a customers has to fulfill for reaching this level. If you use a threshold type, a customers needs to collect that many points or coins to reach the level. If you use an executing type, you can reward things like: giving a coupon after somebody placed his third order. If you are confused about the word “lifetime points”, read the sections “Settings”. </p>
@@ -95,9 +107,12 @@
             <p>You may wonder, what is the “KronaTemplate: Orders” coupon about. This is relevant, if you use the loyalty function. Your customer will be able to convert loyalty points, into a coupon in the frontoffice:</p>
             <a href="{$img_docs}coupon-conversion.jpg" class="fancybox"><img src="{$img_docs}coupon-conversion.jpg"></a>
             <p>In this conversion process the coupon will be created as you set it up in “KronaTemplate: Orders”. You can for example set up a time span of one month and the coupon will be valid for month, when a customer converts loyalty points.</p>
+            <p>Since version 2.0.0 you can also allow your customers, to convert loyalty points directly at the checkout. Note: The technical process is the same. First a coupon is generated. Second the coupon is applied. But this happens all automated.</p>
+
             <h2>Groups</h2>
             <a href="{$img_docs}groups-list.jpg" class="fancybox"><img src="{$img_docs}groups-list.jpg"></a>
             <p>Here you will see all your customer groups. In order to make Krona fully working, the module needs to know about the importance / priority of each group. Remember the VIP example? If this customer group is removed after one year, the customer will be connected to next highest customer group, which he has achieved.</p>
+
             <h2>Settings</h2>
             <p>On the top of the settings form you see your “<strong>cron job url</strong>”. Please set it up and let it execute daily. I guess it’s best to let it execute just some minutes after midnight. Why is a cronjob needed? It’s important, if you have levels with a duration time. It’s also needed for the inbuilt newsletter action. That way it’s possible, to reward a customer every month, as long as he is subscribed to your newsletter. If you want to expire loyalty points, you also need the cron job.</p>
             <h3>General</h3>
@@ -109,12 +124,13 @@
             <p>Under “<strong>url</strong>” you specify the url, where your loyalty program can be reached. If you save it with “loyalty”, you can reach it by yourdomain.com/loyalty.</p>
             <p>If you deactivate “<strong>customer activation</strong>”, your customer have to activate themselves, to be a part of your loyalty system. It means that they don’t collect any points until they activate it. I recommend strongly, to set it to “yes”. </p>
             <p>The “<strong>home content</strong>” is displayed, when a user is going to yourdomain.com/yoururl. It’s like a cms page, where you can describe, how your system works and what it is all about.</p>
+
             <h3>Orders</h3>
             <a href="{$img_docs}settings-orders.jpg" class="fancybox"><img src="{$img_docs}settings-orders.jpg"></a>
             <p>On orders you can set up a “<strong>total amount</strong>”. This amount will be used, to calculate the coins a customer collects, when he places an order. I recommend to use a value WITH tax. Otherwise your customers will be easily confused.</p>
-            <p>In “<strong>rounding</strong>” I recommend to use up. It sounds better to the customer to round up. </p>
-            <p>Be careful when selecting “<strong>order states</strong>”. Always when an order status is updated, it will check, if this new status is relevant. If an order reaches multiple times a relevant status, the coins are given multiple times! Same story for “<strong>cancel order states</strong>”. There the coins are removed of course.</p>
-            <p>The “<strong>title</strong>” and “<strong>message</strong>” will be seen by the customer in the Front-Office timeline. You can set these translations globally here, since it would be very annoying to set it up for every currency...</p>
+            <p>In “<strong>rounding</strong>” I recommend to use up. It sounds better to the customer to round up.</p>
+            <p>Be careful to select all valid “<strong>order states</strong>”. Always when an order status is updated, it will check, if this new status is relevant. If the order state is relevant the coins will be calculated newly. Same is true if the order state is not relevant. In this case the coins will be equal zero.</p>
+
             <h3>Loyalty</h3>
             <a href="{$img_docs}settings-loyalty.jpg" class="fancybox"><img src="{$img_docs}settings-loyalty.jpg"></a>
             <p>What is “<strong>loyalty total value</strong>”? Remember actions are rewarded with points, but orders are rewarded with coins. Your customers will never hear of points and coins. They just see the total loyalty value. You can decide, how this value is calculated.</p>
@@ -124,6 +140,10 @@
             <p>If you switch “<strong>product page</strong>” on. The hook “DisplayRightColumnProduct” will show up information like the above screenshot. You can change the hook manually to “DisplayProductButtons”. Don’t forget to unhook the DisplayRightColumnProduct, if you want to change.</p>
             <a href="{$img_docs}shopping-cart.jpg" class="fancybox"><img src="{$img_docs}shopping-cart.jpg"></a>
             <p>You can also show a little message containing the loyalty points an order will bring. Just switch on “<strong>cart page</strong>”.</p>
+            <p>Since version 2.0.0 it's possible to <b>expire loyalty points</b>. There are two methods: fixed and flexible. Fixed means that the expire date never updates.</p>
+            <p>Example: your customer makes an order. Next day he places a second order. The coins from the first order will expire a day before the points from the second order. If you chose the flexible way, they will both expire on the expire date from the second order. So the expire date of the first order was prolonged.</p>
+            <p>There is an update function for all expire dates. This is useful, if you import orders and want to define an expire date on these. But be careful: This update will override all existing expiring dates!</p>
+
             <h3>Gamification</h3>
             <a href="{$img_docs}settings-gamification.jpg" class="fancybox"><img src="{$img_docs}settings-gamification.jpg"></a>
             <p>The concept of “<strong>gamification total value</strong>” is equal to “loyalty total value”. The customer will only see the total value in frontoffice. However here the option coins + points is probably the most chosen option. If you set it to points only, then you have a clear distinction between actions and orders.</p>
@@ -133,6 +153,7 @@
             <p>You can also allow to use “<strong>pseudonym</strong>”. A customer can save it in his customer account. You can also change it through the backoffice in the player edit view.</p>
             <p>You can allow customers to upload an “<strong>avatar</strong>”. This is one of the inbuilt actions. It will make your leaderboard look more attractive. </p>
             <p>Note: Other modules can use pseudonym and avatar. So if a module developer integrates Krona nicely, pseudonym and avatar will show up, when posting a review for example.</p>
+
             <h3>Coupons</h3>
             <a href="{$img_docs}coupons-list.jpg" class="fancybox"><img src="{$img_docs}coupons-list.jpg"></a>
             <p>You can set up a “<strong>prefix</strong>” for the coupons, which are created by Krona. This way you will always notice in an order, if this coupon was created through Krona module. </p>

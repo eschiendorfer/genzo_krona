@@ -462,33 +462,25 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
             'filter_type' => 'string',
             'filter_key' => 'c!lastname'
         );
+
         if ($this->is_gamification && Configuration::get('krona_pseudonym')) {
             $fields_list['pseudonym'] = array(
                 'title' => $this->l('Pseudonym'),
                 'align' => 'left',
             );
         }
+
         if (($this->is_loyalty AND $this->loyalty_total!='coins') OR ($this->is_gamification AND $this->gamification_total!='coins')) {
             $fields_list['points'] = array(
                 'title' => $this->l('Points'),
                 'class' => 'fixed-width-xs',
                 'align' => 'left',
             );
-            $fields_list['points_calc'] = array(
-                'title' => $this->l('Points_calc'),
-                'class' => 'fixed-width-xs',
-                'align' => 'left', // Todo: remove calc columns
-            );
         }
 
         if (($this->is_loyalty AND $this->loyalty_total!='points') OR ($this->is_gamification AND $this->gamification_total!='points')) {
             $fields_list['coins'] = array(
                 'title' => $this->l('Coins'),
-                'class' => 'fixed-width-xs',
-                'align' => 'left',
-            );
-            $fields_list['coins_calc'] = array(
-                'title' => $this->l('coins_calc'),
                 'class' => 'fixed-width-xs',
                 'align' => 'left',
             );
@@ -502,18 +494,15 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
                 'search' => false,
             );
         }
+
         if ($this->is_loyalty) {
             $fields_list['loyalty'] = array(
                 'title' => $this->loyalty_name,
                 'class' => 'fixed-width-xs',
                 'align' => 'left',
             );
-            $fields_list['loyalty_calc'] = array(
-                'title' => $this->loyalty_name.'_calc',
-                'class' => 'fixed-width-xs',
-                'align' => 'left',
-            );
         }
+
         $fields_list['active'] = array(
             'title' => $this->l('Active'),
             'active' => 'status',
@@ -522,6 +511,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
             'type'  => 'bool',
             'filter_type' => 'int',
         );
+
         $fields_list['banned'] = array(
             'title' => $this->l('Banned'),
             'active' => 'toggleBanned',

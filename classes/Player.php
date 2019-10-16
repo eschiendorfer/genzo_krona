@@ -130,7 +130,7 @@ class Player extends \ObjectModel {
             $query->select('SUM(loyalty-loyalty_used-loyalty_expired) AS expire_points, DATE(loyalty_expire_date) AS expire_date');
             $query->from('genzo_krona_player_history');
             $query->where('id_customer = ' . $this->id_customer);
-            $query->where('loyalty > 0 ');
+            $query->where('(loyalty-loyalty_used-loyalty_expired) > 0 ');
             $query->groupBy('expire_date');
             $query->orderBy('expire_date');
             $expire = \Db::getInstance()->getRow($query);
@@ -370,7 +370,13 @@ class Player extends \ObjectModel {
                         $condition = PlayerHistory::countActionByPlayer($id_customer, $result['id_action'], $dateStart);
                     }
                     elseif ($result['condition_type'] == 'order') {
-                        $condition = PlayerHistory::countOrderByPlayer($id_customer, $result['id_action'], $dateStart);
+                        $condition = PlayerHistory::countOrderByPlayer($id_customer, $result['id_action'], 'order', $dateStart);
+                    }
+                    elseif ($result['condition_type'] == 'has_referred') {
+                        $condition = PlayerHistory::countOrderByPlayer($id_customer, $result['id_action'], 'ref_referrer', $dateStart);
+                    }
+                    elseif ($result['condition_type'] == 'was_referred') {
+                        $condition = PlayerHistory::countOrderByPlayer($id_customer, $result['id_action'], 'ref_buyer', $dateStart);
                     }
                 }
                 else {
@@ -637,7 +643,7 @@ class Player extends \ObjectModel {
         $exists = true;
 
         while ($exists) {
-            $referral_code = strtoupper(\Tools::passwdGen(8));
+            $referral_code = strtoupper(\Tools::passwdGen(6));
 
             $query = new \DbQuery();
             $query->select('COUNT(*)');
@@ -719,19 +725,9 @@ class Player extends \ObjectModel {
 
                         $expiredHistory->add();
                     }
-
-
                 }
-
-                /*$sql = 'UPDATE '._DB_PREFIX_.self::$definition['table'].' AS p
-                        INNER JOIN '._DB_PREFIX_.'customer AS c ON c.id_customer=p.id_customer
-                        SET p.loyalty_expired = (p.loyalty-p.loyalty_used-p.loyalty_expired)
-                        WHERE loyalty_expire IS NOT NULL AND loyalty_expire < NOW() AND c.id_shop='.$id_shop;
-
-                \Db::getInstance()->execute($sql);*/
             }
-        }die();
-
+        }
     }
 
 }

@@ -213,6 +213,8 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController {
                     array('value' => 'coins', 'name' => $this->l('Threshold:') . ' ' . $this->l('Coins')),
                     array('value' => 'action', 'name' => $this->l('Executing Action')),
                     array('value' => 'order', 'name' => $this->l('Executing Order')),
+                    array('value' => 'has_referred', 'name' => $this->l('Referral: has referred orders')),
+                    array('value' => 'was_referred', 'name' => $this->l('Referral: has made orders')),
                 ),
                 'id' => 'value',
                 'name' => 'name',
@@ -423,7 +425,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController {
                 $level->condition = (int)Tools::getValue('condition_action');
                 $level->id_action = (int)Tools::getValue('id_action');
             }
-            elseif ($level->condition_type == 'order') {
+            elseif ($level->condition_type == 'order' || $level->condition_type == 'has_referred' || $level->condition_type == 'was_referred') {
                 $level->condition = (int)Tools::getValue('condition_action');
                 $level->id_action = (int)Tools::getValue('id_action_order');
             }

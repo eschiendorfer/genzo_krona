@@ -34,35 +34,48 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
         $this->_select = 'c.name';
         $this->_join = 'LEFT JOIN '._DB_PREFIX_.'currency c ON (c.id_currency = a.id_currency) ';
 
-        $fields_list = array(
-            'id_action_order' => array(
-                'title' => 'ID',
+        $fields_list['id_action_order'] = array(
+            'title' => 'ID',
+            'align' => 'center',
+            'class' => 'fixed-width-xs',
+            'filter_type' => 'int',
+        );
+
+        $fields_list['name']= array(
+            'title' => $this->l('Currency'),
+            'align' => 'left',
+        );
+
+        $fields_list['coins_change'] = array(
+            'title' => $this->l('Coins Change'),
+            'align' => 'center',
+            'class' => 'fixed-width-xs',
+            'filter_type' => 'int'
+        );
+
+        if (Configuration::get('krona_referral_active')) {
+            $fields_list['coins_change_referrer'] = array(
+                'title' => $this->l('Ref: Coins Referrer'),
                 'align' => 'center',
-                'class' => 'fixed-width-xs',
-                'filter_type' => 'int',
-            ),
-            'name' => array(
-                'title' => $this->l('Currency'),
-                'align' => 'left',
-            ),
-            'coins_change' => array(
-                'title' => $this->l('Coins Change'),
+            );
+            $fields_list['coins_change_buyer'] = array(
+                'title' => $this->l('Ref: Coins Buyer'),
                 'align' => 'center',
-                'class' => 'fixed-width-xs',
-                'filter_type' => 'int'
-            ),
-            'minimum_amount' => array(
-                'title' => $this->l('Minimum Amount'),
-                'align' => 'left',
-            ),
-            'active' => array(
-                'title' => $this->l('Active'),
-                'active' => 'status',
-                'class' => 'fixed-width-xs',
-                'align' => 'center',
-                'type'  => 'bool',
-                'filter_type' => 'int',
-            )
+            );
+        }
+
+        $fields_list['minimum_amount'] = array(
+            'title' => $this->l('Minimum Amount'),
+            'align' => 'left',
+        );
+
+        $fields_list['active'] = array(
+            'title' => $this->l('Active'),
+            'active' => 'status',
+            'class' => 'fixed-width-xs',
+            'align' => 'center',
+            'type'  => 'bool',
+            'filter_type' => 'int',
         );
 
         $this->fields_list = $fields_list;
@@ -158,6 +171,15 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
 
         $inputs[] = array(
             'type'  => 'text',
+            'name'  => 'minimum_amount',
+            'label' => $this->l('Minimum Amount'),
+            'desc'  => sprintf($this->l('Needs there to be a minimum amount of %s to get coins? If not, set it equal to 0.'), $this->object->currency),
+            'class'  => 'input fixed-width-sm',
+            'suffix' => $this->object->currency_iso,
+        );
+
+        $inputs[] = array(
+            'type'  => 'text',
             'name'  => 'coins_change',
             'label' => $this->l('Coins reward'),
             'desc'  => sprintf($this->l('Example: For every %s spent, the user will get X coins.'),$this->object->currency),
@@ -187,11 +209,11 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
 
         $inputs[] = array(
             'type'  => 'text',
-            'name'  => 'minimum_amount',
-            'label' => $this->l('Minimum Amount'),
-            'desc'  => sprintf($this->l('Needs there to be a minimum amount of %s to get coins? If not, set it equal to 0.'), $this->object->currency),
+            'name'  => 'coins_change_max',
+            'label' => $this->l('Max coins change'),
+            'desc'  => $this->l('Do you want set a max value of coins change? If not, set it equal to 0.'),
             'class'  => 'input fixed-width-sm',
-            'suffix' => $this->object->currency_iso,
+            'suffix' => $this->l('Coins'),
         );
 
         $inputs[] = array(
