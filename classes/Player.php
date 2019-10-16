@@ -664,8 +664,9 @@ class Player extends \ObjectModel {
 
         if ($only_valid) {
             $context = \Context::getContext();
-            $in_states = \Configuration::get('krona_order_state', null, $context->shop->id_shop_group, $context->shop->id_shop);
-            $query->where("current_state IN ({$in_states})");
+            if ($in_states = \Configuration::get('krona_order_state', null, $context->shop->id_shop_group, $context->shop->id_shop)) {
+                $query->where("current_state IN ({$in_states})");
+            }
         }
 
         return \Db::getInstance()->getValue($query);
