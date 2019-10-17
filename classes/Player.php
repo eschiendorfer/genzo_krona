@@ -447,20 +447,27 @@ class Player extends \ObjectModel {
 
                     // Send emails Todo: implement conseqs module
                     if (\Module::isEnabled('genzo_crm')) {
-                        // $content = $this->context->smarty->fetch(_PS_MODULE_DIR_."genzo_krona/mails/{$iso}/new_answer.tpl");
 
-                        $args = array(
-                            'module' => 'genzo_krona',
-                            'key' => 'new_level_achieved',
-                            'id_customer' => $id_customer,
-                            'shortcodes' => array(
-                                'level' => $result['name'],
-                                'next_level' => 'Ritter',
-                                'reward' => 'You got something.',
-                            ),
-                        );
+                        // We only wanna send an email when he gets a coupon -> this way we prevent an email on Bauer level
+                        if ($result['reward_type'] == 'coupon') {
 
-                        \Hook::exec('actionSendEmail', $args, null, false, false);
+                            $reward = 'Als Dankeschön hast du einen Gutschein erhalten! Er ist in deinem Konto ersichtlich.';
+
+                            $nextLevel = PlayerLevel::getNextPlayerLevel($id_customer);
+
+                            $args = array(
+                                'module' => 'genzo_krona',
+                                'key' => 'new_level_achieved',
+                                'id_customer' => $id_customer,
+                                'shortcodes' => array(
+                                    'level' => $result['name'],
+                                    'next_level' => $nextLevel->name,
+                                    'reward' => $reward,
+                                ),
+                            );
+
+                            \Hook::exec('actionSendEmail', $args, null, false, false);
+                        }
                     }
                 }
             }

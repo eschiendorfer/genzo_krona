@@ -85,6 +85,11 @@ class PlayerHistory extends \ObjectModel {
             $this->setLoyalty();
         }
 
+        // Expiring
+        if (\Configuration::get('loyalty_expire_method')!='none' && $days = \Configuration::get('krona_loyalty_expire_days')) {
+            $this->loyalty_expire_date = date("Y-m-d H:i:s", strtotime("+{$days} days"));
+        };
+
         return parent::add($autoDate, $nullValues);
     }
 
@@ -103,11 +108,6 @@ class PlayerHistory extends \ObjectModel {
             elseif ($total_mode_loyalty == 'coins') {
                 $this->loyalty = $this->coins;
             }
-
-            // Expiring
-            if (!$this->loyalty_expired && \Configuration::get('loyalty_expire_method')!='none' && $days = \Configuration::get('krona_loyalty_expire_days')) {
-                $this->loyalty_expire_date = date("Y-m-d H:i:s", strtotime("+{$days} days"));
-            };
         }
     }
 

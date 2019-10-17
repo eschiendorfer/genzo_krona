@@ -53,9 +53,17 @@ class Level extends \ObjectModel {
     );
 
     public static function getLevels() {
+
+        $id_lang = \Context::getContext()->language->id;
+
+        if (!$id_lang) {
+            \Configuration::get('PS_LANG_DEFAULT');
+        }
+
         $query = new \DbQuery();
-        $query->select('*');
-        $query->from(self::$definition['table']);
+        $query->select('l.*, ll.name');
+        $query->from(self::$definition['table'], 'l');
+        $query->innerJoin('genzo_krona_level_lang', 'll', 'l.id_level=ll.id_level AND id_lang='.$id_lang);
         return \Db::getInstance()->ExecuteS($query);
     }
 

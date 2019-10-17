@@ -1510,5 +1510,5 @@ class Genzo_Krona extends Module
     // Show and allow edit for referral customers
     // Improving possible action table
     // When you look at the overview, you have a Rank, if you click on it it takes you to the top of the leaderboard. It would be nice if it were take you to yourself, in the list.  So you click on it, and maybe it takes you to page 23, which you are listed on.  Then you can easily see who is around you on the rank list. Also, it would be nice if you could search for players in the rank list
-
+    // Maybe a BO cleanup of used coupons...
 }
