@@ -85,7 +85,7 @@ class AdminGenzoKronaActionsController extends ModuleAdminController {
         $this->bulk_actions = [];
         $this->allow_export = true;
         $this->token = Tools::getAdminTokenLite('AdminGenzoKronaActions');
-        $this->tpl_list_vars['title'] = $this->l('Actions');
+        $this->tpl_list_vars['title'] = 'Krona Actions';
 
 
         parent::__construct();

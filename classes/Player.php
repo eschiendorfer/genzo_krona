@@ -338,7 +338,7 @@ class Player extends \ObjectModel {
         // The check begins
         foreach ($results as $result) {
 
-            if (!$result['active']) {
+            if (!isset($result['active']) || !$result['active']) {
                 continue;
             }
 
