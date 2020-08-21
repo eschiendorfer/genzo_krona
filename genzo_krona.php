@@ -730,31 +730,9 @@ class Genzo_Krona extends Module
     }
 
     public function hookDisplayCustomerAccountForm($params) {
-
-        // include_once(dirname(__FILE__).'/ReferralProgramModule.php');
-
-        /*if (Configuration::get('PS_CIPHER_ALGORITHM'))
-            $cipherTool = new Rijndael(_RIJNDAEL_KEY_, _RIJNDAEL_IV_);
-        else
-            $cipherTool = new Blowfish(_COOKIE_KEY_, _COOKIE_IV_);
-        $explodeResult = explode('|', $cipherTool->decrypt(Tools::getValue('sponsor')));
-        if ($explodeResult AND count($explodeResult) > 1 AND list($id_referralprogram, $email) = $explodeResult AND (int)($id_referralprogram) AND !empty($email) AND Validate::isEmail($email) AND $id_referralprogram == ReferralProgramModule::isEmailExists($email))
-        {
-            $referralprogram = new ReferralProgramModule($id_referralprogram);
-            if (Validate::isLoadedObject($referralprogram))
-            {
-                 // hack for display referralprogram information in form
-                $_POST['customer_firstname'] = $referralprogram->firstname;
-                $_POST['firstname'] = $referralprogram->firstname;
-                $_POST['customer_lastname'] = $referralprogram->lastname;
-                $_POST['lastname'] = $referralprogram->lastname;
-                $_POST['email'] = $referralprogram->email;
-                $_POST['email_create'] = $referralprogram->email;
-                $sponsor = new Customer((int)$referralprogram->id_sponsor);
-                $_POST['referralprogram'] = $sponsor->email;
-            }
-        }*/
-        return $this->display(__FILE__, 'views/templates/hook/createAccountForm.tpl');
+	    if (Configuration::get('krona_referral_active')) {
+            return $this->display(__FILE__, 'views/templates/hook/createAccountForm.tpl');
+        }
     }
 
     public function hookDisplayRightColumnProduct($params) {
