@@ -996,7 +996,7 @@ class Genzo_Krona extends Module
 	    // Check if the customer has any referrer
 	    $id_customer_referrer = 0;
 
-	    if ($referred_by = pSQL($params['_POST']['referral_code'])) {
+	    if (isset($params['_POST']['referral_code']) && ($referred_by = pSQL($params['_POST']['referral_code']))) {
 	        $id_customer_referrer = Player::getIdByReferralCode($referred_by);
         }
 
