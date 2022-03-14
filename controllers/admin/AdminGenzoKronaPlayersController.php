@@ -145,33 +145,38 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
         // Optional Display
         $stats = false;
 
-        if (Tools::isSubmit('updatePlayerHistory') || $this->display=='updatePlayerHistory') {
-            $this->content = $this->renderPlayerHistoryForm();
-        }
-        elseif (Tools::isSubmit('addCustomAction') || $this->display=='customActionForm') {
-            $this->content = $this->generateFormCustomAction();
-        }
-        elseif (
-            $this->display=='edit' ||
-            Tools::isSubmit('deletePlayerLevel') ||
-            Tools::isSubmit('deletePlayerHistory') ||
-            Tools::isSubmit('savePlayerHistory') ||
-            Tools::isSubmit('saveCustomAction')
-        ) {
-            $this->identifier = 'id_customer';
-            $this->className = 'KronaModule\Player';
-
-            if (!$this->loadObject()) {
-                return false;
-            }
-
-            $this->content = $this->renderPlayerForm();
-            $this->content.= $this->generateListPlayerLevels();
-            $this->content.= $this->generateListPlayerHistory();
+        if (Shop::isFeatureActive() && (Shop::getContext() == Shop::CONTEXT_GROUP || Shop::getContext() == Shop::CONTEXT_ALL)) {
+            $this->errors[] = $this->l('Please chose a specific shop, to show players.');
         }
         else {
-            $this->content = $this->renderPlayersList();
-            $stats = $this->getStats();
+            if (Tools::isSubmit('updatePlayerHistory') || $this->display=='updatePlayerHistory') {
+                $this->content = $this->renderPlayerHistoryForm();
+            }
+            elseif (Tools::isSubmit('addCustomAction') || $this->display=='customActionForm') {
+                $this->content = $this->generateFormCustomAction();
+            }
+            elseif (
+                $this->display=='edit' ||
+                Tools::isSubmit('deletePlayerLevel') ||
+                Tools::isSubmit('deletePlayerHistory') ||
+                Tools::isSubmit('savePlayerHistory') ||
+                Tools::isSubmit('saveCustomAction')
+            ) {
+                $this->identifier = 'id_customer';
+                $this->className = 'KronaModule\Player';
+
+                if (!$this->loadObject()) {
+                    return false;
+                }
+
+                $this->content = $this->renderPlayerForm();
+                $this->content.= $this->generateListPlayerLevels();
+                $this->content.= $this->generateListPlayerHistory();
+            }
+            else {
+                $this->content = $this->renderPlayersList();
+                $stats = $this->getStats();
+            }
         }
 
         // This are the real smarty variables
