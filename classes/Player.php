@@ -70,21 +70,23 @@ class Player extends \ObjectModel {
                 $this->add();
             }
 
-            // calculate points, coins, total and loyalty
-            $this->setDynamicValues();
+            if ($this->id_customer) {
+                // calculate points, coins, total and loyalty
+                $this->setDynamicValues();
 
-            if (\Configuration::get('krona_gamification_active')) {
+                if (\Configuration::get('krona_gamification_active')) {
 
-                $names = self::getDisplayNames($this->id_customer);
+                    $names = self::getDisplayNames($this->id_customer);
 
-                $this->firstname = $names['firstname'];
-                $this->lastname = $names['lastname'];
-                $this->display_name = (\Configuration::get('krona_pseudonym') && $this->pseudonym) ? $this->pseudonym : $names['display_name'];
+                    $this->firstname = $names['firstname'];
+                    $this->lastname = $names['lastname'];
+                    $this->display_name = (\Configuration::get('krona_pseudonym') && $this->pseudonym) ? $this->pseudonym : $names['display_name'];
 
-                if (\Configuration::get('krona_avatar')) {
-                    $this->avatar_full = '/upload/genzo_krona/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
+                    if (\Configuration::get('krona_avatar')) {
+                        $this->avatar_full = '/upload/genzo_krona/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
+                    }
+
                 }
-
             }
         }
     }
