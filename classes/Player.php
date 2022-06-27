@@ -42,15 +42,15 @@ class Player extends \ObjectModel {
         'primary' => 'id_customer',
         'multilang' => false,
         'fields' => array(
-            'id_customer'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'id_customer_referrer'       => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_customer'           => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_customer_referrer'  => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'referral_code'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'pseudonym'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'avatar'            => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'active'            => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'banned'            => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'date_add'          => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
-            'date_upd'          => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
+            'pseudonym'             => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'avatar'                => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'active'                => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'banned'                => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'date_add'              => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
+            'date_upd'              => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
         )
     );
 
@@ -160,16 +160,19 @@ class Player extends \ObjectModel {
 
     public function delete() {
 
-        parent::delete();
+        if ($this->id_customer) {
+            $histories = PlayerHistory::getHistoryByPlayer($this->id_customer); // As there is _lang table, we use the foreach
 
-        $histories = PlayerHistory::getHistoryByPlayer($this->id_customer); // As there is _lang table, we use the foreach
+            foreach ($histories as $history) {
+                $playerHistory = new PlayerHistory($history['id_history']);
+                $playerHistory->delete();
+            }
 
-        foreach ($histories as $history) {
-            $playerHistory = new PlayerHistory($history['id_history']);
-            $playerHistory->delete();
+            \Db::getInstance()->delete('genzo_krona_player_level', 'id_customer='.$this->id_customer);
+
+            parent::delete();
         }
 
-        \Db::getInstance()->delete('genzo_krona_player_level', 'id_customer='.$this->id_customer);
     }
 
     // Database
