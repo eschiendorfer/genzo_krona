@@ -1,13 +1,17 @@
-$(document).ready(function() {
+window.addEventListener('DOMContentLoaded', function(event) {
+
+    var avatar_input = document.getElementById('avatar-input');
 
     // Avatar Upload -> Trigger the hidden file input
-    $('#avatar-button').click(function(){
-        $("input#avatar-input").click();
+    document.getElementById('avatar-button').addEventListener('click', function (event) {
+        avatar_input.click();
     });
+
     // Refresh the fake input with the selected image
-    $('input#avatar-input').change(function(e){
-        var filename = $('input#avatar-input')[0].files[0].name;
-        $( 'input#avatar-fake' ).val(filename);
+    // Todo: check why this fake stuff is even needed. Maybe just for styling reasons!?
+    avatar_input.addEventListener('change', function (event) {
+        document.getElementById('avatar-fake').value = avatar_input.value;
     });
 
 });
+
