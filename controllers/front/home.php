@@ -34,6 +34,7 @@ class Genzo_KronaHomeModuleFrontController extends ModuleFrontController {
             'nav' => $this->context->customer->isLogged() ? true : false,
             'loyalty' => Configuration::get('krona_loyalty_active', null),
             'banned' => Tools::getValue('banned') ? true : false,
+            'color_scheme' => 'red',
         ));
 
         $this->setTemplate('home.tpl');

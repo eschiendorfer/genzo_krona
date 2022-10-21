@@ -49,6 +49,7 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController {
             'next_level' => json_decode(json_encode(PlayerLevel::getNextPlayerLevel($id_customer)), true),
             'gamification' => Configuration::get('krona_gamification_active'),
             'loyalty' => Configuration::get('krona_loyalty_active'),
+            'color_scheme' => 'red',
 		));
 
 		$this->setTemplate('levels.tpl');

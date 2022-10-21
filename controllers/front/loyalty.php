@@ -77,6 +77,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController {
             'loyalty' => Configuration::get('krona_loyalty_active'),
             'player' => $player,
             'krona_currency' => $actionOrder->currency_iso,
+            'color_scheme' => 'red',
 		));
 
 		$this->setTemplate('loyalty.tpl');

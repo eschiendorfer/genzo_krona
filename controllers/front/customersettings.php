@@ -58,6 +58,7 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
             'avatar' => Configuration::get('krona_avatar'),
             'gamification' => Configuration::get('krona_gamification_active'),
             'loyalty' => Configuration::get('krona_loyalty_active'),
+            'color_scheme' => 'red',
 		));
 
 		$this->setTemplate('customersettings.tpl');
