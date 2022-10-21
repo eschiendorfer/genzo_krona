@@ -699,8 +699,8 @@ class Genzo_Krona extends Module
         $this->context->controller->addCSS($this->_path.'/views/css/krona_custom.css');
 
         // JS
-        $this->context->controller->addJquery();
-        $this->context->controller->addJS($this->_path.'/views/js/krona.js');
+
+
 
         if (Action::checkIfActionIsActive('genzo_krona', 'page_visit') AND
             $this->context->customer->isLogged()) {

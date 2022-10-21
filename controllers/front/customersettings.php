@@ -97,4 +97,10 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
 
         return $playerObj;
     }
+
+    public function setMedia() {
+        parent::setMedia();
+        $this->addJS(_MODULE_DIR_.'genzo_krona/views/js/krona.js');
+    }
+
 }
