@@ -1042,7 +1042,11 @@ class Genzo_Krona extends Module
         // Check if there is already history entry
         $id_history = PlayerHistory::getIdHistoryByIdOrder($order->id_customer, $order->id);
 
-        $ids_order_state = explode(',', Configuration::get('krona_order_state', null, $order->id_shop_group, $order->id_shop));
+        if (!$krona_order_state = Configuration::get('krona_order_state', null, $order->id_shop_group, $order->id_shop)) {
+            return true;
+        }
+
+        $ids_order_state = explode(',', $krona_order_state);
 
         // Check if the status is relevant
         if (in_array($order->current_state, $ids_order_state) || $id_history) {
@@ -1227,7 +1231,7 @@ class Genzo_Krona extends Module
                 }
                 else {
 
-                    // When an order is cancelled or get's a status that doesn't deserve points
+                    // When an order is cancelled or gets a status that doesn't deserve points
                     $historyBuyer->loyalty = 0;
                     $historyBuyer->coins = 0;
 
