@@ -647,6 +647,8 @@ class Genzo_Krona extends Module
                 'pseudonym' => $player->display_name,
                 'avatar' => $player->avatar_full,
                 'total' => $player->total . ' ' . $name,
+                'rank' => $player->getRank().' '.$this->l('from').' '.Player::getTotalPlayers(),
+                'level' => PlayerLevel::getLastPlayerLevel($id_customer)->name
             );
 
             return $player;
