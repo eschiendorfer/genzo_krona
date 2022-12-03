@@ -67,6 +67,8 @@ Afterwards you can use:
     $kronaCustomer['genzo_krona']['pseudonym']; // Gives the display_name
     $kronaCustomer['genzo_krona']['avatar']; // Gives the full path of avatar
     $kronaCustomer['genzo_krona']['total']; // Shows the points
+    $kronaCustomer['genzo_krona']['rank']; // Shows the rank and total players in a string
+    $kronaCustomer['genzo_krona']['level']; // Shows the current level
     
 You need to check yourself, if the array is filled. Unfortunately thirty bees doesn't allow me to return false.
 
