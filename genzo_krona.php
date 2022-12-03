@@ -850,8 +850,12 @@ class Genzo_Krona extends Module
         }
 
         $id_currency = $this->context->currency->id;
-        $id_ActionOrder = ActionOrder::getIdActionOrderByCurrency($id_currency);
-        $actionOrder = new ActionOrder($id_ActionOrder);
+
+        if (!$id_action_order = ActionOrder::getIdActionOrderByCurrency($id_currency)) {
+            return null;
+        }
+
+        $actionOrder = new ActionOrder($id_action_order);
 
         $order_amount = Configuration::get('krona_order_amount');
 
@@ -915,7 +919,7 @@ class Genzo_Krona extends Module
         Media::addJsDef(
             array(
                 'conversion' => $actionOrder->coins_conversion,
-                'loyalty_max' => min($player->loyalty, $cart_value/$actionOrder->coins_conversion),
+                'loyalty_max' => $player ? min($player->loyalty, $cart_value/$actionOrder->coins_conversion) : $cart_value/$actionOrder->coins_conversion,
             )
         );
 
