@@ -137,8 +137,10 @@ class Player extends \ObjectModel {
             $query->orderBy('expire_date');
             $expire = \Db::getInstance()->getRow($query);
 
-            $this->expire_points = (int)$expire['expire_points'];
-            $this->expire_date = $expire['expire_date'];
+            if (!empty($expire)) {
+                $this->expire_points = (int)$expire['expire_points'];
+                $this->expire_date = $expire['expire_date'];
+            }
 
         }
     }
@@ -723,8 +725,8 @@ class Player extends \ObjectModel {
 
                         foreach (\Language::getIDs() as $id_lang) {
 
-                            $title[$id_lang] = \Configuration::get('krona_loyalty_expire_title', $id_lang, $player['id_shop_group'], $player['id_shop']);
-                            $message[$id_lang] = \Configuration::get('krona_loyalty_expire_message', $id_lang, $player['id_shop_group'], $player['id_shop']);
+                            $title[$id_lang] = \Configuration::get('krona_loyalty_expire_title', $id_lang, $id_shop_group, $id_shop);
+                            $message[$id_lang] = \Configuration::get('krona_loyalty_expire_message', $id_lang, $id_shop_group, $id_shop);
 
                             // Replace message variables
                             $search = array('{loyalty_points}');

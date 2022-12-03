@@ -24,7 +24,9 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
         parent::initContent();
 
         // Check if there needs to be a redirection
-        if (!$this->context->customer->isLogged() || !$id_customer = $this->context->customer->id) {
+        $id_customer = $this->context->customer->id;
+
+        if (!$id_customer || !$this->context->customer->isLogged()) {
             Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home'));
         }
 

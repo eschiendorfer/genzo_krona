@@ -122,9 +122,11 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
         ];
 
         // Order Status
-        $order_state = explode(',', Configuration::get('krona_order_state'));
-        foreach ($order_state as $id) {
-            $this->fields_value['order_state_'.$id] = true;
+        if ($order_state_conf = Configuration::get('krona_order_state')) {
+            $order_state = explode(',', $order_state_conf);
+            foreach ($order_state as $id) {
+                $this->fields_value['order_state_' . $id] = true;
+            }
         }
 
         $tabs = array(
