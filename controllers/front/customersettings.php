@@ -15,6 +15,15 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
     public $errors;
     public $confirmations;
 
+    public function __construct()
+    {
+        if(!Tools::getValue('module')) {
+            $_GET['module'] = 'genzo_krona';
+        }
+
+        parent::__construct();
+    }
+
 	public function initContent() {
 
 		// Disable left and right column

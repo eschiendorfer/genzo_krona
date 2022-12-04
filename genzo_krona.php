@@ -50,6 +50,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayHeader') OR
             !$this->registerHook('displayCustomerAccount') OR
             !$this->registerHook('displayCustomerAccountForm') OR
+            !$this->registerHook('displayCustomerIdentityForm') OR
             !$this->registerHook('displayRightColumnProduct') OR
             !$this->registerHook('displayShoppingCartFooter') OR
             !$this->registerHook('displayKronaCustomer') OR
@@ -735,6 +736,20 @@ class Genzo_Krona extends Module
 	    if (Configuration::get('krona_referral_active')) {
             return $this->display(__FILE__, 'views/templates/hook/createAccountForm.tpl');
         }
+    }
+
+    public function hookDisplayCustomerIdentityForm($params) {
+
+        if ($this->context->theme->directory=='genzo_theme') {
+            require_once _PS_MODULE_DIR_ . 'genzo_krona/controllers/front/customersettings.php';
+
+            $customerSettingsController = new Genzo_KronaCustomerSettingsModuleFrontController();
+            $customerSettingsController->initContent();
+
+            return $this->display(__FILE__, 'views/templates/hook/customerIdentityForm.tpl');
+        }
+
+        return '';
     }
 
     public function hookDisplayRightColumnProduct($params) {
