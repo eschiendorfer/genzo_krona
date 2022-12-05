@@ -18,7 +18,6 @@ use KronaModule\ActionOrder;
 use KronaModule\Player;
 use KronaModule\PlayerHistory;
 use KronaModule\PlayerLevel;
-use KronaModule\Zebra_Image;
 
 class Genzo_Krona extends Module
 {
@@ -57,6 +56,7 @@ class Genzo_Krona extends Module
             !$this->registerHook('displayKronaActionPoints') OR
             !$this->registerHook('actionExecuteKronaAction') OR
             !$this->registerHook('actionCustomerAccountAdd') OR
+            !$this->registerHook('actionObjectCustomerUpdateAfter') OR
             !$this->registerHook('actionObjectCustomerDeleteAfter') OR
             !$this->registerHook('actionOrderStatusPostUpdate') OR
             !$this->registerHook('actionOrderEdited') OR
@@ -470,15 +470,18 @@ class Genzo_Krona extends Module
     public function uploadAvatar($id_customer) {
 
 	    $id_customer = (int)$id_customer;
-	    if($_FILES['avatar']['tmp_name']) {
 
-	        if($_FILES['avatar']['size'] > 5242880) {
+        $file = $_FILES['krona_avatar'] ?? $_FILES['avatar']; // 'avatar' is deprecated but needed for backward compatibility
+
+	    if ($file['tmp_name']) {
+
+	        if ($file['size'] > 5242880) {
 	            $this->errors[] = $this->l('Allowed file size is max 5MB');
 	            return false;
             }
 
             // Handling File
-            $file_tmp = $_FILES['avatar']['tmp_name'];
+            $file_tmp = $file['tmp_name'];
 
             // Check if its an image
             (@is_array(getimagesize($file_tmp))) ? $image = true : $image = false;
@@ -492,13 +495,7 @@ class Genzo_Krona extends Module
 
                 $filename = $id_customer . '.jpg';
 
-                move_uploaded_file($file_tmp, $file_path.$filename);
-
-                $avatar = new Zebra_Image();
-                $avatar->source_path = $file_path.$filename;
-                $avatar->target_path = $file_path.$filename;
-                $avatar->jpeg_quality = 95;
-                $avatar->resize(100, 100, ZEBRA_IMAGE_CROP_CENTER);
+                ImageManager::resize($file_tmp, $file_path.$filename, 100, 100);
             }
             else {
                 $this->errors[] = $this->l('Image Upload failed');
@@ -551,23 +548,9 @@ class Genzo_Krona extends Module
 
                 move_uploaded_file($file_tmp, $file_path.$file_name.$file_extension);
 
-                $avatar_small = new Zebra_Image();
-                $avatar_small->source_path = $file_path.$file_name.$file_extension;
-                $avatar_small->target_path = $file_path.$file_name.'_small.png';
-                $avatar_small->png_compression = 1;
-                $avatar_small->resize(30, 30, ZEBRA_IMAGE_BOXED, -1);
-
-                $avatar_middle = new Zebra_Image();
-                $avatar_middle->source_path = $file_path.$file_name.$file_extension;
-                $avatar_middle->target_path = $file_path.$file_name.'_middle.png';
-                $avatar_middle->png_compression = 1;
-                $avatar_middle->resize(80, 80, ZEBRA_IMAGE_BOXED, -1);
-
-                $avatar_big = new Zebra_Image();
-                $avatar_big->source_path = $file_path.$file_name.$file_extension;
-                $avatar_big->target_path = $file_path.$file_name.'_big.png';
-                $avatar_big->png_compression = 1;
-                $avatar_big->resize(120, 120, ZEBRA_IMAGE_BOXED, -1);
+                ImageManager::resize($file_path.$file_name.$file_extension, $file_path.$file_name.'_small.png', 30, 30);
+                ImageManager::resize($file_path.$file_name.$file_extension, $file_path.$file_name.'_middle.png', 80, 80);
+                ImageManager::resize($file_path.$file_name.$file_extension, $file_path.$file_name.'_big.png', 120, 120);
 
                 unlink($file_path.$file_name.$file_extension);
             }
@@ -1037,6 +1020,15 @@ class Genzo_Krona extends Module
 
         $player->add();
 
+    }
+
+    public function hookActionObjectCustomerUpdateAfter($params) {
+
+        if (Tools::isSubmit('submitKronaCustomerSettings')) {
+            require_once _PS_MODULE_DIR_ . 'genzo_krona/controllers/front/customersettings.php';
+            $customerSettingsController = new Genzo_KronaCustomerSettingsModuleFrontController();
+            $customerSettingsController->saveCustomerSettings();
+        }
     }
 
     public function hookActionObjectCustomerDeleteAfter($params) {

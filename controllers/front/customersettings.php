@@ -15,8 +15,9 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
     public $errors;
     public $confirmations;
 
-    public function __construct()
-    {
+    public function __construct() {
+
+        // Making sure, that controller is accessible in other files/hooks with require_once like genzo_krona.php
         if(!Tools::getValue('module')) {
             $_GET['module'] = 'genzo_krona';
         }
@@ -24,7 +25,19 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
         parent::__construct();
     }
 
-	public function initContent() {
+    public function postProcess() {
+
+        parent::postProcess();
+
+        // Customer Saves Settings Form - needs to be before the playerObj, to have refreshed values
+        // Usage of saveCustomerSettings is deprecated, but needed for backward compatibility
+        if (Tools::isSubmit('submitKronaCustomerSettings') || Tools::isSubmit('saveCustomerSettings')) {
+            $this->saveCustomerSettings();
+        }
+
+    }
+
+    public function initContent() {
 
 		// Disable left and right column
 		$this->display_column_left = false;
@@ -39,13 +52,7 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
             Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home'));
         }
 
-        // Customer Saves Settings Form - needs to be before the playerObj, to have refreshed values
-        if (Tools::isSubmit('saveCustomerSettings')) {
-            $playerObj = $this->saveCustomerSettings();
-        }
-        else {
-            $playerObj = new Player($id_customer);
-        }
+        $playerObj = new Player($id_customer);
 
         if ($playerObj->banned) {
             Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1');
@@ -75,18 +82,18 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
 		$this->setTemplate('customersettings.tpl');
 	}
 
-	private function saveCustomerSettings() {
+	public function saveCustomerSettings() {
 
 	    $id_customer = $this->context->customer->id;
 
 	    $playerObj = new Player($id_customer);
-	    $playerObj->active = (bool)Tools::getValue('active');
+	    $playerObj->active = (bool)Tools::getValue('krona_active');
 
 	    if (Configuration::get('krona_pseudonym')) {
-	        $playerObj->pseudonym = pSQL(Tools::getValue('pseudonym'));
+	        $playerObj->pseudonym = pSQL(Tools::getValue('krona_pseudonym'));
         }
 
-        if ($_FILES['avatar']['tmp_name']) {
+        if (isset($_FILES['krona_avatar']['tmp_name']) || $_FILES['avatar']['tmp_name']) {
 
             $playerObj->avatar = ($this->module->uploadAvatar($id_customer)) ? $id_customer.'.jpg' : $playerObj->avatar;
 
@@ -105,9 +112,8 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
         }
 
         $this->confirmations = $this->module->l('Your Customer Settings were sucessfully saved.');
-        $playerObj->update();
+        return $playerObj->update();
 
-        return $playerObj;
     }
 
     public function setMedia() {
