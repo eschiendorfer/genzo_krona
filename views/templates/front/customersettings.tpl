@@ -24,7 +24,7 @@
         {if $gamification && $pseudonym}
             <div class="form-row">
                 <div class="krona-label"><label for="pseudonym">{l s='Pseudonym' mod='genzo_krona'}</label></div>
-                <input type="text" class="form-control" id="pseudonym" name="pseudonym" value="{$player.pseudonym}">
+                <input type="text" class="form-control" id="pseudonym" name="krona_pseudonym" value="{$player.pseudonym}">
             </div>
         {/if}
         {if $gamification && $avatar}
@@ -33,11 +33,11 @@
                 <div id="avatar-upload">
                     <input type="text" id="avatar-fake" value="">
                     <span id="avatar-button">{l s='Select Avatar' mod='genzo_krona'}</span>
-                    <input id="avatar-input" name="avatar" type="file" >
+                    <input id="avatar-input" name="krona_avatar" type="file" >
                 </div>
             </div>
         {/if}
-        <button type="submit" name="saveCustomerSettings" class="krona-button">{l s='Save' mod='genzo_krona'}</button>
+        <button type="submit" name="saveKronaCustomerSettings" class="krona-button">{l s='Save' mod='genzo_krona'}</button>
     </form>
 </div>
 

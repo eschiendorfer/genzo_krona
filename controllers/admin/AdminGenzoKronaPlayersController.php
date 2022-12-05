@@ -811,7 +811,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
         $inputs[] = array(
             'type'  => 'file',
             'label' => 'Avatar',
-            'name'  => 'avatar',
+            'name'  => 'krona_avatar',
         );
 
         // We shouldn't change points this way, since it will not generate any history for the player. This will cause troubles, when checking points in levels.
