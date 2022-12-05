@@ -87,10 +87,10 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
 	    $id_customer = $this->context->customer->id;
 
 	    $playerObj = new Player($id_customer);
-	    $playerObj->active = (bool)Tools::getValue('krona_active');
+	    $playerObj->active = (bool)Tools::getValue('krona_active', Tools::getValue('active'));
 
 	    if (Configuration::get('krona_pseudonym')) {
-	        $playerObj->pseudonym = pSQL(Tools::getValue('krona_pseudonym'));
+	        $playerObj->pseudonym = pSQL(Tools::getValue('krona_pseudonym', Tools::getValue('pseudonym')));
         }
 
         if (isset($_FILES['krona_avatar']['tmp_name']) || $_FILES['avatar']['tmp_name']) {

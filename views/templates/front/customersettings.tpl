@@ -16,7 +16,7 @@
                 <img id="avatar" src="{$player.avatar_full}">
             {/if}
             <div class="krona-label"><label for="active">{l s='Using' mod='genzo_krona'} {$game_name}</label></div>
-            <input type="radio" id="yes" name="active" value="1" {if $player.active==1}checked{/if}>
+            <input type="radio" id="yes" name="krona_active" value="1" {if $player.active==1}checked{/if}>
             <label for="yes">{l s='Yes' mod='genzo_krona'}</label>
             <input style="margin-left: 10px;" type="radio" id="no" name="active" value="0" {if $player.active==0}checked{/if}>
             <label for="no"> {l s='No' mod='genzo_krona'}</label>
@@ -37,7 +37,7 @@
                 </div>
             </div>
         {/if}
-        <button type="submit" name="saveKronaCustomerSettings" class="krona-button">{l s='Save' mod='genzo_krona'}</button>
+        <button type="submit" name="submitKronaCustomerSettings" class="krona-button">{l s='Save' mod='genzo_krona'}</button>
     </form>
 </div>
 
