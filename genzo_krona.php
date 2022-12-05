@@ -857,6 +857,10 @@ class Genzo_Krona extends Module
 
         $actionOrder = new ActionOrder($id_action_order);
 
+        if (!$actionOrder->coins_conversion) {
+            return null;
+        }
+
         $order_amount = Configuration::get('krona_order_amount');
 
         if ($order_amount == 'total_wt') {
