@@ -73,6 +73,7 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController 
             'page' => $page,
             'loyalty' => Configuration::get('krona_loyalty_active'),
             'title' => ($limit_players!=0) ? "Top {$limit_players}" : false,
+            'color_scheme' => 'red',
 		));
 
 		$this->setTemplate('leaderboard.tpl');

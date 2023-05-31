@@ -54,6 +54,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             'gamification' => Configuration::get('krona_gamification_active'),
             'referral' => Configuration::get('krona_referral_active'),
             'actions' => Player::getPossibleActions($id_customer),
+            'color_scheme' => 'red',
         ));
 
         $this->setTemplate('overview.tpl');
