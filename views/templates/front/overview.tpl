@@ -7,7 +7,7 @@
 
 {include file="./nav.tpl"}
 <div id="overview">
-    {if $loyalty || $referral}
+    {if $own_profile && ($loyalty || $referral)}
         <div id="loyalty" class="krona-box" {if !$gamification}style="width: 100%"{/if}>
             <ul class="overview" >
                 {if $loyalty}

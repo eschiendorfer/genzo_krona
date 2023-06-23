@@ -21,15 +21,23 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
 
         parent::initContent();
 
-        // Check if there needs to be a redirection
-        if (!$this->context->customer->isLogged() || !$id_customer = $this->context->customer->id) {
+        $id_customer = 0;
+
+        if ($referral_code = strtoupper(Tools::getValue('referral_code'))) {
+            $id_customer = Player::getIdByReferralCode($referral_code);
+        }
+        else if ($this->context->customer->isLogged()) {
+            $id_customer = $this->context->customer->id;
+        }
+
+        if (!$id_customer) {
             Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home'));
         }
 
         $playerObj = new Player($id_customer);
 
         if ($playerObj->banned) {
-            Tools::redirect($krona_url = $this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1');
+            Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1');
         }
         elseif (!$playerObj->active) {
             Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'customersettings'));
@@ -48,6 +56,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             'active' => 'Overview',
             'player' => json_decode(json_encode($playerObj), true),
             'rank' => $playerObj->getRank(),
+            'total_players' => Player::getTotalPlayers(),
             'history' => PlayerHistory::getHistoryByPlayer($id_customer, ['viewable=1'], ['limit' => 5, 'offset' => 0]),
             'level' => PlayerLevel::getLastPlayerLevel($id_customer),
             'loyalty' => Configuration::get('krona_loyalty_active'),
@@ -55,6 +64,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             'referral' => Configuration::get('krona_referral_active'),
             'actions' => Player::getPossibleActions($id_customer),
             'color_scheme' => 'red',
+            'own_profile' => $id_customer==$this->context->customer->id,
         ));
 
         $this->setTemplate('overview.tpl');

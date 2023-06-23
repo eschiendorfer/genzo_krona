@@ -58,10 +58,6 @@ class Genzo_KronaCustomerSettingsModuleFrontController extends ModuleFrontContro
             Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'home').'?banned=1');
         }
 
-        if (!$playerObj->active) {
-            $this->errors[] = $this->module->l('Please activate your account.');
-        }
-
         $game_name = Configuration::get('krona_game_name', $this->context->language->id);
 
 		$this->context->smarty->assign(array(

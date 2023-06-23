@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2019 Emanuel Schiendorfer
+ * Copyright (C) 2023 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2019 Emanuel Schiendorfer
+ * @copyright 2023 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -26,7 +26,7 @@ class Genzo_Krona extends Module
 	function __construct() {
 		$this->name = 'genzo_krona';
 		$this->tab = 'front_office_features';
-		$this->version = '2.0.0';
+		$this->version = '2.0.1';
 		$this->author = 'Emanuel Schiendorfer';
 		$this->need_instance = 0;
 
@@ -483,7 +483,7 @@ class Genzo_Krona extends Module
             // Handling File
             $file_tmp = $file['tmp_name'];
 
-            // Check if its an image
+            // Check if it's an image
             (@is_array(getimagesize($file_tmp))) ? $image = true : $image = false;
 
             if ($image) {
@@ -494,6 +494,23 @@ class Genzo_Krona extends Module
                 }
 
                 $filename = $id_customer . '.jpg';
+
+                // Check if we first need to cut the image to a square
+                list($width, $height) = getimagesize($file_tmp);
+
+                if ($width!=$height) {
+
+                    if ($width > $height) {
+                        $dstX = ($width-$height)/2;
+                        $dstY = 0;
+                    }
+                    else {
+                        $dstX = 0;
+                        $dstY = ($height-$width)/2;
+                    }
+
+                    ImageManager::cut($file_tmp, $file_tmp, min($width, $height), min($width, $height), 'jpg', $dstX, $dstY);
+                }
 
                 ImageManager::resize($file_tmp, $file_path.$filename, 100, 100);
             }
@@ -629,10 +646,11 @@ class Genzo_Krona extends Module
 
             $player = array(
                 'pseudonym' => $player->display_name,
-                'avatar' => $player->avatar_full,
+                'avatar' => $player->avatar_full ?: '/upload/genzo_krona/img/avatar/no-avatar.jpg',
                 'total' => $player->total . ' ' . $name,
                 'rank' => $player->getRank().' '.$this->l('from').' '.Player::getTotalPlayers(),
-                'level' => PlayerLevel::getLastPlayerLevel($id_customer)->name
+                'level' => PlayerLevel::getLastPlayerLevel($id_customer)->name,
+                'url' => $this->context->link->getModuleLink('genzo_krona', 'overview').'/'.strtolower($player->referral_code),
             );
 
             return $player;
@@ -680,13 +698,12 @@ class Genzo_Krona extends Module
     }
 
     public function hookDisplayHeader() {
-	    // CSS
+
+        // CSS
         $this->context->controller->addCSS($this->_path.'/views/css/krona.css');
         $this->context->controller->addCSS($this->_path.'/views/css/krona_custom.css');
 
         // JS
-
-
 
         if (Action::checkIfActionIsActive('genzo_krona', 'page_visit') AND
             $this->context->customer->isLogged()) {
@@ -1321,6 +1338,21 @@ class Genzo_Krona extends Module
                 'controller' => 'overview',
                 'rule' => $slack.'/overview',
                 'keywords' => array(),
+                'params' => array(
+                    'fc' => 'module',
+                    'module' => 'genzo_krona',
+                    'controller' => 'overview',
+                ),
+            ),
+            'module-genzo_krona-overview-player' => array(
+                'controller' => 'overview',
+                'rule' => $slack.'/overview/{referral_code}',
+                'keywords' => array(
+                    'referral_code' => array(
+                        'regexp' => '[_a-zA-Z0-9-\pL]*',
+                        'param' => 'referral_code',
+                    )
+                ),
                 'params' => array(
                     'fc' => 'module',
                     'module' => 'genzo_krona',
