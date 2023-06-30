@@ -615,8 +615,8 @@ class Player extends \ObjectModel {
         $acronym = "";
 
         foreach ($words as $w) {
-            if (!empty($w[0])) {
-                $acronym .= $w[0] . '. ';
+            if (!empty(mb_substr($w, 0, 1))) {
+                $acronym .= mb_substr($w, 0, 1) . '. ';
             }
         }
 
