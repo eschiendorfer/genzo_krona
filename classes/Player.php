@@ -637,6 +637,9 @@ class Player extends \ObjectModel {
             $having = 'coins > ' . $this->total;
         }
 
+        $hide_players = \Configuration::get('krona_hide_players');
+        $sqlHidePlayers = $hide_players ? ' p.`id_customer` NOT IN ('.$hide_players.') ' : ' 1 ';
+
         $sql = '
             SELECT COUNT(*)
             FROM '._DB_PREFIX_.'genzo_krona_player AS p
@@ -646,7 +649,8 @@ class Player extends \ObjectModel {
                 GROUP BY id_customer
                 HAVING '.$having.'
             ) AS ph ON p.id_customer=ph.id_customer
-            INNER JOIN '._DB_PREFIX_.'customer AS c ON p.id_customer=c.id_customer AND c.id_shop='.$context->shop->id;
+            INNER JOIN '._DB_PREFIX_.'customer AS c ON p.id_customer=c.id_customer AND c.id_shop='.$context->shop->id."
+            WHERE p.active=1 AND {$sqlHidePlayers}";
 
         return \Db::getInstance()->getValue($sql)+1;
     }

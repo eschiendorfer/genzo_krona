@@ -37,15 +37,18 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController {
         }
 
         $game_name = Configuration::get('krona_game_name', $this->context->language->id);
+        $levels = PlayerLevel::getAllPlayerLevels($id_customer, array('l.`active`=1 AND (pl.`active`=1 OR l.`hide`=0)'));
 
 		$this->context->smarty->assign(array(
 		    'grid' => Configuration::get('krona_levels_grid'),
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
+            'player_name' => $playerObj->display_name,
             'total_name' => Configuration::get('krona_total_name', $this->context->language->id),
             'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),
             'active' => 'Levels',
-            'levels' => PlayerLevel::getAllPlayerLevels($id_customer, array('l.`active`=1 AND (pl.`active`=1 OR l.`hide`=0)')),
+            'levels' => $levels,
+            'current_level' => end($levels),
             'next_level' => json_decode(json_encode(PlayerLevel::getNextPlayerLevel($id_customer)), true),
             'gamification' => Configuration::get('krona_gamification_active'),
             'loyalty' => Configuration::get('krona_loyalty_active'),
