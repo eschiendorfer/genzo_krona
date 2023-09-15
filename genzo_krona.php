@@ -646,7 +646,7 @@ class Genzo_Krona extends Module
 
             $player = array(
                 'pseudonym' => $player->display_name,
-                'avatar' => $player->avatar_full ?: '/upload/genzo_krona/img/avatar/no-avatar.jpg',
+                'avatar' => $player->avatar_full && file_exists(_PS_UPLOAD_DIR_.'genzo_krona/img/avatar/'.$player->avatar) ? $player->avatar_full : '/upload/genzo_krona/img/avatar/no-avatar.jpg',
                 'total' => $player->total . ' ' . $name,
                 'rank' => $player->getRank().' '.$this->l('from').' '.Player::getTotalPlayers(),
                 'level' => PlayerLevel::getLastPlayerLevel($id_customer)->name,
