@@ -625,6 +625,8 @@ class Player extends \ObjectModel {
 
     public function getRank() {
 
+        // Todo: this process is way too slow, we need to add a "total" column to players table and always update it with a history change
+
         $context = \Context::getContext();
 
         $gamification_total = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id_shop);
