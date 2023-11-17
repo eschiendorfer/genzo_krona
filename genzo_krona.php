@@ -495,6 +495,11 @@ class Genzo_Krona extends Module
 
                 $filename = $id_customer . '.jpg';
 
+                // Remove white background
+                if (class_exists('SpielezarHelper')) {
+                    SpielezarHelper::cropImageWithSpielezarStyle($file_tmp, false);
+                }
+
                 // Check if we first need to cut the image to a square
                 list($width, $height) = getimagesize($file_tmp);
 
