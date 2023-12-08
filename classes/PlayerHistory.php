@@ -126,7 +126,7 @@ class PlayerHistory extends \ObjectModel {
         $id_lang = \Context::getContext()->language->id;
 
         $query = new \DbQuery();
-        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, IFNULL(h.force_display, (h.points+h.coins)) AS `change`, h.loyalty, l.*');
+        $query->select('h.id_history, h.id_customer, h.id_action, h.id_action_order, h.url, h.date_add, h.date_upd, IFNULL(h.force_display, (h.points+h.coins)) AS `change`, h.loyalty, h.viewed, l.*');
         $query->from(self::$definition['table'], 'h');
         $query->innerJoin(self::$definition['table'].'_lang', 'l', 'l.`id_history` = h.`id_history` AND l.`id_lang` = ' . (int)$id_lang);
         $query->where('`id_customer` = ' . (int)$id_customer);
@@ -151,7 +151,31 @@ class PlayerHistory extends \ObjectModel {
             $query->orderBy('h.`id_history` DESC');
         }
 
-        return \Db::getInstance()->ExecuteS($query);
+        $histories = \Db::getInstance()->ExecuteS($query);
+
+        // Replace pseudonym shortcodes with real pseudonymes
+        // Note: we can't do that while saving, as pseudonyms can change over time
+        foreach ($histories as &$history) {
+            $pattern = '/\{pseudonym\s+id_customer="(\d+)"\}/';
+            preg_match_all($pattern, $history['message'], $matches);
+
+            if ($matches && !empty($matches[0])) {
+                foreach ($matches[0] as $pseudonym) {
+                    $patternPseudonym = '/\{pseudonym\s+id_customer="(\d+)"\}/';
+                    preg_match($patternPseudonym, $pseudonym, $matchesCustomer);
+
+                    if (!empty($matchesCustomer[1])) {
+                        if ($id_customer = (int)$matchesCustomer[1]) {
+                            $kronaCustomer = \Hook::exec('displayKronaCustomer', array('id_customer' => $id_customer), null, true, false);
+                            $history['message'] = str_replace($pseudonym, $kronaCustomer['genzo_krona']['pseudonym'], $history['message']);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return $histories;
     }
 
     public static function getTotalHistoryByPlayer($id_customer, $filters = null) {
@@ -258,6 +282,10 @@ class PlayerHistory extends \ObjectModel {
         $query->select('COUNT(*)');
         $query->from('genzo_krona_player_history');
         $query->where('viewed=0 AND viewable=1 AND id_customer = ' . $id_customer);
+
+        // It doesn't make much sense to show page_visits as the customer would always see a notification, when he starts a customer journey
+        $query->where('id_action!=2');
+
         return (int)\Db::getInstance()->getValue($query);
     }
 

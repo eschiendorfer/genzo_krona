@@ -458,7 +458,9 @@ class Player extends \ObjectModel {
                         // We only wanna send an email when he gets a coupon -> this way we prevent an email on Bauer level
                         if ($result['reward_type'] == 'coupon') {
 
-                            $reward = 'Als Dankeschön haben Sie einen Gutschein erhalten! Der Code ist in Ihrem Konto ersichtlich.';
+                            if (isset($coupon)) {
+                                $reward = 'Als Dankeschön haben Sie einen 10%-Gutschein erhalten! Einlösbar in den nächsten drei Monaten: '.$coupon->code;
+                            }
 
                             $nextLevel = PlayerLevel::getNextPlayerLevel($id_customer);
 
@@ -469,7 +471,7 @@ class Player extends \ObjectModel {
                                 'shortcodes' => array(
                                     'level' => $result['name'],
                                     'next_level' => $nextLevel->name,
-                                    'reward' => $reward,
+                                    'reward' => $reward ?? '',
                                 ),
                             );
 

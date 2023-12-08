@@ -43,9 +43,6 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             Tools::redirect($this->context->link->getModuleLink('genzo_krona', 'customersettings'));
         }
 
-        // Handle notification
-        Db::getInstance()->update('genzo_krona_player_history', ['viewed' => 1], 'id_customer='.$id_customer);
-
         $game_name = Configuration::get('krona_game_name', $this->context->language->id);
 
         $this->context->smarty->assign(array(
@@ -66,7 +63,11 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             'actions' => Player::getPossibleActions($id_customer),
             'color_scheme' => 'red',
             'own_profile' => $id_customer==$this->context->customer->id,
+            'box' => (bool)Tools::getValue('box'),
         ));
+
+        // Handle notification
+        Db::getInstance()->update('genzo_krona_player_history', ['viewed' => 1], 'id_customer='.$id_customer);
 
         $this->setTemplate('overview.tpl');
 	}
