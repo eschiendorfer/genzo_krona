@@ -680,6 +680,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 'tab' => 'gamification',
             );
 
+            // Increase the memory_limit for this heavy process
+            ini_set('memory_limit', '1024M');
             $players = \KronaModule\Player::getAllPlayers();
 
             $inputs[] = array(
@@ -734,6 +736,8 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
     }
 
     public function postProcess() {
+
+        return;
 
         if (Tools::isSubmit('saveSettings')) {
 
