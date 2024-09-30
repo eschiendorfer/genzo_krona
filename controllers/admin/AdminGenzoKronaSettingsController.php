@@ -737,8 +737,6 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
 
     public function postProcess() {
 
-        return;
-
         if (Tools::isSubmit('saveSettings')) {
 
             $loyalty = Configuration::get('krona_loyalty_active');
