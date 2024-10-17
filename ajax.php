@@ -31,3 +31,15 @@ if(Tools::getValue('notification')) {
         echo json_encode(\KronaModule\PlayerHistory::getNotificationValue($id_customer));
     }
 }
+
+if (Tools::isSubmit('loadCommunityMembers')) {
+
+    $query = new \DbQuery();
+    $query->select('id_customer, pseudonym, avatar');
+    $query->from(Player::$definition['table']);
+    $query->where("active=1 AND banned=0 AND pseudonym!=''");
+    $query->orderBy("pseudonym ASC");
+    $players = \Db::getInstance()->ExecuteS($query);
+
+    die(json_encode($players));
+}

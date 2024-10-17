@@ -506,12 +506,12 @@ class Genzo_Krona extends Module
                 if ($width!=$height) {
 
                     if ($width > $height) {
-                        $dstX = ($width-$height)/2;
+                        $dstX = round(($width-$height)/2);
                         $dstY = 0;
                     }
                     else {
                         $dstX = 0;
-                        $dstY = ($height-$width)/2;
+                        $dstY = round(($height-$width)/2);
                     }
 
                     ImageManager::cut($file_tmp, $file_tmp, min($width, $height), min($width, $height), 'jpg', $dstX, $dstY);
@@ -653,7 +653,7 @@ class Genzo_Krona extends Module
                 'pseudonym' => $player->display_name,
                 'avatar' => $player->avatar_full && file_exists(_PS_UPLOAD_DIR_.'genzo_krona/img/avatar/'.$player->avatar) ? $player->avatar_full : '/upload/genzo_krona/img/avatar/no-avatar.jpg',
                 'total' => $player->total . ' ' . $name,
-                'rank' => $player->getRank().' '.$this->l('from').' '.Player::getTotalPlayers(),
+                // 'rank' => $player->getRank().' '.$this->l('from').' '.Player::getTotalPlayers(),
                 'level' => PlayerLevel::getLastPlayerLevel($id_customer)->name,
                 'url' => $this->context->link->getModuleLink('genzo_krona', 'overview').'/'.strtolower($player->referral_code),
             );
@@ -710,6 +710,7 @@ class Genzo_Krona extends Module
         // $this->context->controller->addCSS($this->_path.'/views/css/krona_custom.css');
 
         // JS
+        $this->context->controller->addJS($this->_path . '/views/js/krona.js');
 
         if (Action::checkIfActionIsActive('genzo_krona', 'page_visit') AND
             $this->context->customer->isLogged()) {
