@@ -17,14 +17,14 @@ use KronaModule\Action;
 use KronaModule\Player;
 
 // Page Visit
-if(Tools::getValue('page_visit')) {
+if (Tools::getValue('page_visit')) {
     $id_customer = (int)Tools::getValue('page_visit');
     Action::triggerPageVisit($id_customer);
     echo true;
 }
 
 // Notification
-if(Tools::getValue('notification')) {
+if (Tools::getValue('notification')) {
     $id_customer = (int)Tools::getValue('notification');
     $context = Context::getContext();
     if ($id_customer == $context->customer->id) {

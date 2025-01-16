@@ -83,7 +83,8 @@ class Player extends \ObjectModel {
                     $this->display_name = (\Configuration::get('krona_pseudonym') && $this->pseudonym) ? $this->pseudonym : $names['display_name'];
 
                     if (\Configuration::get('krona_avatar')) {
-                        $this->avatar_full = '/upload/genzo_krona/img/avatar/' . $this->avatar . '?=' . strtotime($this->date_upd);
+                        $dateUpdParameter = $this->avatar!='no-avatar.jpg' ? '?='.strtotime($this->date_upd) : '';
+                        $this->avatar_full = '/upload/genzo_krona/img/avatar/' . $this->avatar . $dateUpdParameter;
                     }
 
                 }
