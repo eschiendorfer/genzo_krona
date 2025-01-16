@@ -73,8 +73,8 @@ class AdminGenzoKronaGroupsController extends ModuleAdminController {
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
         $this->position_identifier = 'position';
-        $this->_orderBy = 'position';
-        $this->_orderWay = 'ASC';
+        $this->_defaultOrderBy = 'position';
+        $this->_defaultOrderWay = 'ASC';
         $this->bulk_actions = [];
         $this->list_simple_header = true;
 

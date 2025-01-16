@@ -80,8 +80,8 @@ class AdminGenzoKronaActionsController extends ModuleAdminController {
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
-        $this->_orderBy = 'id_action';
-        $this->_orderWay = 'ASC';
+        $this->_defaultOrderBy = 'id_action';
+        $this->_defaultOrderWay = 'ASC';
         $this->bulk_actions = [];
         $this->allow_export = true;
         $this->token = Tools::getAdminTokenLite('AdminGenzoKronaActions');

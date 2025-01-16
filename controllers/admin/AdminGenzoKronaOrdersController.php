@@ -80,8 +80,8 @@ class AdminGenzoKronaOrdersController extends ModuleAdminController {
 
         $this->fields_list = $fields_list;
         $this->actions = array('edit');
-        $this->_orderBy = 'id_action_order';
-        $this->_orderWay = 'ASC';
+        $this->_defaultOrderBy = 'id_action_order';
+        $this->_defaultOrderWay = 'ASC';
         $this->bulk_actions = [];
 
         parent::__construct();
