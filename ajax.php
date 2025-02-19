@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Copyright (C) 2019 Emanuel Schiendorfer
+ * Copyright (C) 2025 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2019 Emanuel Schiendorfer
+ * @copyright 2025 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -20,7 +20,7 @@ use KronaModule\Player;
 if (Tools::getValue('page_visit')) {
     $id_customer = (int)Tools::getValue('page_visit');
     Action::triggerPageVisit($id_customer);
-    echo true;
+    die(true);
 }
 
 // Notification
@@ -28,7 +28,7 @@ if (Tools::getValue('notification')) {
     $id_customer = (int)Tools::getValue('notification');
     $context = Context::getContext();
     if ($id_customer == $context->customer->id) {
-        echo json_encode(\KronaModule\PlayerHistory::getNotificationValue($id_customer));
+        die(json_encode(\KronaModule\PlayerHistory::getNotificationValue($id_customer)));
     }
 }
 
