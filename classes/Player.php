@@ -558,7 +558,7 @@ class Player extends \ObjectModel {
         $execution_times = (int)PlayerHistory::countActionByPlayer($id_customer, $action->id, $startDate, $endDate);
         $executions_left = (int)$action->execution_max-$execution_times;
 
-        if ($action->execution_type == 'unlimited' || $executions_left) {
+        if ($action->execution_type == 'unlimited' || ($executions_left > 0)) {
             if ($getInfo) {
                 return array(
                     'executions_possible' => true,
