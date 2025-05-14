@@ -75,6 +75,9 @@ class PlayerHistory extends \ObjectModel {
             $this->setLoyalty();
         }
 
+        // Delete cache
+        $this->deleteDisplayKronaCustomerCache();
+
         // We need to have the null value in force_display
         return parent::update($nullValues);
     }
@@ -90,7 +93,17 @@ class PlayerHistory extends \ObjectModel {
             $this->loyalty_expire_date = date("Y-m-d H:i:s", strtotime("+{$days} days"));
         };
 
+        $this->deleteDisplayKronaCustomerCache();
+
         return parent::add($autoDate, $nullValues);
+    }
+
+    private function deleteDisplayKronaCustomerCache() {
+        $cacheKey = 'Krona::displayKronaCustomer_'.$this->id_customer;
+        $cacheInstance = \Cache::getInstance();
+        if ($cacheInstance->exists($cacheKey)) {
+            $cacheInstance->delete($cacheKey);
+        }
     }
 
     private function setLoyalty() {

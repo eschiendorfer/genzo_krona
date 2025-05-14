@@ -643,25 +643,40 @@ class Genzo_Krona extends Module
     public function hookDisplayKronaCustomer($params) {
 
 	    $id_customer = (int)$params['id_customer'];
-        $player = new Player($id_customer);
 
-	    if ($player->active) {
+        // Check if a cache is available?
+        $cacheKey = 'Krona::displayKronaCustomer_'.$id_customer;
+        $cacheInstance = Cache::getInstance();
+
+        if ($cachedData = $cacheInstance->get($cacheKey)) {
+            return $cachedData;
+        }
+
+
+        // Check if player is active
+        $playerObj = new Player($id_customer);
+
+        if ($playerObj->active) {
 
             $name = Configuration::get('krona_total_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
 
             $player = array(
-                'pseudonym' => $player->display_name,
-                'avatar' => $player->avatar_full && file_exists(_PS_UPLOAD_DIR_.'genzo_krona/img/avatar/'.$player->avatar) ? $player->avatar_full : '/upload/genzo_krona/img/avatar/no-avatar.jpg',
-                'total' => $player->total . ' ' . $name,
-                // 'rank' => $player->getRank().' '.$this->l('from').' '.Player::getTotalPlayers(),
+                'pseudonym' => $playerObj->display_name,
+                'avatar' => $playerObj->avatar_full && file_exists(_PS_UPLOAD_DIR_ . 'genzo_krona/img/avatar/' . $playerObj->avatar) ? $playerObj->avatar_full : '/upload/genzo_krona/img/avatar/no-avatar.jpg',
+                'total' => $playerObj->total . ' ' . $name,
+                'rank' => $playerObj->getRank().' '.$this->l('from').' '.Player::getTotalPlayers(),
                 'level' => PlayerLevel::getLastPlayerLevel($id_customer)->name,
-                'url' => $this->context->link->getModuleLink('genzo_krona', 'overview').'/'.strtolower($player->referral_code),
+                'url' => $this->context->link->getModuleLink('genzo_krona', 'overview') . '/' . strtolower($playerObj->referral_code),
             );
-
-            return $player;
+        }
+        else {
+            $player = [];
         }
 
-	    return false;
+        // Store cache
+        $cacheInstance->set($cacheKey, $player, SpielezarHelper::CACHE_TTL_1_WEEK);
+
+        return $player;
     }
 
     public function hookDisplayKronaActionPoints($params) {
@@ -993,7 +1008,7 @@ class Genzo_Krona extends Module
                 $history->id_action = $id_action;
                 $history->points = $action->points_change;
 
-                if (isset($params['action_url']) && !empty($params['action_url'])) {
+                if (!empty($params['action_url'])) {
                     $history->url = $params['action_url']; // Action url is not mandatory
                 }
 
