@@ -100,8 +100,8 @@ class PlayerHistory extends \ObjectModel {
 
     private function deleteDisplayKronaCustomerCache() {
         $cacheKey = 'Krona::displayKronaCustomer_'.$this->id_customer;
-        $cacheInstance = \Cache::getInstance();
-        if ($cacheInstance->exists($cacheKey)) {
+        $cacheInstance = \Cache::isEnabled() ? \Cache::getInstance() : false;
+        if ($cacheInstance && $cacheInstance->exists($cacheKey)) {
             $cacheInstance->delete($cacheKey);
         }
     }

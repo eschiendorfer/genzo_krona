@@ -646,9 +646,9 @@ class Genzo_Krona extends Module
 
         // Check if a cache is available?
         $cacheKey = 'Krona::displayKronaCustomer_'.$id_customer;
-        $cacheInstance = Cache::getInstance();
+        $cacheInstance = Cache::isEnabled() ? Cache::getInstance() : false;
 
-        if ($cachedData = $cacheInstance->get($cacheKey)) {
+        if ($cacheInstance && ($cachedData = $cacheInstance->get($cacheKey))) {
             return $cachedData;
         }
 
@@ -674,7 +674,9 @@ class Genzo_Krona extends Module
         }
 
         // Store cache
-        $cacheInstance->set($cacheKey, $player, SpielezarHelper::CACHE_TTL_1_WEEK);
+        if ($cacheInstance) {
+            $cacheInstance->set($cacheKey, $player, SpielezarHelper::CACHE_TTL_1_WEEK);
+        }
 
         return $player;
     }
