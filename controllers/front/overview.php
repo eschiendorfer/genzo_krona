@@ -64,6 +64,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             'color_scheme' => 'red',
             'own_profile' => $id_customer==$this->context->customer->id,
             'box' => (bool)Tools::getValue('box'),
+            'renderCGContentTab' => !Tools::getValue('ajax'), // Basically not render on /community which loads some overview by ajax
         ));
 
         // Handle notification
