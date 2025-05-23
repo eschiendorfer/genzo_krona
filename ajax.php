@@ -25,10 +25,9 @@ if (Tools::getValue('page_visit')) {
 
 // Notification
 if (Tools::getValue('notification')) {
-    $id_customer = (int)Tools::getValue('notification');
     $context = Context::getContext();
-    if ($id_customer == $context->customer->id) {
-        die(json_encode(\KronaModule\PlayerHistory::getNotificationValue($id_customer)));
+    if ($context->customer->id) {
+        die(json_encode(\KronaModule\PlayerHistory::getNotificationValue($context->customer->id)));
     }
 }
 
