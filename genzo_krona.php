@@ -357,14 +357,14 @@ class Genzo_Krona extends Module
     public function installAdminMenus() {
 	    if (
 	        !$this->uninstallAdminMenus() OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaActions', 'Krona', 1) OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaOrders', 'Krona Orders', 0) OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaLevels', 'Krona Levels', 0) OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaPlayers', 'Krona Players', 0) OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaCoupons', 'Krona Coupons', 0) OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaGroups', 'Krona Groups', 0) OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaSettings', 'Krona Settings', 0) OR
-            !$this->registerAdminMenu('AdminCustomers', 'AdminGenzoKronaSupport', 'Krona Support', 0)
+            !$this->registerAdminMenu( 'AdminGenzoKronaActions', 'Krona', 'AdminParentCustomer', 1) OR
+            !$this->registerAdminMenu( 'AdminGenzoKronaOrders', 'Krona Orders', 'AdminGenzoKronaActions', 0) OR
+            !$this->registerAdminMenu( 'AdminGenzoKronaLevels', 'Krona Levels', 'AdminGenzoKronaActions', 0) OR
+            !$this->registerAdminMenu( 'AdminGenzoKronaPlayers', 'Krona Players', 'AdminGenzoKronaActions', 0) OR
+            !$this->registerAdminMenu( 'AdminGenzoKronaCoupons', 'Krona Coupons', 'AdminGenzoKronaActions', 0) OR
+            !$this->registerAdminMenu( 'AdminGenzoKronaGroups', 'Krona Groups', 'AdminGenzoKronaActions', 0) OR
+            !$this->registerAdminMenu( 'AdminGenzoKronaSettings', 'Krona Settings', 'AdminGenzoKronaActions', 0) OR
+            !$this->registerAdminMenu( 'AdminGenzoKronaSupport', 'Krona Support', 'AdminGenzoKronaActions', 0)
         ) {
 	        return false;
         }
@@ -384,14 +384,21 @@ class Genzo_Krona extends Module
 	    return true;
     }
 
-    private function registerAdminMenu($parent, $class_name, $name, $active = true) {
+    private function registerAdminMenu($controllerName, $title, $tabNameParent = '', $active = true) {
+
+        // Check if tab already exits
+        if (Tab::getIdFromClassName($controllerName)) {
+            return true;
+        }
+
         // Create new admin tab -> This is needed, otherwise the Admin Controller aren't working
         $tab = new Tab();
-        $tab->id_parent = (int)Tab::getIdFromClassName($parent);
+        $tab->id_parent = $tabNameParent ? (int)Tab::getIdFromClassName($tabNameParent) : 0;
         $tab->name = array();
-        foreach (Language::getLanguages(true) as $lang)
-            $tab->name[$lang['id_lang']] = $name;
-        $tab->class_name = $class_name;
+        foreach (Language::getLanguages() as $lang) {
+            $tab->name[$lang['id_lang']] = $title;
+        }
+        $tab->class_name = $controllerName;
         $tab->module = $this->name;
         $tab->active = ($active) ? 1 : 0;
         return $tab->add();
