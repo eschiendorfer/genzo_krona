@@ -18,6 +18,8 @@ use KronaModule\ActionOrder;
 use KronaModule\Player;
 use KronaModule\PlayerHistory;
 use KronaModule\PlayerLevel;
+use CoreExtension\CacheService;
+use CoreExtension\CacheKeysEnum;
 
 class Genzo_Krona extends Module
 {
@@ -651,16 +653,18 @@ class Genzo_Krona extends Module
 
 	    $id_customer = (int)$params['id_customer'];
 
-        // Check if a cache is available?
-        $cacheKey = 'Krona::displayKronaCustomer_'.$id_customer;
-        $cacheInstance = Cache::isEnabled() ? Cache::getInstance() : false;
+        $cacheKeyParameters = [
+            'idCustomer' => $id_customer
+        ];
 
-        if ($cacheInstance && ($cachedData = $cacheInstance->get($cacheKey))) {
-            return $cachedData;
+        $cachedValue = CacheService::getCacheValue(CacheKeysEnum::KRONA_CUSTOMER, $cacheKeyParameters);
+
+        if ($cachedValue) {
+            return $cachedValue;
         }
 
-
         // Check if player is active
+        $player = [];
         $playerObj = new Player($id_customer);
 
         if ($playerObj->active) {
@@ -669,20 +673,14 @@ class Genzo_Krona extends Module
 
             $player = array(
                 'pseudonym' => $playerObj->display_name,
-                'avatar' => $playerObj->avatar_full && file_exists(_PS_UPLOAD_DIR_ . 'genzo_krona/img/avatar/' . $playerObj->avatar) ? $playerObj->avatar_full : '/upload/genzo_krona/img/avatar/no-avatar.jpg',
-                'total' => $playerObj->total . ' ' . $name,
-                'rank' => $cacheInstance ? $playerObj->getRank().' '.$this->l('from').' '.Player::getTotalPlayers() : '',
-                'level' => PlayerLevel::getLastPlayerLevel($id_customer)->name,
-                'url' => $this->context->link->getModuleLink('genzo_krona', 'overview') . '/' . strtolower($playerObj->referral_code),
+                'avatar'    => $playerObj->avatar_full && file_exists(_PS_UPLOAD_DIR_ . 'genzo_krona/img/avatar/' . $playerObj->avatar) ? $playerObj->avatar_full : '/upload/genzo_krona/img/avatar/no-avatar.jpg',
+                'total'     => $playerObj->total . ' ' . $name,
+                'rank'      => $playerObj->getRank() . ' ' . $this->l('from') . ' ' . Player::getTotalPlayers(),
+                'level'     => PlayerLevel::getLastPlayerLevel($id_customer)->name,
+                'url'       => $this->context->link->getModuleLink('genzo_krona', 'overview') . '/' . strtolower($playerObj->referral_code),
             );
-        }
-        else {
-            $player = [];
-        }
 
-        // Store cache
-        if ($cacheInstance) {
-            $cacheInstance->set($cacheKey, $player, SpielezarHelper::CACHE_TTL_1_WEEK);
+            CacheService::setCacheValue(CacheKeysEnum::KRONA_CUSTOMER, $player, $cacheKeyParameters);
         }
 
         return $player;

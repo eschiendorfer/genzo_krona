@@ -10,6 +10,8 @@
 
 namespace KronaModule;
 
+use CoreExtension\CacheService;
+
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
 class PlayerHistory extends \ObjectModel {
@@ -75,8 +77,7 @@ class PlayerHistory extends \ObjectModel {
             $this->setLoyalty();
         }
 
-        // Delete cache
-        $this->deleteDisplayKronaCustomerCache();
+        CacheService::deleteCacheByTriggerEntityObject($this);
 
         // We need to have the null value in force_display
         return parent::update($nullValues);
@@ -93,17 +94,9 @@ class PlayerHistory extends \ObjectModel {
             $this->loyalty_expire_date = date("Y-m-d H:i:s", strtotime("+{$days} days"));
         };
 
-        $this->deleteDisplayKronaCustomerCache();
+        CacheService::deleteCacheByTriggerEntityObject($this);
 
         return parent::add($autoDate, $nullValues);
-    }
-
-    private function deleteDisplayKronaCustomerCache() {
-        $cacheKey = 'Krona::displayKronaCustomer_'.$this->id_customer;
-        $cacheInstance = \Cache::isEnabled() ? \Cache::getInstance() : false;
-        if ($cacheInstance && $cacheInstance->exists($cacheKey)) {
-            $cacheInstance->delete($cacheKey);
-        }
     }
 
     private function setLoyalty() {
