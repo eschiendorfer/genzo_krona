@@ -1,9 +1,9 @@
 <?php
 /**
- * Copyright (C) 2019 Emanuel Schiendorfer
+ * Copyright (C) 2025 Emanuel Schiendorfer
  *
  * @author    Emanuel Schiendorfer <https://github.com/eschiendorfer>
- * @copyright 2019 Emanuel Schiendorfer
+ * @copyright 2025 Emanuel Schiendorfer
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
