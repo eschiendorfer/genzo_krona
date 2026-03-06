@@ -19,3 +19,4 @@ include_once(dirname(__FILE__).'/classes/Level.php');
 include_once(dirname(__FILE__).'/classes/Player.php');
 include_once(dirname(__FILE__).'/classes/PlayerHistory.php');
 include_once(dirname(__FILE__).'/classes/PlayerLevel.php');
+include_once(dirname(__FILE__).'/classes/KronaEmailShortcodeResolver.php');

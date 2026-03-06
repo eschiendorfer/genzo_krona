@@ -734,21 +734,27 @@ class Genzo_Krona extends Module
         // JS
         $this->context->controller->addJS($this->_path . '/views/js/krona.js');
 
-        if (Action::checkIfActionIsActive('genzo_krona', 'page_visit') AND
-            $this->context->customer->isLogged()) {
-            Media::addJsDef(array('id_customer' => $this->context->customer->id));
+        $idCustomer = (int)$this->context->customer->id;
+        $kronaPlayerActive = true;
+
+        if ($idCustomer) {
+            $player = new Player($this->context->customer->id);
+            if (!$player->active) {
+                $kronaPlayerActive = false;
+            }
+        }
+
+        Media::addJsDef([
+            'id_customer'       => $idCustomer,
+            'kronaPlayerActive' => $idCustomer && $kronaPlayerActive
+        ]);
+
+        if (Action::checkIfActionIsActive('genzo_krona', 'page_visit')) {
             $this->context->controller->addJS($this->_path . '/views/js/page_visit.js');
         }
 
-        if (
-            Configuration::get('krona_notification', null, $this->context->shop->id_shop_group, $this->context->shop->id) AND
-            $this->context->customer->isLogged()
-        ) {
-            $player = new Player($this->context->customer->id);
-            if ($player->active) {
-                Media::addJsDef(array('id_customer' => $this->context->customer->id));
-                $this->context->controller->addJS($this->_path . '/views/js/notification.js');
-            }
+        if (Configuration::get('krona_notification', null, $this->context->shop->id_shop_group, $this->context->shop->id)) {
+            $this->context->controller->addJS($this->_path . '/views/js/notification.js');
         }
     }
 
@@ -1338,9 +1344,18 @@ class Genzo_Krona extends Module
                 'title' => 'Level achieved',
                 'subtitle' => 'You have achieved a new Level.',
                 'shortcodes' => array(
-                    'level' => $this->l('This will display the name of the level.'),
-                    'next_level' => $this->l('This will display the name of the level.'),
-                    'reward' => $this->l('This will display a sentence of the reward.'),
+                    'level' => [
+                        'resolver_function' => 'KronaModule\\KronaEmailShortcodeResolver::resolveLevel',
+                        'title' => $this->l('This will display the name of the level.'),
+                    ],
+                    'next_level' => [
+                        'resolver_function' => 'KronaModule\\KronaEmailShortcodeResolver::resolveNextLevel',
+                        'title' => $this->l('This will display the name of the level.'),
+                    ],
+                    'reward' => [
+                        'resolver_function' => 'KronaModule\\KronaEmailShortcodeResolver::resolveReward',
+                        'title' => $this->l('This will display a sentence of the reward.'),
+                    ],
                 ),
             ),
         );
