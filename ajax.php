@@ -25,9 +25,11 @@ if (Tools::getValue('page_visit')) {
 // Notification
 if (Tools::getValue('notification')) {
     $context = Context::getContext();
+    $value = 0;
     if ($context->customer->id) {
-        die(json_encode(\KronaModule\PlayerHistory::getNotificationValue($context->customer->id)));
+        $value = \KronaModule\PlayerHistory::getNotificationValue($context->customer->id);
     }
+    die(json_encode($value));
 }
 
 if (Tools::isSubmit('loadCommunityMembers')) {
