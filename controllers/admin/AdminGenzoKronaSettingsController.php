@@ -10,9 +10,14 @@
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
+require_once _PS_MODULE_DIR_ . 'extending_core_files/autoload/classes/admin/bootstrap_sidebar_base.php';
 use KronaModule\Player;
 
-class AdminGenzoKronaSettingsController extends ModuleAdminController {
+class AdminGenzoKronaSettingsController extends AdminModuleSidebarBaseController {
+
+    protected $sidebarModuleName = 'genzo_krona';
+
+    protected $sidebarTab = 'Settings';
 
     public function __construct() {
 
@@ -48,12 +53,7 @@ class AdminGenzoKronaSettingsController extends ModuleAdminController {
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
             )
         );
-
-        $tpl = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
-
-        $this->context->smarty->assign(array(
-            'content' => $tpl, // This seems to be anything inbuilt. It's just chance that we both use content as an assign variable
-        ));
+        $this->wrapSidebarContent(isset($content) ? $content : $this->content);
     }
 
     public function renderForm() {

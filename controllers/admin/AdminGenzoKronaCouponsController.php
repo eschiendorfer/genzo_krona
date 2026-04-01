@@ -9,7 +9,6 @@
  */
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
-
 class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore {
 
     public function initContent() {
@@ -31,7 +30,6 @@ class AdminGenzoKronaCouponsController extends AdminCartRulesControllerCore {
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
             )
         );
-
         $tpl = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
 
         $this->context->smarty->assign(array(

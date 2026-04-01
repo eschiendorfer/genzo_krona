@@ -10,13 +10,18 @@
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
+require_once _PS_MODULE_DIR_ . 'extending_core_files/autoload/classes/admin/bootstrap_sidebar_base.php';
 use KronaModule\Level;
 use KronaModule\Action;
 use KronaModule\ActionOrder;
 use KronaModule\Coupon;
 
 
-class AdminGenzoKronaLevelsController extends ModuleAdminController {
+class AdminGenzoKronaLevelsController extends AdminModuleSidebarBaseController {
+
+    protected $sidebarModuleName = 'genzo_krona';
+
+    protected $sidebarTab = 'Levels';
 
     /* @var $module Genzo_Krona */
     public $module;
@@ -162,12 +167,7 @@ class AdminGenzoKronaLevelsController extends ModuleAdminController {
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
             )
         );
-
-        $content = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
-
-        $this->context->smarty->assign(array(
-            'content' => $content,
-        ));
+        $this->wrapSidebarContent(isset($content) ? $content : $this->content);
 
     }
 

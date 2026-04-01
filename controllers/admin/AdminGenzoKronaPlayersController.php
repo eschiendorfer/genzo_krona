@@ -10,13 +10,18 @@
 
 require_once _PS_MODULE_DIR_ . 'genzo_krona/autoload.php';
 
+require_once _PS_MODULE_DIR_ . 'extending_core_files/autoload/classes/admin/bootstrap_sidebar_base.php';
 use KronaModule\Player;
 use KronaModule\PlayerHistory;
 use KronaModule\PlayerLevel;
 use KronaModule\Action;
 use KronaModule\ActionOrder;
 
-class AdminGenzoKronaPlayersController extends ModuleAdminController {
+class AdminGenzoKronaPlayersController extends AdminModuleSidebarBaseController {
+
+    protected $sidebarModuleName = 'genzo_krona';
+
+    protected $sidebarTab = 'Players';
 
     /* @var $module Genzo_Krona */
     public $module;
@@ -195,12 +200,7 @@ class AdminGenzoKronaPlayersController extends ModuleAdminController {
                 'page_header_toolbar_btn'   => $this->page_header_toolbar_btn,
             )
         );
-
-        $tpl = $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'genzo_krona/views/templates/admin/main.tpl');
-
-        $this->context->smarty->assign(array(
-            'content' => $tpl, // This seems to be anything inbuilt. It's just chance that we both use content as an assign variable
-        ));
+        $this->wrapSidebarContent(isset($content) ? $content : $this->content);
 
         return true;
 
