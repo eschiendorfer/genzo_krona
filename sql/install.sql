@@ -6,12 +6,16 @@ CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player` (
   `referral_code` VARCHAR(40) NOT NULL,
   `pseudonym` VARCHAR(40) NOT NULL,
   `avatar` VARCHAR(200) DEFAULT NULL,
+  `total` INT(12) NOT NULL DEFAULT 0,
+  `id_level` INT(12) NOT NULL DEFAULT 0,
   `active` BOOL DEFAULT 1 NOT NULL,
   `banned` BOOL DEFAULT 0 NOT NULL,
   `date_add` DATETIME NULL,
   `date_upd` DATETIME NULL,
   PRIMARY KEY ( `id_customer` ),
-  INDEX `id_customer_referrer` (`id_customer_referrer`)
+  INDEX `id_customer_referrer` (`id_customer_referrer`),
+  INDEX `total` (`total`),
+  INDEX `id_level` (`id_level`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=CHARSET_TYPE;
 
 CREATE TABLE IF NOT EXISTS `PREFIX_genzo_krona_player_level` (

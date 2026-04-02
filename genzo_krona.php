@@ -28,7 +28,7 @@ class Genzo_Krona extends Module
 	function __construct() {
 		$this->name = 'genzo_krona';
 		$this->tab = 'front_office_features';
-		$this->version = '2.0.1';
+		$this->version = '2.0.2';
 		$this->author = 'Emanuel Schiendorfer';
 		$this->need_instance = 0;
 
@@ -653,34 +653,62 @@ class Genzo_Krona extends Module
 
 	    $id_customer = (int)$params['id_customer'];
 
+        if ($id_customer <= 0) {
+            return [];
+        }
+
+        $idLang = (int)$this->context->language->id;
+        $idShop = (int)$this->context->shop->id;
+        $requestCacheKey = $id_customer.'|'.$idLang.'|'.$idShop;
+        $isCoreCacheEnabled = Cache::isEnabled();
+
+        static $requestCache = [];
+
+        if (!$isCoreCacheEnabled && isset($requestCache[$requestCacheKey])) {
+            return $requestCache[$requestCacheKey];
+        }
+
         $cacheKeyParameters = [
             'idCustomer' => $id_customer
         ];
 
-        $cachedValue = CacheService::getCacheValue(CacheKeysEnum::KRONA_CUSTOMER, $cacheKeyParameters);
-
-        if ($cachedValue) {
-            return $cachedValue;
+        if ($isCoreCacheEnabled) {
+            $cachedValue = CacheService::getCacheValue(CacheKeysEnum::KRONA_CUSTOMER, $cacheKeyParameters);
+            if ($cachedValue) {
+                return $cachedValue;
+            }
         }
 
         // Check if player is active
         $player = [];
-        $playerObj = new Player($id_customer);
+        $playerObj = new Player($id_customer, false);
 
-        if ($playerObj->active) {
+        if ($playerObj->id_customer && $playerObj->active) {
 
             $name = Configuration::get('krona_total_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id_shop);
+            $levelName = '';
+
+            if ((int)$playerObj->id_level > 0) {
+                $levelObj = new \KronaModule\Level((int)$playerObj->id_level, (int)$this->context->language->id);
+                $levelName = (string)$levelObj->name;
+            }
 
             $player = array(
                 'pseudonym' => $playerObj->display_name,
                 'avatar'    => $playerObj->avatar_full && file_exists(_PS_UPLOAD_DIR_ . 'genzo_krona/img/avatar/' . $playerObj->avatar) ? $playerObj->avatar_full : '/upload/genzo_krona/img/avatar/no-avatar.jpg',
                 'total'     => $playerObj->total . ' ' . $name,
                 'rank'      => $playerObj->getRank() . ' ' . $this->l('from') . ' ' . Player::getTotalPlayers(),
-                'level'     => PlayerLevel::getLastPlayerLevel($id_customer)->name,
-                'url'       => $this->context->link->getModuleLink('genzo_krona', 'overview') . '/' . strtolower($playerObj->referral_code),
+                'level'     => $levelName,
+                'url'       => $this->context->link->getModuleLink('genzo_krona', 'overview', ['referral_code' => $playerObj->referral_code]),
             );
 
-            CacheService::setCacheValue(CacheKeysEnum::KRONA_CUSTOMER, $player, $cacheKeyParameters);
+            if ($isCoreCacheEnabled) {
+                CacheService::setCacheValue(CacheKeysEnum::KRONA_CUSTOMER, $player, $cacheKeyParameters);
+            }
+        }
+
+        if (!$isCoreCacheEnabled) {
+            $requestCache[$requestCacheKey] = $player;
         }
 
         return $player;
@@ -1378,7 +1406,7 @@ class Genzo_Krona extends Module
                     'controller' => 'home',
                 ),
             ),
-            'module-genzo_krona-overview' => array(
+            /*'module-genzo_krona-overview' => array(
                 'controller' => 'overview',
                 'rule' => $slack.'/overview',
                 'keywords' => array(),
@@ -1387,8 +1415,8 @@ class Genzo_Krona extends Module
                     'module' => 'genzo_krona',
                     'controller' => 'overview',
                 ),
-            ),
-            'module-genzo_krona-overview-player' => array(
+            ),*/
+            'module-genzo_krona-overview' => array(
                 'controller' => 'overview',
                 'rule' => $slack.'/overview/{referral_code}',
                 'keywords' => array(

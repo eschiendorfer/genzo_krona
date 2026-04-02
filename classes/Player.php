@@ -28,6 +28,7 @@ class Player extends \ObjectModel {
     public $points;
     public $coins;
     public $total;
+    public $id_level;
     public $loyalty;
     public $expire_points; // How many points will expire next?
     public $expire_date;
@@ -47,6 +48,8 @@ class Player extends \ObjectModel {
             'referral_code'         => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'pseudonym'             => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'avatar'                => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'total'                 => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'id_level'              => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'active'                => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'banned'                => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'date_add'              => array('type' => self::TYPE_DATE, 'validate' =>'isDateFormat'),
@@ -54,7 +57,7 @@ class Player extends \ObjectModel {
         )
     );
 
-    public function __construct($id_customer = null) {
+    public function __construct($id_customer = null, $loadDynamicValues = true) {
 
         parent::__construct($id_customer);
 
@@ -71,8 +74,14 @@ class Player extends \ObjectModel {
             }
 
             if ($this->id_customer) {
-                // calculate points, coins, total and loyalty
-                $this->setDynamicValues();
+                if ($loadDynamicValues) {
+                    // calculate points, coins, total and loyalty
+                    $this->setDynamicValues();
+                }
+                else {
+                    $this->total = (int)$this->total;
+                    $this->id_level = (int)$this->id_level;
+                }
 
                 if (\Configuration::get('krona_gamification_active')) {
 
@@ -102,21 +111,12 @@ class Player extends \ObjectModel {
 
         $this->points = (int)$player['points'];
         $this->coins = (int)$player['coins'];
-        $this->total = 0;
+        $this->total = (int)$this->total;
         $this->loyalty = 0;
 
         // Override total value if gamification is active
         if (\Configuration::get('krona_gamification_active')) {
-
-            $total_mode_gamification = \Configuration::get('krona_gamification_total');
-
-            if ($total_mode_gamification == 'points_coins') {
-                $this->total = $this->points + $this->coins;
-            } elseif ($total_mode_gamification == 'points') {
-                $this->total = $this->points;
-            } elseif ($total_mode_gamification == 'coins') {
-                $this->total = $this->coins;
-            }
+            $this->total = self::calculateTotalByMode($this->points, $this->coins);
         }
 
         // Override loyalty value if loyalty is active
@@ -144,6 +144,56 @@ class Player extends \ObjectModel {
             }
 
         }
+    }
+
+    private static function calculateTotalByMode(int $points, int $coins): int
+    {
+        $total_mode_gamification = \Configuration::get('krona_gamification_total');
+
+        if ($total_mode_gamification == 'points') {
+            return $points;
+        }
+
+        if ($total_mode_gamification == 'coins') {
+            return $coins;
+        }
+
+        return $points + $coins;
+    }
+
+    public static function refreshSnapshot(int $id_customer, bool $refreshLevel = true): bool
+    {
+        $id_customer = (int)$id_customer;
+
+        if ($id_customer <= 0) {
+            return false;
+        }
+
+        $query = new \DbQuery();
+        $query->select('SUM(points) as points, SUM(coins) as coins');
+        $query->from('genzo_krona_player_history');
+        $query->where('id_customer = ' . $id_customer);
+        $summary = \Db::getInstance()->getRow($query);
+
+        $points = (int)($summary['points'] ?? 0);
+        $coins = (int)($summary['coins'] ?? 0);
+
+        $data = [
+            'total' => self::calculateTotalByMode($points, $coins),
+        ];
+
+        if ($refreshLevel) {
+            $query = new \DbQuery();
+            $query->select('id_level');
+            $query->from('genzo_krona_player_level');
+            $query->where('id_customer = ' . $id_customer);
+            $query->orderBy('id_player_level DESC');
+            $idLevel = (int)\Db::getInstance()->getValue($query);
+
+            $data['id_level'] = $idLevel;
+        }
+
+        return (bool)\Db::getInstance()->update(self::$definition['table'], $data, 'id_customer = ' . $id_customer);
     }
 
     public function add($autoDate = true, $nullValues = false) {
@@ -482,6 +532,8 @@ class Player extends \ObjectModel {
                 }
             }
         }
+
+        self::refreshSnapshot((int)$id_customer, true);
     }
 
     public static function getPossibleActions($id_customer) {
@@ -627,20 +679,7 @@ class Player extends \ObjectModel {
     }
 
     public function getRank() {
-
-        // Todo: this process is way too slow, we need to add a "total" column to players table and always update it with a history change
-
         $context = \Context::getContext();
-
-        $gamification_total = \Configuration::get('krona_gamification_total', null, $context->shop->id_shop_group, $context->shop->id_shop);
-
-        if ($gamification_total == 'points_coins') {
-            $having = 'points+coins > ' . $this->total;
-        } elseif ($gamification_total == 'points') {
-            $having = 'points > ' . $this->total;
-        } elseif ($gamification_total == 'coins') {
-            $having = 'coins > ' . $this->total;
-        }
 
         $hide_players = \Configuration::get('krona_hide_players');
         $sqlHidePlayers = $hide_players ? ' p.`id_customer` NOT IN ('.$hide_players.') ' : ' 1 ';
@@ -648,14 +687,10 @@ class Player extends \ObjectModel {
         $sql = '
             SELECT COUNT(*)
             FROM '._DB_PREFIX_.'genzo_krona_player AS p
-            INNER JOIN (
-                SELECT id_customer, SUM(points) AS points, SUM(coins) AS coins
-                FROM '._DB_PREFIX_.'genzo_krona_player_history
-                GROUP BY id_customer
-                HAVING '.$having.'
-            ) AS ph ON p.id_customer=ph.id_customer
             INNER JOIN '._DB_PREFIX_.'customer AS c ON p.id_customer=c.id_customer AND c.id_shop='.$context->shop->id."
-            WHERE p.active=1 AND {$sqlHidePlayers}";
+            WHERE p.active=1
+            AND p.total > ".(int)$this->total."
+            AND {$sqlHidePlayers}";
 
         return \Db::getInstance()->getValue($sql)+1;
     }

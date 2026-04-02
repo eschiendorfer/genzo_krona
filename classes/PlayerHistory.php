@@ -80,7 +80,13 @@ class PlayerHistory extends \ObjectModel {
         CacheService::deleteCacheByTriggerEntityObject($this);
 
         // We need to have the null value in force_display
-        return parent::update($nullValues);
+        $result = parent::update($nullValues);
+
+        if ($result) {
+            Player::refreshSnapshot((int)$this->id_customer, false);
+        }
+
+        return $result;
     }
 
     public function add($force_loyalty = false, $autoDate = true, $nullValues = true) {
@@ -96,7 +102,13 @@ class PlayerHistory extends \ObjectModel {
 
         CacheService::deleteCacheByTriggerEntityObject($this);
 
-        return parent::add($autoDate, $nullValues);
+        $result = parent::add($autoDate, $nullValues);
+
+        if ($result) {
+            Player::refreshSnapshot((int)$this->id_customer, false);
+        }
+
+        return $result;
     }
 
     private function setLoyalty() {
