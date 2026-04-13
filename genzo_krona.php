@@ -1406,16 +1406,6 @@ class Genzo_Krona extends Module
                     'controller' => 'home',
                 ),
             ),
-            /*'module-genzo_krona-overview' => array(
-                'controller' => 'overview',
-                'rule' => $slack.'/overview',
-                'keywords' => array(),
-                'params' => array(
-                    'fc' => 'module',
-                    'module' => 'genzo_krona',
-                    'controller' => 'overview',
-                ),
-            ),*/
             'module-genzo_krona-overview' => array(
                 'controller' => 'overview',
                 'rule' => $slack.'/overview/{referral_code}',

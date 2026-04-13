@@ -14,8 +14,8 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController 
 
 	public function initContent() {
 
-		// Disable left and right column
-		$this->display_column_left = false;
+		// Show community left menu
+		$this->display_column_left = true;
 		$this->display_column_right = false;
 
         parent::initContent();
