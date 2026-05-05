@@ -16,20 +16,12 @@ use KronaModule\Action;
 use KronaModule\Player;
 
 // Page Visit
-if (Tools::getValue('page_visit')) {
-    $id_customer = (int)Tools::getValue('page_visit');
-    Action::triggerPageVisit($id_customer);
-    die(true);
-}
-
-// Notification
-if (Tools::getValue('notification')) {
-    $context = Context::getContext();
-    $value = 0;
-    if ($context->customer->id) {
-        $value = \KronaModule\PlayerHistory::getNotificationValue($context->customer->id);
+if (Tools::isSubmit('page_visit')) {
+    $id_customer = (int)(Context::getContext()->customer->id ?? 0);
+    if ($id_customer > 0) {
+        Action::triggerPageVisit($id_customer);
     }
-    die(json_encode($value));
+    die('true');
 }
 
 if (Tools::isSubmit('loadCommunityMembers')) {

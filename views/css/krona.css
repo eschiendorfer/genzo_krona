@@ -101,21 +101,6 @@ i.icon-krona::before {
     line-height: 15px;
 }
 
-/* Notification */
-#krona-notification {
-    width: 13px;
-    height: 13px;
-    background: #FF0000;
-    color: #FFF;
-    text-align: center;
-    font-weight: bold;
-    line-height: 14px;
-    border: 1px solid #C10000;
-    border-radius: 50%;
-    font-size: 10px;
-    display: none;
-}
-
 /* Navigation */
 [id^="module-genzo_krona"] ul#krona-nav {
     padding: 0 10px;

@@ -23,6 +23,7 @@ use CoreExtension\CacheKeysEnum;
 
 class Genzo_Krona extends Module
 {
+    private const KRONA_NOTIFICATION_BADGE_IMAGE = '/modules/genzo_krona/views/img/avatar/krona-badge.webp';
     public $errors;
 
 	function __construct() {
@@ -780,10 +781,6 @@ class Genzo_Krona extends Module
         if (Action::checkIfActionIsActive('genzo_krona', 'page_visit')) {
             $this->context->controller->addJS($this->_path . '/views/js/page_visit.js');
         }
-
-        if (Configuration::get('krona_notification', null, $this->context->shop->id_shop_group, $this->context->shop->id)) {
-            $this->context->controller->addJS($this->_path . '/views/js/notification.js');
-        }
     }
 
     public function hookDisplayCustomerAccount() {
@@ -1012,7 +1009,7 @@ class Genzo_Krona extends Module
 
     public function hookActionExecuteKronaAction($params) {
 
-	    // Hook values: module_name, action_name, id_customer, action_url, action_message
+	    // Hook values: module_name, action_name, id_customer, action_url, action_message, target_entity_type, target_id_entity
 	    $module_name = pSQL($params['module_name']);
 	    $action_name = pSQL($params['action_name']);
 
@@ -1039,45 +1036,189 @@ class Genzo_Krona extends Module
         if (!$player->active || $player->banned || !$action->active) {
             return 'Player or Action not active.';
         }
-        else {
-
-            // Check if the User is still allowed to execute this action
-            if ($player->checkIfPlayerStillCanExecuteAction($id_customer, $action)) {
-
-                $history = new PlayerHistory();
-                $history->id_customer = $customer->id;
-                $history->id_action = $id_action;
-                $history->points = $action->points_change;
-
-                if (!empty($params['action_url'])) {
-                    $history->url = $params['action_url']; // Action url is not mandatory
-                }
-
-                // Preparing the lang array for the history message
-                $ids_lang = Language::getIDs();
-                $message = !empty($params['action_message']) ? $params['action_message'] : array();
-
-                foreach ($ids_lang as $id_lang) {
-
-                    if (empty($params['action_message'])) {
-                        $message[$id_lang] = $action->message[$id_lang];
-                    }
-
-                    // After defining the message array we replace the shortcodes -> shortcodes can be used for external messages too
-                    $search = array('{points}', '{coins}');
-                    $replace = array($history->points, $history->coins);
-                    $history->message[$id_lang] = str_replace($search, $replace, $message[$id_lang]);
-
-                    $history->title[$id_lang] = pSQL($action->title[$id_lang]);
-                }
-
-                $history->add();
-
-                Player::updatePlayerLevels($id_customer);
+        if ($player->checkIfPlayerStillCanExecuteAction($id_customer, $action)) {
+            $actionUrl = trim((string)($params['action_url'] ?? ''));
+            $targetEntityType = (int)($params['target_entity_type'] ?? 0);
+            $targetIdEntity = (int)($params['target_id_entity'] ?? 0);
+            if ($targetEntityType <= 0 || $targetIdEntity <= 0) {
+                $targetEntityType = 0;
+                $targetIdEntity = 0;
             }
+
+            $history = new PlayerHistory();
+            $history->id_customer = $customer->id;
+            $history->id_action = $id_action;
+            $history->points = $action->points_change;
+
+            if ($actionUrl !== '') {
+                $history->url = $actionUrl; // Action url is not mandatory
+            }
+
+            // Preparing the lang array for the history message
+            $ids_lang = Language::getIDs();
+            $actionMessage = $params['action_message'] ?? [];
+
+            foreach ($ids_lang as $id_lang) {
+                $template = $this->resolveKronaActionMessageTemplate($actionMessage, $action, (int)$id_lang);
+
+                // After defining the message array we replace the shortcodes -> shortcodes can be used for external messages too
+                $search = array('{points}', '{coins}');
+                $replace = array($history->points, $history->coins);
+                $history->message[$id_lang] = str_replace($search, $replace, $template);
+
+                $history->title[$id_lang] = pSQL((string)($action->title[$id_lang] ?? ''));
+            }
+
+            if (!(bool)$history->add()) {
+                return false;
+            }
+
+            Player::updatePlayerLevels($id_customer);
+            $this->createCommunityNotificationFromKronaHistory(
+                $history,
+                $customer,
+                $action_name,
+                $actionUrl,
+                $targetEntityType,
+                $targetIdEntity
+            );
         }
+
         return true;
 	}
+
+    private function resolveKronaActionMessageTemplate($actionMessage, Action $action, int $idLang): string
+    {
+        if (is_array($actionMessage)) {
+            if (isset($actionMessage[$idLang])) {
+                return (string)$actionMessage[$idLang];
+            }
+
+            foreach ($actionMessage as $value) {
+                if ((string)$value !== '') {
+                    return (string)$value;
+                }
+            }
+        } elseif (is_string($actionMessage) && trim($actionMessage) !== '') {
+            return $actionMessage;
+        }
+
+        if (is_array($action->message) && isset($action->message[$idLang])) {
+            return (string)$action->message[$idLang];
+        }
+
+        if (is_array($action->message)) {
+            foreach ($action->message as $value) {
+                if ((string)$value !== '') {
+                    return (string)$value;
+                }
+            }
+        }
+
+        return '';
+    }
+
+    private function createCommunityNotificationFromKronaHistory(
+        PlayerHistory $history,
+        Customer $customer,
+        string $actionName,
+        string $actionUrl,
+        int $targetEntityType = 0,
+        int $targetIdEntity = 0
+    ): void
+    {
+        $pointsDelta = (int)$history->points + (int)$history->coins;
+        if ($pointsDelta === 0) {
+            return;
+        }
+
+        $idRecipient = (int)$history->id_customer;
+        if ($idRecipient <= 0) {
+            return;
+        }
+
+        $eventKey = $this->buildKronaCommunityEventKey($actionName);
+        if ($eventKey === '') {
+            return;
+        }
+
+        $idLang = $this->resolveCustomerLanguageId($customer);
+        $title = $this->resolveKronaLanguageValue($history->title, $idLang);
+        $message = $this->resolveKronaLanguageValue($history->message, $idLang);
+        if ($message === '') {
+            return;
+        }
+
+        $idHistory = (int)($history->id_history ?: $history->id);
+        if ($idHistory <= 0) {
+            return;
+        }
+
+        $actionUrl = trim($actionUrl);
+        $targetEntityType = (int)$targetEntityType;
+        $targetIdEntity = (int)$targetIdEntity;
+        $hasTarget = $targetEntityType > 0 && $targetIdEntity > 0;
+        $notificationUrl = $hasTarget ? '' : $actionUrl;
+
+        Hook::exec('actionCreateCommunityNotification', [
+            'id_customer_recipient' => $idRecipient,
+            'id_actor_type' => 'company',
+            'id_actor' => 1,
+            'event_key' => $eventKey,
+            'title' => $title,
+            'message' => $message,
+            'url' => $notificationUrl,
+            'image_override' => self::KRONA_NOTIFICATION_BADGE_IMAGE,
+            'source_ref' => 'krona_history:' . $idHistory,
+            'target_entity_type' => $hasTarget ? $targetEntityType : 0,
+            'target_id_entity' => $hasTarget ? $targetIdEntity : 0,
+        ]);
+    }
+
+    private function resolveCustomerLanguageId(Customer $customer): int
+    {
+        $idLang = (int)$customer->id_lang;
+        if ($idLang <= 0) {
+            $idLang = (int)Configuration::get('PS_LANG_DEFAULT');
+        }
+
+        if ($idLang <= 0) {
+            $idLang = (int)$this->context->language->id;
+        }
+
+        return $idLang > 0 ? $idLang : 1;
+    }
+
+    private function resolveKronaLanguageValue($value, int $idLang): string
+    {
+        if (!is_array($value)) {
+            return trim((string)$value);
+        }
+
+        if (isset($value[$idLang])) {
+            return trim((string)$value[$idLang]);
+        }
+
+        foreach ($value as $candidate) {
+            if (trim((string)$candidate) !== '') {
+                return trim((string)$candidate);
+            }
+        }
+
+        return '';
+    }
+
+    private function buildKronaCommunityEventKey(string $actionName): string
+    {
+        $normalized = Tools::strtolower(trim($actionName));
+        $normalized = preg_replace('/[^a-z0-9_]+/i', '_', $normalized);
+        $normalized = trim((string)$normalized, '_');
+        if ($normalized === '') {
+            return '';
+        }
+
+        return 'krona_' . $normalized;
+    }
 
     public function hookActionCustomerAccountAdd($params) {
 

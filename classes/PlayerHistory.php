@@ -295,16 +295,4 @@ class PlayerHistory extends \ObjectModel {
         return (int)\Db::getInstance()->getValue($query);
     }
 
-    public static function getNotificationValue($id_customer) {
-        $query = new \DbQuery();
-        $query->select('COUNT(*)');
-        $query->from('genzo_krona_player_history');
-        $query->where('viewed=0 AND viewable=1 AND id_customer = ' . $id_customer);
-
-        // It doesn't make much sense to show page_visits as the customer would always see a notification, when he starts a customer journey
-        $query->where('id_action!=2');
-
-        return (int)\Db::getInstance()->getValue($query);
-    }
-
 }

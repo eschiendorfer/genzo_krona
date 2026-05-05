@@ -94,7 +94,6 @@ class AdminGenzoKronaSettingsController extends AdminModuleSidebarBaseController
             'loyalty_expire_title'  => $loyalty_expire_title,
             'loyalty_expire_message'  => $loyalty_expire_message,
             'levels_grid' => Configuration::get('krona_levels_grid'),
-            'notification' => Configuration::get('krona_notification'),
             'loyalty_active' => Configuration::get('krona_loyalty_active'),
             'loyalty_total' => Configuration::get('krona_loyalty_total'),
             'referral_active' => Configuration::get('krona_referral_active'),
@@ -251,27 +250,6 @@ class AdminGenzoKronaSettingsController extends AdminModuleSidebarBaseController
             'label' => $this->l('Levels Display Grid'),
             'desc' => $this->l('Should the levels in FrontOffice be displayed as grid (yes) or list (no)'),
             'name' => 'levels_grid',
-            'values' => array(
-                array(
-                    'id' => 'active_on',
-                    'value' => 1,
-                    'label' => $this->l('Yes')
-                ),
-                array(
-                    'id' => 'active_off',
-                    'value' => 0,
-                    'label' => $this->l('No')
-                )
-            ),
-            'tab' => 'general',
-        );
-
-        $inputs[] = array(
-            'type' => 'switch',
-            'label' => $this->l('Notification'),
-            'desc' => $this->l('You need to add a div with id "krona-notification". 
-                                      It will be filled with the number of unseen events.'),
-            'name' => 'notification',
             'values' => array(
                 array(
                     'id' => 'active_on',
@@ -778,7 +756,6 @@ class AdminGenzoKronaSettingsController extends AdminModuleSidebarBaseController
             Configuration::updateValue('krona_gamification_active', Tools::getValue('gamification_active'));
 
             Configuration::updateValue('krona_levels_grid', (bool)Tools::getValue('levels_grid'));
-            Configuration::updateValue('krona_notification', (bool)Tools::getValue('notification'));
 
             // Loyalty
             if ($loyalty) {

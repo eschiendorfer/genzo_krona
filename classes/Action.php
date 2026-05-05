@@ -113,6 +113,9 @@ class Action extends \ObjectModel {
     public static function triggerPageVisit($id_customer) {
 
         $id_customer = (int)$id_customer;
+        if ($id_customer <= 0) {
+            return;
+        }
 
         $hook = array(
             'module_name' => 'genzo_krona',
