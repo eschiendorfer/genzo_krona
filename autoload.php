@@ -9,6 +9,8 @@
  */
 
 // Note never add cronjob file here, this breaks whole FO
+include_once(_PS_MODULE_DIR_ . 'tb_framework/autoload.php');
+
 include_once(dirname(__FILE__).'/genzo_krona.php');
 
 include_once(dirname(__FILE__).'/classes/Action.php');
