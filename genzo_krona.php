@@ -1510,8 +1510,6 @@ class Genzo_Krona extends Module
 
         $actions = array(
             'new_level_achieved' => array (
-                'title' => 'Level achieved',
-                'subtitle' => 'You have achieved a new Level.',
                 'shortcodes' => array(
                     'level' => [
                         'resolver_function' => 'KronaModule\\KronaEmailShortcodeResolver::resolveLevel',
