@@ -22,3 +22,10 @@ include_once(dirname(__FILE__).'/classes/Player.php');
 include_once(dirname(__FILE__).'/classes/PlayerHistory.php');
 include_once(dirname(__FILE__).'/classes/PlayerLevel.php');
 include_once(dirname(__FILE__).'/classes/KronaEmailShortcodeResolver.php');
+include_once(dirname(__FILE__).'/classes/entity_data/KronaCustomerProfileEntityDataProvider.php');
+
+if (class_exists(\CoreExtension\EntityDataRegistry::class)) {
+    \CoreExtension\EntityDataRegistry::registerProvider(
+        \KronaModule\EntityData\KronaCustomerProfileEntityDataProvider::class
+    );
+}

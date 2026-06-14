@@ -69,6 +69,7 @@ class Genzo_KronaLoyaltyModuleFrontController extends ModuleFrontController {
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $loyalty_name,
             'game_name' => $game_name,
+            'krona_overview_url' => $this->module->getKronaOverviewUrlByPlayer($playerObj),
             'loyalty_name' => $loyalty_name,
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,

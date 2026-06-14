@@ -650,6 +650,27 @@ class Genzo_Krona extends Module
         }
     }
 
+    public function getKronaOverviewUrlByPlayer(Player $player): string
+    {
+        if (!(int)$player->id_customer || !(bool)$player->active || (bool)$player->banned) {
+            return '';
+        }
+
+        return $this->getKronaOverviewUrlByReferralCode((string)$player->referral_code);
+    }
+
+    public function getKronaOverviewUrlByReferralCode(string $referralCode): string
+    {
+        $referralCode = trim($referralCode);
+        if ($referralCode === '') {
+            return '';
+        }
+
+        return (string)$this->context->link->getModuleLink('genzo_krona', 'overview', [
+            'referral_code' => $referralCode,
+        ]);
+    }
+
     public function hookDisplayKronaCustomer($params) {
 
 	    $id_customer = (int)$params['id_customer'];
@@ -700,7 +721,7 @@ class Genzo_Krona extends Module
                 'total'     => $playerObj->total . ' ' . $name,
                 'rank'      => $playerObj->getRank() . ' ' . $this->l('from') . ' ' . Player::getTotalPlayers(),
                 'level'     => $levelName,
-                'url'       => $this->context->link->getModuleLink('genzo_krona', 'overview', ['referral_code' => $playerObj->referral_code]),
+                'url'       => $this->getKronaOverviewUrlByPlayer($playerObj),
             );
 
             if ($isCoreCacheEnabled) {
@@ -784,9 +805,15 @@ class Genzo_Krona extends Module
     }
 
     public function hookDisplayCustomerAccount() {
+        $playerObj = null;
+        $idCustomer = (int)$this->context->customer->id;
+        if ($idCustomer > 0) {
+            $playerObj = new Player($idCustomer, false);
+        }
 
         $this->context->smarty->assign(array(
             'game_name' => Configuration::get('krona_game_name', $this->context->language->id, $this->context->shop->id_shop_group, $this->context->shop->id),
+            'krona_overview_url' => $playerObj instanceof Player ? $this->getKronaOverviewUrlByPlayer($playerObj) : '',
         ));
 
         return $this->display(__FILE__, 'views/templates/hook/customerAccount.tpl');

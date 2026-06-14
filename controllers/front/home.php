@@ -23,10 +23,15 @@ class Genzo_KronaHomeModuleFrontController extends ModuleFrontController {
         parent::initContent();
 
         $game_name = Configuration::get('krona_game_name', $this->context->language->id);
+        $playerObj = null;
+        if ($this->context->customer->isLogged() && (int)$this->context->customer->id > 0) {
+            $playerObj = new Player((int)$this->context->customer->id, false);
+        }
 
         $this->context->smarty->assign(array(
             'meta_title' => $game_name,
             'game_name' => $game_name,
+            'krona_overview_url' => $playerObj instanceof Player ? $this->module->getKronaOverviewUrlByPlayer($playerObj) : '',
             'points_name' => Configuration::get('krona_points_name', $this->context->language->id),
             'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),
             'description' => Configuration::get('krona_description', $this->context->language->id),

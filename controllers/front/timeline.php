@@ -54,6 +54,7 @@ class Genzo_KronaTimelineModuleFrontController extends ModuleFrontController {
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
+            'krona_overview_url' => $this->module->getKronaOverviewUrlByPlayer($playerObj),
             'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),
             'confirmation' => $this->confirmation,
             'errors' => $this->errors,

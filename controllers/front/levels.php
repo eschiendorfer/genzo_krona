@@ -43,6 +43,7 @@ class Genzo_KronaLevelsModuleFrontController extends ModuleFrontController {
 		    'grid' => Configuration::get('krona_levels_grid'),
             'meta_title' => $game_name.': '. $this->module->l('Timeline'),
             'game_name' => $game_name,
+            'krona_overview_url' => $this->module->getKronaOverviewUrlByPlayer($playerObj),
             'player_name' => $playerObj->display_name,
             'total_name' => Configuration::get('krona_total_name', $this->context->language->id),
             'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),

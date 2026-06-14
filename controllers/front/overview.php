@@ -49,6 +49,7 @@ class Genzo_KronaOverviewModuleFrontController extends ModuleFrontController {
             'meta_title' => $game_name . ': ' . $this->module->l('Overview'),
             'nobots' => true, // Player sites shouldn't be indexed as they are anyway a lot of duplicate content
             'game_name' => $game_name,
+            'krona_overview_url' => $this->module->getKronaOverviewUrlByPlayer($playerObj),
             'total_name' => Configuration::get('krona_total_name', $this->context->language->id),
             'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),
             'active' => 'Overview',

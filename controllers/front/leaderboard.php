@@ -61,10 +61,15 @@ class Genzo_KronaLeaderboardModuleFrontController extends ModuleFrontController 
         );
 
         $game_name = Configuration::get('krona_game_name', $this->context->language->id);
+        $playerObj = null;
+        if ($this->context->customer->isLogged() && (int)$this->context->customer->id > 0) {
+            $playerObj = new Player((int)$this->context->customer->id, false);
+        }
 
 		$this->context->smarty->assign(array(
             'meta_title' => $game_name.': '.$this->module->l('Leaderboard'),
             'game_name' => $game_name,
+            'krona_overview_url' => $playerObj instanceof Player ? $this->module->getKronaOverviewUrlByPlayer($playerObj) : '',
             'total_name' => Configuration::get('krona_total_name', $this->context->language->id),
             'loyalty_name' => Configuration::get('krona_loyalty_name', $this->context->language->id),
             'active' => 'Players',

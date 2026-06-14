@@ -1,6 +1,10 @@
 <ul id="krona-nav">
     <li {if $active=='Overview'}class="active"{/if}>
-        <a href="{$link->getModuleLink('genzo_krona', 'overview')}">{l s='Overview' mod='genzo_krona'}</a>
+        {if !empty($krona_overview_url)}
+            <a href="{$krona_overview_url}">{l s='Overview' mod='genzo_krona'}</a>
+        {else}
+            <span>{l s='Overview' mod='genzo_krona'}</span>
+        {/if}
     </li>
     <li {if $active=='Timeline'}class="active"{/if}>
         <a href="{$link->getModuleLink('genzo_krona', 'timeline')}">{l s='Timeline' mod='genzo_krona'}</a>
